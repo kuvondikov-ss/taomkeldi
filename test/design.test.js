@@ -22,6 +22,7 @@ test('original logo va variantlar mavjud, original o\'zgarmagan shakllarda', () 
     for (const [, d] of svg.matchAll(/ d="([^"]+)"/g)) assert.ok(originalPaths.has(d), `${f}: path o'zgargan`);
   }
   assert.ok(fs.statSync(dir + 'taomkeldi-avatar-512.png').size > 1000);
+  assert.ok(fs.statSync(dir + 'banner-food.webp').size > 1000, 'banner fotosi');
 });
 
 test('Mini App sahifalarida emoji ishlatilmagan, ranglar faqat tokenlardan', () => {

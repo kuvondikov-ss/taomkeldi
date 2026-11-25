@@ -11,7 +11,7 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 3 | Brend, logo va dizayn tizimi | ✅ bajarildi, 43/43 test (2026-11-25) — [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) |
 | 4 | Bot kirishi, menyusi va tillari | ✅ bajarildi lokal, 75/75 test (2026-11-25); Telegram'da jonli sinalmagan |
 | 5 | Jizzax hududi va manzil | ✅ bajarildi lokal, 103/103 test (2026-11-25); Telegram ichida sinalmagan |
-| 6 | Bosh sahifa, qidiruv, saralash | ✅ bajarildi lokal, 122/122 test (2026-11-25); banner uchun haqiqiy taom fotosi kerak |
+| 6 | Bosh sahifa, qidiruv, saralash | ✅ bajarildi lokal, 122/122 test (2026-11-25); banner fotosi qo'yildi |
 | 7 | Restoran menyusi va taom oynasi | ⏭ navbatda |
 | 8 | Savat, checkout, buyurtma holatlari | — |
 | 9 | Naqd, karta o'tkazmasi, onlayn to'lov | — |
@@ -66,7 +66,7 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Yopiq restoran holati, buyurtma olinmasligi | 5/8 | qisman | Ro'yxatda `is_open`; `assertCanDeliver` tayyor, checkout 8-bosqichda |
 | Yetkazish hisobi bitta funksiyada, "to'g'ri chiziq" deb yoziladi | 5 | mavjud | `geo-core.deliveryFee`, `distance_method: straight_line` |
 | Bosh sahifa tartibi: header → manzil → qidiruv → banner → oshxona turlari → restoranlar | 6 | mavjud | `views/home.js`; 320/390 px, yorug'/to'q mavzuda ko'rildi |
-| Banner (sarlavha, "Tanlash" → restoranlar ro'yxati) | 6 | qisman | Haqiqiy taom fotosi yo'q — hozircha logo belgisi; foto qo'yish joyi tayyor (`.banner-photo`) |
+| Banner (taom fotosi, sarlavha, "Tanlash" → restoranlar ro'yxati) | 6 | mavjud | `public/brand/banner-food.webp` (foydalanuvchi bergan tasvirdan, logosiz qism); 320/430 px, yorug'/to'q |
 | Restoran kartasi: cover, nom, turlar, haqiqiy reyting, ETA, yetkazish narxi, ochiq/yopiq, sevimli | 6 | mavjud | `views/cards.js`; reyting faqat `rating_count > 0` bo'lsa |
 | Oshxona turlari — manzildagi restoranlardan | 6 | mavjud | `catalog.home` `cuisines`; test |
 | Saralash: tavsiya, reyting, tez, arzon yetkazish; aksiya — alohida filtr | 6 | mavjud | `catalog.SORTERS`; 8 ta test. Ochiq restoranlar har doim yopiqlardan oldin |
@@ -124,9 +124,8 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Server: `services/catalog.js` (ro'yxat + filtr + saralash, qidiruv, sevimlilar, restoran sahifasi, oshxona turlari), `geo-core.deliveryEta`.
 - Mini App: bosh sahifa, qidiruv, sevimlilar, restoran sahifasi (menyu ro'yxati); filtrlar URL'da saqlanadi.
 - Sinov: 122/122; brauzerda aksiya, oshxona turi, saralash, qidiruv (taom → restoran sahifasida belgilash), sevimlilar qo'shish/olib tashlash; 320 px to'q mavzu.
-- Ochiq: banner uchun haqiqiy, ruxsatli taom fotosi; restoran cover rasmlari (restoran paneli — 11-bosqich).
+- Banner fotosi foydalanuvchi bergan tasvirdan qo'yildi (`docs/DESIGN_SYSTEM.md` → Marketing tasvirlari). Ochiq: restoran cover rasmlari (restoran paneli — 11-bosqich).
 
 ## Ochiq savollar
-- Banner fotosi: o'zingiz berasizmi yoki tasvir yaratish vositasi bilan tayyorlaymizmi?
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.
 - "Aloqa" ma'lumoti (oddiy botdagi `@delivo_uz`) — Taomkeldi uchun to'g'ri aloqa manzili.

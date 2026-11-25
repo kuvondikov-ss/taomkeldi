@@ -26,12 +26,12 @@ export async function renderHome(el, params, _m, ctx) {
         ${icon('chevron')}
       </button>
       <button class="search search-link" id="search" type="button">${icon('search')}<span class="input">${t('search_home')}</span></button>
-      <section class="banner" aria-labelledby="banner-title">
+      <section class="banner has-photo" aria-labelledby="banner-title">
+        <img class="banner-photo" src="/brand/banner-food.webp" alt="" width="740" height="190" decoding="async">
         <div class="banner-text">
           <h2 class="banner-title" id="banner-title">${t('banner_title')}</h2>
           <button class="btn btn-banner" id="banner-cta">${t('banner_cta')}</button>
         </div>
-        <div class="banner-art" aria-hidden="true"></div>
       </section>
       <div class="chip-row" id="cuisines" aria-label="${t('nav_search')}"></div>
       <div class="row filter-row">

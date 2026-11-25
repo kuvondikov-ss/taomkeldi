@@ -69,8 +69,14 @@ body.fullscreen { overflow: hidden; }
   width: 36%; max-width: 150px; aspect-ratio: 452 / 246; flex: none; background: var(--banner-cta);
   -webkit-mask: url('/brand/taomkeldi-mark.svg') center / contain no-repeat; mask: url('/brand/taomkeldi-mark.svg') center / contain no-repeat;
 }
-.banner.has-photo .banner-art { display: none; }
-.banner-photo { width: 40%; max-width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-md); flex: none; }
+/* Foto o'ng tomonda; chapdan banner rangiga o'tuvchi gradient matnni o'qiladigan qiladi. */
+.banner.has-photo { position: relative; }
+.banner-photo { position: absolute; top: 0; right: 0; bottom: 0; width: 64%; height: 100%; object-fit: cover; object-position: 30% 50%; }
+.banner.has-photo::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, var(--banner-bg) 36%, color-mix(in srgb, var(--banner-bg) 70%, transparent) 52%, transparent 78%);
+}
+.banner.has-photo .banner-text { position: relative; z-index: 2; max-width: 58%; }
 .filter-row { justify-content: space-between; gap: var(--sp-2); }
 .sort-select { position: relative; flex: 1; max-width: 240px; }
 .sort-select .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-2); }

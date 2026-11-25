@@ -17,6 +17,12 @@ Variantlar `node scripts/brand-variants.mjs` bilan qayta yasaladi; shakllar (pat
 
 Cheklov: belgi keng, 16 px favikonda mayda; 32 px+ o'qiladi.
 
+## Marketing tasvirlari
+Foydalanuvchi bergan 4 ta tasvir: `assets/marketing/` (rollup-banner, courier-bag, packaging, merch). Ular serverdan berilmaydi.
+- Bosh sahifa banneri: `public/brand/banner-food.webp` — `rollup-banner.webp` dan faqat taom qismi (osh va lag'mon, 740×190) kesib olingan; logo va yozuvlar kirmagan.
+- Muhim: bu tasvirlardagi logo (sumka shaklidagi belgi) original logodan farq qiladi. Ilovada logo sifatida faqat `public/brand/taomkeldi-original.svg` va undan yasalgan variantlar ishlatiladi.
+- Banner: foto o'ngda, chapdan `--banner-bg` rangiga o'tuvchi gradient matnni o'qiladigan qiladi; 320 va 430 px, yorug'/to'q mavzuda tekshirildi.
+
 ## Ranglar
 Palitra logodan: `#679C76` (asosiy yashil), `#21583A` (to'q yashil), `#92B88F`, `#B5CFAE`, yozuv `#232323`.
 Sahifalar faqat semantik tokenlardan foydalanadi; `components.css` da xom rang yo'q (test tekshiradi).

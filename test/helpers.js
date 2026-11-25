@@ -25,8 +25,11 @@ export async function setup(envOverrides = {}, { fetchImpl } = {}) {
 
   async function close() {
     await new Promise((r) => server.close(r));
+    // Fon tinglovchilari (guruh/kuryer/mijoz xabarlari, dispetcher) tugamasdan baza yopilmasin.
+    try { await Promise.race([services.idle(), new Promise((r) => setTimeout(r, 2000))]); } catch { /* test o'zi tekshiradi */ }
     try { db.close(); } catch { /* allaqachon yopilgan */ }
-    fs.rmSync(dir, { recursive: true, force: true });
+    // Windows: fayl hali band bo'lsa qayta urinadi; vaqtinchalik papka qolib ketsa ham test yiqilmaydi.
+    try { fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch { /* OS keyinroq tozalaydi */ }
   }
   return { dir, env, config, db, services, base, close };
 }

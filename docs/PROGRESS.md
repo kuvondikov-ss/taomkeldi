@@ -23,7 +23,7 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 15 | Jonli kuzatuv, tarix, profil | ✅ bajarildi lokal, 273/273 test (2026-11-25) |
 | 16 | "Bepul yetkazib berish" bo'limi | ✅ bajarildi lokal, 284/284 test (2026-11-25) |
 | 17 | Barcha ekranlarning yakuniy dizayni | ✅ bajarildi lokal, 284/284 test (2026-11-25) — [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md#17-bosqich-yakuniy-korinish-tekshiruvi-2026-11-25) |
-| 18 | Yakuniy sinov, Railway, topshirish | ⏭ navbatda |
+| 18 | Yakuniy sinov, Railway, topshirish | ✅ tayyorlandi lokal, 290/290 test (2026-11-25); **deploy — foydalanuvchi "deploy qil" deganda** ([OPERATIONS.md](OPERATIONS.md)) |
 
 ## Production holati
 Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy/simple-bot.js`). 2-bosqich kodi deploy qilinmagan. Deploydan oldin: Railway volume, Node 22.13+ ekanini tekshirish va `PLATFORM_ADMIN_IDS` (yoki mavjud `ADMIN_CHAT_ID`). Yangi kod deploy qilinsa, oddiy botdagi "matn bilan buyurtma" oqimi yo'qoladi: buyurtma Mini App orqali 8-bosqichda qaytadi.
@@ -252,6 +252,11 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Chegara taomlar summasiga (chegirmadan keyin, yetkazishsiz) taqqoslanadi; `free_delivery_from = 0` — "hamma uchun bepul" emas; minimal buyurtma, ochiqlik va mavjudlik baribir tekshiriladi; "Arzon yetkazish" saralashi alohida.
 - Mini App: bosh sahifada "Bepul yetkazish" chipi (soni bilan) → "Hozir bepul" va "Summadan bepul" guruhlari; kartada "Yetkazish bepul" belgisi yoki "[summa] so'mdan bepul"; savat/checkout — qoldiq va "0 so'm — bepul"; restoran sozlamasida "Mijoz qanday ko'radi" ko'rinishi (xarajat restoran hisobidan, platforma subsidiyasi yo'q).
 - Sinov: 284/284 (11 ta yangi: N−1/N/N+1, mahsulot olib tashlash, manzil/radius, yopiq, minimal, olib ketish, doimiy 0, buyurtma va xabarlarda jami tengligi, hisobot, bo'lim filtri). Brauzerda: bo'lim, chip, sozlama ko'rinishi.
+
+## 18-bosqich natijasi (deploysiz)
+- End-to-end ssenariylar va test hisoboti: [TEST_REPORT.md](TEST_REPORT.md) — 290/290; beqaror test topilib tuzatildi.
+- Railway holati o'qib tekshirildi (o'zgartirilmadi): servis bor, **volume va domen yo'q**, o'zgaruvchilar `ADMIN_CHAT_ID`, `taomkeldi_bot`. Deploy rejasi: [OPERATIONS.md](OPERATIONS.md).
+- Qo'shildi: `railway.json`, haqiqiy `/health`, `scripts/backup.mjs`, zaxira/tiklash/migratsiya/rollback yo'riqnomasi, Node `>=22.13 <25`.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

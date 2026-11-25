@@ -6,6 +6,8 @@ import { createApp } from './http/app.js';
 import { createBot } from './bot/index.js';
 
 const config = loadConfig();
+config.runtime = { bot: 'starting' };
+config.version = process.env.RAILWAY_GIT_COMMIT_SHA?.slice(0, 7) || process.env.npm_package_version || null;
 for (const w of config.warnings) console.warn(`Ogohlantirish: ${w}`);
 
 const db = openDb(config.dbPath);
@@ -19,12 +21,15 @@ const server = app.listen(config.port, () => {
 let bot = null;
 if (!config.botToken) {
   console.warn('BOT_TOKEN yo\'q: bot ishga tushirilmadi (faqat HTTP).');
+  config.runtime.bot = 'no_token';
 } else if (!config.botEnabled) {
   console.warn('BOT_ENABLED=0: bot ishga tushirilmadi (faqat HTTP).');
+  config.runtime.bot = 'disabled';
 } else {
   bot = createBot({ config, services });
   services.setBotApi(bot.bot.api); // xabarlar va onlayn to'lov havolasi uchun
   await bot.start();
+  config.runtime.bot = 'running';
 }
 if (config.payments.providerToken && !bot) console.warn('PAYMENT_PROVIDER_TOKEN bor, lekin bot ishlamayapti: onlayn to\'lov ko\'rsatilmaydi.');
 

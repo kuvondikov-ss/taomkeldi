@@ -91,10 +91,20 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
     await Promise.all([group.idle(), orderNotify.idle()]);
   }
 
+  // Healthcheck: baza o'qiladi, migratsiya versiyasi, xabarlar navbati.
+  function health() {
+    db.prepare('SELECT 1').get();
+    return {
+      db: 'ok',
+      migration: db.prepare('SELECT MAX(id) AS v FROM schema_migrations').get().v,
+      notifications: outbox.stats(),
+    };
+  }
+
   // Bot ishga tushganda: xabar yuborish va onlayn to'lov uchun Telegram API.
   const setBotApi = (api) => { payments.setBotApi(api); outbox.setBotApi(api); group.setBotApi(api); orderNotify.setBotApi(api); dispatch.setBotApi(api); };
   return {
     geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, manage, group,
-    outbox, templates, orderNotify, dispatch, tracking, setBotApi, events, idle,
+    outbox, templates, orderNotify, dispatch, tracking, setBotApi, events, idle, health,
   };
 }

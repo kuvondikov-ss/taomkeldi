@@ -23,7 +23,15 @@ export function createApp({ config, services, logger = console }) {
     next();
   });
 
-  app.get('/health', (_req, res) => res.json({ ok: true }));
+  // Railway healthcheck. Baza ishlamasa — 503 (deploy "sog'lom emas"). Bot holati faqat ma'lumot uchun.
+  app.get('/health', (_req, res) => {
+    try {
+      res.json({ ok: true, ...services.health(), bot: config.runtime?.bot || 'unknown', version: config.version || null });
+    } catch (e) {
+      logger.error('Healthcheck xatosi:', e.message);
+      res.status(503).json({ ok: false, db: 'error' });
+    }
+  });
 
   // --- Autentifikatsiya: Authorization: tma <initData> ---
   // DEV_AUTH (faqat lokal, production'da config.devAuth=false): X-Dev-User: <telegram id>

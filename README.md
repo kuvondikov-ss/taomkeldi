@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 17-bosqich (barcha ekranlarning yakuniy ko'rinishi) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 18 bosqich lokal bajarildi (290/290 test). Production deploy — buyruq bilan; reja va muhit: [docs/OPERATIONS.md](docs/OPERATIONS.md), test hisoboti: [docs/TEST_REPORT.md](docs/TEST_REPORT.md). Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -25,6 +25,11 @@ Logo variantlari: `node scripts/brand-variants.mjs`. Rang kontrasti: `node scrip
 ```bash
 npm test
 ```
+Hisobot: [docs/TEST_REPORT.md](docs/TEST_REPORT.md).
+
+## Ishga tushirish (Railway) va texnik xizmat
+[docs/OPERATIONS.md](docs/OPERATIONS.md): volume (`DATA_DIR=/data`), HTTPS `WEBAPP_URL`, bitta nusxa (long polling), healthcheck `/health`, migratsiyalar, zaxira (`node scripts/backup.mjs`) va tiklash, rollback.
+Rollar jadvali — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md#4-rollar), bot xabarlari — [docs/message-catalog.md](docs/message-catalog.md).
 Har test alohida vaqtinchalik bazada ishlaydi; Telegram'ga hech narsa yuborilmaydi.
 
 ## Tuzilma
@@ -47,7 +52,7 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 
 | Metod | Yo'l | Kim |
 |---|---|---|
-| GET | `/health` | hamma |
+| GET | `/health` | hamma: `db`, `migration`, `notifications`, `bot` (baza ishlamasa 503) |
 | GET | `/api/me` | foydalanuvchi va rollari |
 | PUT | `/api/me/lang` | til (`uz`/`ru`) |
 | GET/POST | `/api/addresses` | o'z manzillari |

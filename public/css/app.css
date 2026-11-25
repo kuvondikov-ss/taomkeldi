@@ -101,3 +101,39 @@ body.fullscreen { overflow: hidden; }
 .is-unavailable .pname { color: var(--text-2); }
 .is-highlighted { outline: 3px solid var(--focus); outline-offset: -3px; }
 .list-item > .grow { display: flex; flex-direction: column; }
+
+/* --- Restoran sahifasi va menyu (7-bosqich) --- */
+.restaurant-hero { position: relative; }
+.restaurant-hero .card-media { border-radius: var(--radius-card); display: block; }
+.more-btn { align-self: flex-start; min-height: 36px; padding: 0; gap: var(--sp-1); color: var(--primary); }
+.restaurant .tabs { top: 0; }
+.menu-section { scroll-margin-top: 56px; }
+.section-title { padding-top: var(--sp-2); }
+
+.product-card { display: flex; flex-direction: column; container-type: inline-size; }
+.product-card .media-btn { position: relative; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer; }
+.product-card .media-btn .card-media, .product-card .media-btn .placeholder { aspect-ratio: 4 / 3; display: grid; }
+.product-card .card-body { flex: 1; gap: 2px; padding: var(--sp-2) var(--sp-3) var(--sp-3); }
+.product-card .name-btn { padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; font-size: 15px; min-height: 2.5em; }
+.product-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--sp-2); margin-top: auto; padding-top: var(--sp-1); }
+.product-actions { display: flex; justify-content: flex-end; margin-top: var(--sp-2); }
+.product-actions .qty { width: 100%; justify-content: space-between; }
+.product-actions .add-btn { width: 100%; border-radius: var(--radius-pill); min-height: 40px; }
+.product-card.is-unavailable .card-media, .product-card.is-unavailable .placeholder { opacity: .5; filter: grayscale(.7); }
+.product-card .badge-danger { margin-left: auto; }
+.cannot-order .add-btn { opacity: .45; }
+.dish-photo { border-radius: var(--radius-card); aspect-ratio: 4 / 3; width: 100%; object-fit: cover; }
+
+/* Pastki savat paneli */
+.cart-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 25;
+  padding: var(--sp-2) var(--page-x) calc(var(--sp-2) + env(safe-area-inset-bottom));
+  background: var(--surface); box-shadow: 0 -1px 0 var(--border), var(--shadow-md);
+}
+.cart-bar-btn { gap: var(--sp-3); justify-content: space-between; }
+.cart-bar-count { min-width: 28px; height: 28px; border-radius: 14px; display: grid; place-items: center; background: var(--on-primary); color: var(--primary); font-size: var(--fs-sm); }
+.cart-bar-label { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cart-bar-note { text-align: center; margin-top: 4px; }
+body.has-cart-bar .page { padding-bottom: calc(var(--cta-h) + 64px + env(safe-area-inset-bottom)); }
+.cart-row .grow { gap: 2px; }
+#to-rest { border: 1px solid var(--border); }

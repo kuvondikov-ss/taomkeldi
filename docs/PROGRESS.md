@@ -12,8 +12,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 4 | Bot kirishi, menyusi va tillari | ✅ bajarildi lokal, 75/75 test (2026-11-25); Telegram'da jonli sinalmagan |
 | 5 | Jizzax hududi va manzil | ✅ bajarildi lokal, 103/103 test (2026-11-25); Telegram ichida sinalmagan |
 | 6 | Bosh sahifa, qidiruv, saralash | ✅ bajarildi lokal, 122/122 test (2026-11-25); banner fotosi qo'yildi |
-| 7 | Restoran menyusi va taom oynasi | ⏭ navbatda |
-| 8 | Savat, checkout, buyurtma holatlari | — |
+| 7 | Restoran menyusi va taom oynasi | ✅ bajarildi lokal, 131/131 test (2026-11-25) |
+| 8 | Savat, checkout, buyurtma holatlari | ⏭ navbatda |
 | 9 | Naqd, karta o'tkazmasi, onlayn to'lov | — |
 | 10 | Platforma paneli va restoran ulash | — |
 | 11 | Restoran panelining bo'limlari | — |
@@ -73,7 +73,16 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Qidiruv: restoran va taom, so'nggi so'rovlar, natija turlari ajratilgan, taom → restoran sahifasida belgilanadi | 6 | mavjud | `/api/search`, `views/search.js`; 6 ta test |
 | Sevimlilar | 6 | mavjud | `/api/favorites`, `views/favorites.js`, bosh sahifadagi yurakcha |
 | Yuklanish / filtr bo'yicha bo'sh / hududda restoran yo'q — alohida holatlar | 6 | mavjud | `home.js` (`total_in_area`) |
-| Menyu va taom oynasi | 7 | qisman | Restoran sahifasida menyu ro'yxati (kategoriyalar bo'yicha); tablar, taom oynasi, savat 7-bosqichda |
+| Restoran sahifasi: cover, nom, tur, ETA, narx, minimal summa, bepul yetkazish sharti, sevimli, "Batafsil" | 7 | mavjud | `views/restaurant.js`; ish vaqti — bo'lsa ko'rsatiladi (sozlash 11-bosqichda) |
+| Yopishqoq kategoriya tablari (bosish → bo'lim, aylantirish → faol tab) | 7 | mavjud | `IntersectionObserver`; ←/→ klaviatura |
+| 2 ustunli taom kartalari 4:3, chegirma, tugagan, tor ekranda miqdor to'liq kenglikda | 7 | mavjud | brauzerda 360 px |
+| Taom oynasi (rasm, nom, tavsif, porsiya, narx, miqdor, "Savatga qo'shish · summa") | 7 | mavjud | tarkib/allergen o'ylab topilmaydi |
+| Bitta taom bir nechta bo'limda — miqdor bitta holatdan | 7 | mavjud | "Ommabop" + kategoriya; brauzerda tekshirildi |
+| Boshqa restoran taomi — tasdiqsiz savat o'chirilmaydi | 7 | mavjud | `cart-core.setQty` `conflict`; test + brauzer |
+| Savat paneli (soni, summasi, "yetkazish alohida") | 7 | mavjud | `.cart-bar` |
+| Savatdagi taom stop-listga tushsa — ogohlantirish va olib tashlash | 7/8 | mavjud | restoran sahifasi + `/api/cart/check`; checkout 8-bosqichda qayta tekshiradi |
+| Orqaga qaytganda aylantirish va kategoriya holati | 7 | mavjud | `main.js` `scrollMemory` |
+| Savat sahifasi | 8 | qisman | Miqdor, server tekshiruvi (narx o'zgarishi, stop-list, yopiq, radius, minimal summa), jami; rasmiylashtirish 8-bosqichda |
 | Savat, checkout, holat o'tishlari | 8 | yo'q | Asos: `createRecord` |
 | To'lovlar | 9 | yo'q | `payment_status` ustuni bor |
 | Platforma paneli, restoran arizasi | 10 | qisman | `/api/admin/restaurants` (ro'yxat, yaratish) |
@@ -125,6 +134,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Mini App: bosh sahifa, qidiruv, sevimlilar, restoran sahifasi (menyu ro'yxati); filtrlar URL'da saqlanadi.
 - Sinov: 122/122; brauzerda aksiya, oshxona turi, saralash, qidiruv (taom → restoran sahifasida belgilash), sevimlilar qo'shish/olib tashlash; 320 px to'q mavzu.
 - Banner fotosi foydalanuvchi bergan tasvirdan qo'yildi (`docs/DESIGN_SYSTEM.md` → Marketing tasvirlari). Ochiq: restoran cover rasmlari (restoran paneli — 11-bosqich).
+
+## 7-bosqich natijasi
+- Yangi: `public/js/shared/cart-core.js` (savat qoidalari, Node'da test qilinadi), `public/js/app/cart.js`, `views/cart.js`, `POST /api/cart/check`.
+- Qayta yozildi: `views/restaurant.js` (tablar, kartalar, taom oynasi, savat paneli).
+- Tuzatildi: tasdiqlash dialogi natijani tugma bosilganda qaytaradi (fon rejimida `close` hodisasi kechikkan); `.alert` ichida tugma bo'lsa matn torayib qolmaydi.
+- Sinov: 131/131; brauzerda 360 px: ikki bo'limdagi bir xil miqdor, tugagan taom, uzun nom, restoran almashtirish (bekor/tasdiq), taom oynasi, savat tekshiruvi (stop-list, narx o'zgarishi), orqaga qaytganda aylantirish joyi.
+- Savat qurilmada saqlanadi (`localStorage`, foydalanuvchi bo'yicha); narx va mavjudlik har doim serverda qayta tekshiriladi.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

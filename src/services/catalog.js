@@ -121,6 +121,41 @@ export function createCatalogService(db, geo, access) {
     return { ...card(r, geo.deliveryFor(r, point), actor), address_text: r.address_text, work_hours: r.work_hours, categories, products };
   }
 
+  // Savatni server tomonida qayta tekshirish: joriy narx, mavjudlik (stop-list), o'chirilganlar,
+  // restoran holati va manzilga yetkazishi. Klient yuborgan narx faqat "narx o'zgardi" deb ko'rsatish uchun.
+  // Natija hisob-kitobi — faqat bazadagi narxlardan (checkout 8-bosqichda shu hisobni qayta qiladi).
+  function checkCart(actor, point, input) {
+    const restaurantId = v.id(input?.restaurant_id, 'restaurant_id');
+    const items = Array.isArray(input?.items) ? input.items : null;
+    if (!items || items.length === 0 || items.length > 100) throw new AppError('VALIDATION', { details: { field: 'items' } });
+    const r = db.prepare('SELECT * FROM restaurants WHERE id = ?').get(restaurantId);
+    if (!r || r.status !== 'active') throw new AppError('NOT_FOUND');
+
+    const get = db.prepare('SELECT id, name_uz, price, is_available, is_deleted FROM products WHERE id = ? AND restaurant_id = ?');
+    const lines = [];
+    let total = 0;
+    for (const it of items) {
+      const pid = v.id(it.product_id, 'product_id');
+      const qty = v.int(it.qty, 'qty', { min: 1, max: 99 });
+      const p = get.get(pid, restaurantId);
+      if (!p || p.is_deleted) { lines.push({ product_id: pid, qty, status: 'removed', price: null, name: null }); continue; }
+      const clientPrice = Number.isSafeInteger(it.price) ? it.price : null;
+      const line = { product_id: pid, qty, name: p.name_uz, price: p.price, line_total: p.price * qty, price_changed: clientPrice != null && clientPrice !== p.price, old_price: clientPrice };
+      if (!p.is_available) { lines.push({ ...line, status: 'unavailable', line_total: 0 }); continue; }
+      lines.push({ ...line, status: 'ok' });
+      total += line.line_total;
+    }
+    const delivery = geo.deliveryFor(r, point);
+    return {
+      restaurant: { id: r.id, name: r.name, is_open: r.is_open === 1, min_order: r.min_order, free_delivery_from: r.free_delivery_from },
+      delivery,
+      lines,
+      items_total: total,
+      below_min_order: total < r.min_order,
+      can_order: r.is_open === 1 && delivery.deliverable && total > 0 && total >= r.min_order && lines.every((l) => l.status === 'ok'),
+    };
+  }
+
   // --- Sevimlilar ---
   function favorites(actor, point) {
     const ids = db.prepare('SELECT restaurant_id FROM favorites WHERE user_id = ? ORDER BY created_at DESC').all(actor.id).map((x) => x.restaurant_id);
@@ -165,5 +200,5 @@ export function createCatalogService(db, geo, access) {
     return cuisinesOf.all(restaurantId).map((c) => ({ ...c }));
   }
 
-  return { home, search, restaurant, favorites, setFavorite, allCuisines, setRestaurantCuisines };
+  return { home, search, restaurant, checkCart, favorites, setFavorite, allCuisines, setRestaurantCuisines };
 }

@@ -44,5 +44,12 @@ for (const [name, m] of Object.entries(menus)) {
     for (const [pn, price, old, portion] of items) s.restaurants.addProduct(rid, { categoryId: cid, name: pn, price, oldPrice: old, portion });
   }
 }
+// 7-bosqich ko'rinishlari uchun: ommabop, tugagan, uzun nom, tavsif, kategoriyasiz taom.
+const markaz = byName('[DEMO] Markaz Choyxonasi');
+if (markaz && !db.prepare("SELECT 1 FROM products WHERE restaurant_id = ? AND name_uz LIKE 'Maxsus%'").get(markaz)) {
+  db.prepare("UPDATE products SET is_popular = 1, description_uz = 'Devzira guruch, qo‘y go‘shti, sabzi va no‘xat. Qozonda, o‘tinda pishiriladi.' WHERE restaurant_id = ? AND name_uz = 'Choyxona oshi'").run(markaz);
+  db.prepare("UPDATE products SET is_available = 0 WHERE restaurant_id = ? AND name_uz = 'Jigar shashlik'").run(markaz);
+  s.restaurants.addProduct(markaz, { name: 'Maxsus to‘y oshi bedana tuxumi va qazi bilan, katta oila uchun porsiya', price: 120000, portion: '1.5 kg' });
+}
 console.log('Tayyor. Brauzerda: http://localhost:3917/?dev=301');
 db.close();

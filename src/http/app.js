@@ -115,6 +115,10 @@ export function createApp({ config, services, logger = console }) {
     const point = services.addresses.resolvePoint(req.actor, req.query);
     res.json({ ok: true, restaurant: services.catalog.restaurant(req.actor, v.id(req.params.id), point) });
   });
+  api.post('/cart/check', (req, res) => {
+    const point = services.addresses.resolvePoint(req.actor, req.body || {});
+    res.json({ ok: true, ...services.catalog.checkCart(req.actor, point, req.body) });
+  });
   api.get('/search', (req, res) => {
     const point = services.addresses.resolvePoint(req.actor, req.query);
     res.json({ ok: true, ...services.catalog.search(req.actor, point, req.query.q) });

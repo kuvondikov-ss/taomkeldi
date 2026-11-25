@@ -1,6 +1,14 @@
 // Mini App matnlari (uz/ru). Til — serverdagi foydalanuvchi tili (bot bilan bir xil).
 const uz = {
-  search_home: 'Taom yoki restoran qidirish', banner_title: 'Mazali taomlar. Bir necha bosishda.', banner_cta: 'Tanlash',
+  popular: 'Ommabop', work_hours: 'Ish vaqti', more_info: 'Batafsil', free_from: '{sum}dan yuqori buyurtmada yetkazish bepul', description: 'Tavsif', address: 'Manzil',
+  add_sum: 'Savatga qo‘shish · {sum}', update_sum: 'Saqlash · {sum}', remove_from_cart: 'Savatdan olib tashlash', add_to_cart: 'Savatga qo‘shish',
+  cart: 'Savat', cart_items: '{n} ta taom', delivery_extra: 'Yetkazish narxi alohida', items_sum: 'Taomlar: {sum}',
+  switch_title: 'Savatni tozalaysizmi?', switch_text: 'Savatda “{name}” taomlari bor. Bitta buyurtmada faqat bitta restoran taomlari bo‘ladi.', switch_confirm: 'Tozalash va qo‘shish',
+  cart_empty: 'Savat bo‘sh', cart_empty_hint: 'Restorandan taom tanlang', to_restaurants: 'Restoranlarga o‘tish',
+  unavailable_in_cart: 'Savatdagi {n} ta taom hozir mavjud emas', remove_unavailable: 'Mavjud emaslarini olib tashlash', removed_item: 'Bu taom menyudan olib tashlangan',
+  price_changed: 'Narx o‘zgardi: {old} → {new}', checkout_soon: 'Buyurtmani rasmiylashtirish keyingi bosqichda qo‘shiladi.',
+  cannot_order_closed: 'Restoran yopiq — hozir buyurtma olinmaydi', below_min: 'Minimal buyurtma {sum} — yana {left} qo‘shing',
+  qty_dec: 'Kamaytirish', qty_inc: 'Ko‘paytirish', added: 'Savatga qo‘shildi', clear_cart: 'Savatni tozalash', cart_cleared: 'Savat tozalandi', go_restaurant: 'Restoranga qaytish',  search_home: 'Taom yoki restoran qidirish', banner_title: 'Mazali taomlar. Bir necha bosishda.', banner_cta: 'Tanlash',
   all_cuisines: 'Hammasi', sort_label: 'Saralash', sort_recommended: 'Tavsiya', sort_rating: 'Reyting', sort_fast: 'Tez yetkazish', sort_cheap_delivery: 'Arzon yetkazish',
   promo: 'Aksiya', filtered_empty: 'Bu filtr bo‘yicha restoran topilmadi', reset_filters: 'Filtrlarni tozalash',
   eta: '{from}–{to} daq', favorites: 'Sevimlilar', favorites_empty: 'Sevimli restoran yo‘q', favorites_empty_hint: 'Restoran kartasidagi yurakchani bosing.',
@@ -59,7 +67,15 @@ const uz = {
 };
 
 const ru = {
-  search_home: 'Поиск блюд и ресторанов', banner_title: 'Вкусная еда. В несколько касаний.', banner_cta: 'Выбрать',
+  popular: 'Популярное', work_hours: 'Часы работы', more_info: 'Подробнее', free_from: 'Доставка бесплатно при заказе от {sum}', description: 'Описание', address: 'Адрес',
+  add_sum: 'В корзину · {sum}', update_sum: 'Сохранить · {sum}', remove_from_cart: 'Убрать из корзины', add_to_cart: 'В корзину',
+  cart: 'Корзина', cart_items: '{n} блюд', delivery_extra: 'Доставка оплачивается отдельно', items_sum: 'Блюда: {sum}',
+  switch_title: 'Очистить корзину?', switch_text: 'В корзине блюда из «{name}». В одном заказе — блюда только одного ресторана.', switch_confirm: 'Очистить и добавить',
+  cart_empty: 'Корзина пуста', cart_empty_hint: 'Выберите блюда в ресторане', to_restaurants: 'К ресторанам',
+  unavailable_in_cart: 'Нет в наличии: {n} блюд в корзине', remove_unavailable: 'Убрать недоступные', removed_item: 'Блюдо убрано из меню',
+  price_changed: 'Цена изменилась: {old} → {new}', checkout_soon: 'Оформление заказа появится на следующем этапе.',
+  cannot_order_closed: 'Ресторан закрыт — заказы сейчас не принимаются', below_min: 'Минимальный заказ {sum} — добавьте ещё {left}',
+  qty_dec: 'Уменьшить', qty_inc: 'Увеличить', added: 'Добавлено в корзину', clear_cart: 'Очистить корзину', cart_cleared: 'Корзина очищена', go_restaurant: 'Вернуться в ресторан',  search_home: 'Поиск блюд и ресторанов', banner_title: 'Вкусная еда. В несколько касаний.', banner_cta: 'Выбрать',
   all_cuisines: 'Все', sort_label: 'Сортировка', sort_recommended: 'Рекомендуем', sort_rating: 'Рейтинг', sort_fast: 'Быстрая доставка', sort_cheap_delivery: 'Дешёвая доставка',
   promo: 'Акции', filtered_empty: 'По этим фильтрам ресторанов нет', reset_filters: 'Сбросить фильтры',
   eta: '{from}–{to} мин', favorites: 'Избранное', favorites_empty: 'Нет избранных ресторанов', favorites_empty_hint: 'Нажмите сердечко на карточке ресторана.',

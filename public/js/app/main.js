@@ -8,6 +8,7 @@ import { renderHome } from './views/home.js';
 import { renderSearch } from './views/search.js';
 import { renderFavorites } from './views/favorites.js';
 import { renderRestaurant } from './views/restaurant.js';
+import { renderCart } from './views/cart.js';
 import { renderPicker } from './views/picker.js';
 import { renderAddressForm } from './views/address-form.js';
 import { renderAddresses } from './views/addresses.js';
@@ -27,6 +28,7 @@ const ROUTES = [
   [/^search$/, renderSearch, { nav: 'search', needsAddress: true }],
   [/^favorites$/, renderFavorites, { needsAddress: true }],
   [/^r\/(\d+)$/, renderRestaurant, { needsAddress: true }],
+  [/^cart$/, renderCart, { needsAddress: true }],
   [/^orders$/, renderOrders, { nav: 'orders' }],
   [/^profile$/, renderProfile, { nav: 'profile' }],
   [/^addresses$/, renderAddresses, {}],
@@ -42,10 +44,16 @@ function parseHash() {
   return { path, params: new URLSearchParams(query) };
 }
 
+// Orqaga qaytganda aylantirish joyi (va shu orqali faol kategoriya tabi) tiklanadi.
+const scrollMemory = new Map();
+let currentKey = null;
+let navType = 'push';
+
 export function go(path, { replace = false } = {}) {
   const url = `#/${path}`;
   if (replace) history.replaceState(null, '', url);
   else history.pushState(null, '', url);
+  navType = replace ? 'replace' : 'push';
   render();
 }
 
@@ -61,9 +69,13 @@ function setNav(active) {
 let renderSeq = 0;
 async function render() {
   const seq = ++renderSeq;
+  if (currentKey) scrollMemory.set(currentKey, window.scrollY);
+  const restoreScroll = navType === 'pop';
+  navType = 'pop'; // keyingi hashchange (orqaga/oldinga) uchun
   cleanup?.();
   cleanup = null;
   const { path, params } = parseHash();
+  currentKey = location.hash;
   const route = ROUTES.find(([re]) => re.test(path)) || ROUTES[0];
   const [re, fn, opts] = route;
 
@@ -85,6 +97,11 @@ async function render() {
   if (seq !== renderSeq) { if (typeof result === 'function') result(); return; } // eskirgan render
   if (typeof result === 'function') cleanup = result;
   hydrateIcons(view);
+  if (restoreScroll && scrollMemory.has(currentKey)) {
+    const y = scrollMemory.get(currentKey);
+    requestAnimationFrame(() => window.scrollTo(0, y));
+    setTimeout(() => window.scrollTo(0, y), 150); // rasmlar yuklangach
+  }
 }
 
 function fatal(title, text, retry) {

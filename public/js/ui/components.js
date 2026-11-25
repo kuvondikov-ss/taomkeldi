@@ -64,11 +64,21 @@ export function confirmDialog({ title, text = '', confirm = 'Tasdiqlash', cancel
         <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" value="ok">${esc(confirm)}</button>
       </div>`;
     document.body.append(d);
+    // Natijani tugma bosilganda darhol qaytaramiz ('close' hodisasi fon rejimida kechikishi mumkin).
+    let done = false;
+    const finish = (ok) => {
+      if (done) return;
+      done = true;
+      if (d.open) d.close();
+      d.remove();
+      resolve(ok);
+    };
     d.addEventListener('click', (e) => {
       const v = e.target.closest('button')?.value;
-      if (v) d.close(v);
+      if (v) finish(v === 'ok');
     });
-    d.addEventListener('close', () => { resolve(d.returnValue === 'ok'); d.remove(); });
+    d.addEventListener('cancel', () => finish(false)); // Esc
+    d.addEventListener('close', () => finish(d.returnValue === 'ok'));
     d.showModal();
   });
 }

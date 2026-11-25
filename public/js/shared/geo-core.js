@@ -43,4 +43,12 @@ export function deliveryFee({ delivery_base = 0, delivery_base_m = 0, delivery_p
   return delivery_base + delivery_per_km * Math.ceil(extraM / 1000);
 }
 
+// Taxminiy yetkazish vaqti oralig'i (daqiqa): tayyorlash + yo'l (to'g'ri chiziq, ~15 km/soat) + topshirish.
+// Bu baho; aniq vaqt sifatida ko'rsatilmaydi. 5 daqiqaga yaxlitlanadi, oraliq 10 daqiqa.
+export function deliveryEta({ prep_minutes = 20 }, distanceM) {
+  const travel = Math.ceil(distanceM / 250);
+  const from = Math.ceil((prep_minutes + travel + 5) / 5) * 5;
+  return { from, to: from + 10 };
+}
+
 export const DISTANCE_METHOD = 'straight_line';

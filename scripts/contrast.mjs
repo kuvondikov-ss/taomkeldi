@@ -47,6 +47,8 @@ const PAIRS = [
   ['--surface', '--brand', 3, 'faol tab chizig\'i (bezak, matn emas)'],
   ['--bg', '--focus', 3, 'fokus halqasi'],
   ['--surface', '--border', 1.2, 'chegara (bezak)'],
+  ['--banner-bg', '--on-banner', 4.5, 'banner sarlavhasi'],
+  ['--banner-cta', '--on-banner-cta', 4.5, 'banner tugmasi'],
 ];
 
 let failed = 0;

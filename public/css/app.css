@@ -52,3 +52,46 @@ body.fullscreen { overflow: hidden; }
 #place { min-height: 1.25em; }
 #notice { flex-wrap: wrap; }
 .alert .btn-ghost { min-height: 36px; padding: 0; color: inherit; text-decoration: underline; white-space: nowrap; }
+
+/* --- Bosh sahifa (6-bosqich) --- */
+.home .app-header { min-height: 48px; }
+.search-link { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+.search-link .input { display: flex; align-items: center; color: var(--text-2); }
+.banner {
+  display: flex; align-items: center; gap: var(--sp-3); min-height: 112px; max-height: 148px; overflow: hidden;
+  padding: var(--sp-4); border-radius: var(--radius-card); background: var(--banner-bg); color: var(--on-banner);
+}
+.banner-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-3); }
+.banner-title { margin: 0; font-size: 18px; font-weight: var(--fw-bold); line-height: var(--lh-tight); }
+.btn-banner { min-height: 40px; background: var(--banner-cta); color: var(--on-banner-cta); padding: 0 var(--sp-5); }
+/* Haqiqiy taom fotosi berilguncha: logo belgisi banner tugmasi rangida (shakli originaldan). */
+.banner-art {
+  width: 36%; max-width: 150px; aspect-ratio: 452 / 246; flex: none; background: var(--banner-cta);
+  -webkit-mask: url('/brand/taomkeldi-mark.svg') center / contain no-repeat; mask: url('/brand/taomkeldi-mark.svg') center / contain no-repeat;
+}
+.banner.has-photo .banner-art { display: none; }
+.banner-photo { width: 40%; max-width: 160px; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-md); flex: none; }
+.filter-row { justify-content: space-between; gap: var(--sp-2); }
+.sort-select { position: relative; flex: 1; max-width: 240px; }
+.sort-select .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--text-2); }
+.sort-select .select { min-height: 40px; padding: 0 var(--sp-3) 0 40px; border-radius: var(--radius-pill); font-size: var(--fs-sm); font-weight: var(--fw-medium); appearance: none; -webkit-appearance: none; }
+
+/* Restoran kartasi */
+.restaurant-card .card-cover { position: relative; }
+.restaurant-card .card-media { display: block; }
+.fav-btn { position: absolute; top: var(--sp-2); right: var(--sp-2); background: var(--surface); color: var(--text-2); box-shadow: var(--shadow-sm); }
+.fav-btn[aria-pressed="true"] { color: var(--danger); }
+.fav-btn[aria-pressed="true"] .icon { fill: currentColor; }
+.cover-badge { position: absolute; left: var(--sp-2); top: var(--sp-2); }
+.card-open { width: 100%; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.rating { white-space: nowrap; font-weight: var(--fw-semibold); }
+.rating .icon { color: var(--warning); fill: currentColor; }
+.danger-text { color: var(--danger); }
+
+/* Restoran sahifasi */
+.restaurant-cover { border-radius: var(--radius-card); }
+.product-row { cursor: default; }
+.product-row .grow { display: flex; flex-direction: column; gap: 2px; }
+.is-unavailable .pname { color: var(--text-2); }
+.is-highlighted { outline: 3px solid var(--focus); outline-offset: -3px; }
+.list-item > .grow { display: flex; flex-direction: column; }

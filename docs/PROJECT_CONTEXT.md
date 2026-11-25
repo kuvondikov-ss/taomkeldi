@@ -177,6 +177,10 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Masofa — to'g'ri chiziq (haversine), UI'da "to'g'ri chiziq" deb yoziladi; narx: baza + har boshlangan km | Yo'l masofasi API'si yo'q; yolg'on aniqlik bermaslik |
 | 2026-11-25 | Xarita: Leaflet (o'z serverimizdan) + OSM plitkalari, attribution doim ko'rinadi; qidiruv — Nominatim server proksi orqali, avtomatik to'ldirishsiz | Provayder qoidalari (1 so'rov/s, kesh, User-Agent) |
 | 2026-11-25 | Joriy yetkazish manzili = serverdagi asosiy (va hudud ichidagi) manzil | Qurilmalar orasida bir xil; tekshiruv serverda |
+| 2026-11-25 | Saralash: har qanday tartibda ochiq restoranlar yopiqlardan oldin; "tavsiya" = reyting × ishonch (baholar soni/10, ko'pi 1) + yaqinlik; "arzon yetkazish" — narx bo'yicha, "bepul" deb atalmaydi | Buyurtma olinmaydigan restoran tepada turmasligi; kam bahoga ortiqcha ishonmaslik |
+| 2026-11-25 | Aksiya = mavjud mahsulotda `old_price > price` | Soxta chegirma ko'rsatmaslik |
+| 2026-11-25 | Taxminiy yetkazish vaqti: tayyorlash + masofa/15 km/soat + 5 daq, 10 daqiqalik oraliq | Aniq countdown va'da qilinmaydi |
+| 2026-11-25 | So'nggi qidiruvlar qurilmada (localStorage) saqlanadi | Serverga ortiqcha shaxsiy ma'lumot yozmaslik |
 | 2026-11-25 | Oddiy botdagi "matn bilan buyurtma" oqimi yangi kodga ko'chirilmadi | Yangi modelda buyurtma restoran va mahsulotlarga bog'langan; Mini App orqali 8-bosqichda |
 | 2026-11-25 | Original logo olindi: `public/brand/taomkeldi-original.svg` (shior: "Taomingiz eshigingizgacha"). Variantlar `scripts/brand-variants.mjs` bilan yasaladi — geometriya o'zgarmaydi, faqat kesish va qora yozuv rangi (to'q fon uchun) | 3-bosqich talabi: original SVG'dan full/mark, yorug'/to'q variantlar |
 | 2026-11-25 | Palitra logodagi yashil ranglardan olinadi (promptdagi to'q ko'k/to'q sariq palitra o'rniga) — foydalanuvchi tasdiqladi; asosiy tugma `#21583A` + oq matn (8.3:1), `#679C76` faqat bezak (oq fonda 3.2:1). Batafsil: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Logo yashil: `#679C76`, `#21583A`, `#92B88F`, `#B5CFAE`, yozuv `#232323` |

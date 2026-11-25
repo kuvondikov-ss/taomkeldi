@@ -104,15 +104,28 @@ export function createApp({ config, services, logger = console }) {
     res.json({ ok: true });
   });
 
-  // --- Restoranlar (mijoz): faqat tanlangan nuqtani qamrab oladigan faol restoranlar ---
+  // --- Katalog (mijoz): faqat tanlangan nuqtaga yetkazadigan faol restoranlar ---
+  // ?address_id= yoki ?lat=&lon=; filtrlar: cuisine, promo=1, sort=recommended|rating|fast|cheap_delivery
   api.get('/restaurants', (req, res) => {
     const point = services.addresses.resolvePoint(req.actor, req.query);
-    res.json({ ok: true, point, restaurants: services.restaurants.listForPoint(point) });
+    const { cuisine, promo, sort } = req.query;
+    res.json({ ok: true, point, ...services.catalog.home(req.actor, point, { cuisine, promo, sort: sort || undefined }) });
   });
   api.get('/restaurants/:id', (req, res) => {
     const point = services.addresses.resolvePoint(req.actor, req.query);
-    res.json({ ok: true, restaurant: services.restaurants.getPublic(v.id(req.params.id), point) });
+    res.json({ ok: true, restaurant: services.catalog.restaurant(req.actor, v.id(req.params.id), point) });
   });
+  api.get('/search', (req, res) => {
+    const point = services.addresses.resolvePoint(req.actor, req.query);
+    res.json({ ok: true, ...services.catalog.search(req.actor, point, req.query.q) });
+  });
+  api.get('/favorites', (req, res) => {
+    const point = services.addresses.resolvePoint(req.actor, req.query);
+    res.json({ ok: true, restaurants: services.catalog.favorites(req.actor, point) });
+  });
+  api.put('/favorites/:rid', (req, res) => res.json({ ok: true, ...services.catalog.setFavorite(req.actor, req.params.rid, true) }));
+  api.delete('/favorites/:rid', (req, res) => res.json({ ok: true, ...services.catalog.setFavorite(req.actor, req.params.rid, false) }));
+  api.get('/cuisines', (_req, res) => res.json({ ok: true, cuisines: services.catalog.allCuisines() }));
 
   // --- Mijoz buyurtmalari ---
   api.get('/orders', (req, res) => res.json({ ok: true, orders: services.orders.listForCustomer(req.actor) }));
@@ -128,6 +141,9 @@ export function createApp({ config, services, logger = console }) {
   api.get('/panel/restaurants/:rid/orders', (req, res) => {
     const orders = services.orders.listForRestaurant(req.actor, v.id(req.params.rid, 'rid'), { status: req.query.status });
     res.json({ ok: true, orders });
+  });
+  api.put('/panel/restaurants/:rid/cuisines', (req, res) => {
+    res.json({ ok: true, cuisines: services.catalog.setRestaurantCuisines(req.actor, v.id(req.params.rid, 'rid'), req.body?.cuisine_ids) });
   });
   api.put('/panel/restaurants/:rid/location', (req, res) => {
     res.json({ ok: true, restaurant: services.restaurants.updateLocation(req.actor, v.id(req.params.rid, 'rid'), req.body || {}) });

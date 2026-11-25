@@ -26,5 +26,23 @@ for (const d of demo) {
     .run(d.lat, d.lon, d.radius, d.base, d.perKm, d.open, r.id);
   console.log('+', d.name);
 }
+// Oshxona turlari, menyu, aksiya va namunaviy (DEMO) baholar.
+const byName = (n) => db.prepare('SELECT id FROM restaurants WHERE name = ?').get(n)?.id;
+const cuisine = (slug) => db.prepare('SELECT id FROM cuisines WHERE slug = ?').get(slug).id;
+const menus = {
+  '[DEMO] Markaz Choyxonasi': { cuisines: ['milliy', 'shashlik'], rating: [46, 10], items: [['Osh', [['Choyxona oshi', 35000, 42000, '350 g'], ['To‘y oshi', 38000, null, '350 g']]], ['Shashlik', [['Qo‘y go‘shti shashlik', 18000, null, '1 six'], ['Jigar shashlik', 14000, null, '1 six']]], ['Ichimliklar', [['Ko‘k choy', 5000, null, '1 choynak']]]] },
+  '[DEMO] Yopiq Kafe': { cuisines: ['fastfood', 'pitsa'], rating: null, items: [['Fast food', [['Burger', 32000, null, '1 dona'], ['Lavash', 28000, null, '1 dona']]]] },
+  '[DEMO] Zomin Oshxonasi': { cuisines: ['milliy', 'somsa'], rating: [9, 2], items: [['Somsa', [['Tandir somsa', 8000, null, '1 dona']]]] },
+};
+for (const [name, m] of Object.entries(menus)) {
+  const rid = byName(name);
+  if (!rid || db.prepare('SELECT 1 FROM products WHERE restaurant_id = ?').get(rid)) continue;
+  s.catalog.setRestaurantCuisines(admin, rid, m.cuisines.map(cuisine));
+  if (m.rating) db.prepare('UPDATE restaurants SET rating_sum = ?, rating_count = ? WHERE id = ?').run(m.rating[0], m.rating[1], rid);
+  for (const [cat, items] of m.items) {
+    const cid = s.restaurants.addCategory(rid, cat);
+    for (const [pn, price, old, portion] of items) s.restaurants.addProduct(rid, { categoryId: cid, name: pn, price, oldPrice: old, portion });
+  }
+}
 console.log('Tayyor. Brauzerda: http://localhost:3917/?dev=301');
 db.close();

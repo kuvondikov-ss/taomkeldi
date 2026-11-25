@@ -119,6 +119,10 @@
   --skeleton-hi: #F6F4EF;
   --shadow-sm: 0 1px 2px rgba(20, 30, 24, .06);
   --shadow-md: 0 6px 24px rgba(20, 30, 24, .12);
+  --banner-bg: var(--green-700);
+  --on-banner: var(--white);
+  --banner-cta: var(--green-200);
+  --on-banner-cta: var(--green-900);
   --logo-light: block;
   --logo-dark: none;
 }
@@ -152,6 +156,8 @@
     --skeleton-hi: #29372E;
     --shadow-sm: none;
     --shadow-md: 0 6px 24px rgba(0, 0, 0, .5);
+    --banner-bg: #1F3A2A;
+    --on-banner: #EEF2EC;
     --logo-light: none;
     --logo-dark: block;
   }
@@ -183,6 +189,8 @@
   --skeleton-hi: #29372E;
   --shadow-sm: none;
   --shadow-md: 0 6px 24px rgba(0, 0, 0, .5);
+  --banner-bg: #1F3A2A;
+  --on-banner: #EEF2EC;
   --logo-light: none;
   --logo-dark: block;
 }

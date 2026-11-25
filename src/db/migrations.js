@@ -258,6 +258,30 @@ const migrations = [
       ALTER TABLE restaurants ADD COLUMN applicant_id INTEGER REFERENCES users(id);
     `,
   },
+  {
+    id: 3,
+    name: 'home_cuisines_rating',
+    sql: `
+      -- Reyting: faqat haqiqiy baholardan (15-bosqich). count = 0 bo'lsa reyting ko'rsatilmaydi.
+      ALTER TABLE restaurants ADD COLUMN rating_sum INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE restaurants ADD COLUMN rating_count INTEGER NOT NULL DEFAULT 0;
+      -- Taxminiy tayyorlash vaqti (daqiqa) — yetkazish vaqti bahosi uchun.
+      ALTER TABLE restaurants ADD COLUMN prep_minutes INTEGER NOT NULL DEFAULT 20 CHECK (prep_minutes BETWEEN 5 AND 180);
+
+      INSERT OR IGNORE INTO cuisines (slug, name_uz, name_ru, sort) VALUES
+        ('milliy',    'Milliy taomlar',    'Национальная кухня', 10),
+        ('shashlik',  'Shashlik',          'Шашлык',             20),
+        ('somsa',     'Somsa va non',      'Самса и выпечка',    30),
+        ('fastfood',  'Fast food',         'Фастфуд',            40),
+        ('pitsa',     'Pitsa',             'Пицца',              50),
+        ('yevropa',   'Yevropa taomlari',  'Европейская кухня',  60),
+        ('turk',      'Turk taomlari',     'Турецкая кухня',     70),
+        ('sushi',     'Sushi',             'Суши',               80),
+        ('shirinlik', 'Shirinliklar',      'Десерты',            90),
+        ('kofe',      'Kofe va choy',      'Кофе и чай',        100),
+        ('ichimlik',  'Ichimliklar',       'Напитки',           110);
+    `,
+  },
 ];
 
 export function migrate(db) {

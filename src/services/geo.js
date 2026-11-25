@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
-import { pointInGeometry, distanceMeters, deliveryFee, DISTANCE_METHOD } from '../../public/js/shared/geo-core.js';
+import { pointInGeometry, distanceMeters, deliveryFee, deliveryEta, DISTANCE_METHOD } from '../../public/js/shared/geo-core.js';
 
 const REGION = JSON.parse(fs.readFileSync(new URL('../../public/geo/jizzax.json', import.meta.url), 'utf8'));
 
@@ -33,6 +33,7 @@ export function createGeoService() {
       distance_m: d,
       distance_method: DISTANCE_METHOD,
       delivery_fee: inRadius ? deliveryFee(restaurant, d) : null,
+      eta_min: inRadius ? deliveryEta(restaurant, d) : null, // { from, to } — taxminiy
     };
   }
 

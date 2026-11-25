@@ -1,6 +1,14 @@
 // Mini App matnlari (uz/ru). Til — serverdagi foydalanuvchi tili (bot bilan bir xil).
 const uz = {
-  nav_home: 'Bosh sahifa', nav_search: 'Qidirish', nav_orders: 'Buyurtmalar', nav_profile: 'Profil',
+  search_home: 'Taom yoki restoran qidirish', banner_title: 'Mazali taomlar. Bir necha bosishda.', banner_cta: 'Tanlash',
+  all_cuisines: 'Hammasi', sort_label: 'Saralash', sort_recommended: 'Tavsiya', sort_rating: 'Reyting', sort_fast: 'Tez yetkazish', sort_cheap_delivery: 'Arzon yetkazish',
+  promo: 'Aksiya', filtered_empty: 'Bu filtr bo‘yicha restoran topilmadi', reset_filters: 'Filtrlarni tozalash',
+  eta: '{from}–{to} daq', favorites: 'Sevimlilar', favorites_empty: 'Sevimli restoran yo‘q', favorites_empty_hint: 'Restoran kartasidagi yurakchani bosing.',
+  fav_add: 'Sevimlilarga qo‘shish', fav_remove: 'Sevimlilardan olib tashlash',
+  search_title: 'Qidirish', search_min: 'Kamida 2 ta harf yozing', recent: 'So‘nggi qidiruvlar', clear: 'Tozalash',
+  found_restaurants: 'Restoranlar', found_dishes: 'Taomlar', nothing_found: 'Hech narsa topilmadi', nothing_found_hint: 'Boshqa so‘z bilan qidirib ko‘ring.',
+  not_deliverable: 'Tanlangan manzilga yetkazmaydi', min_order: 'Minimal buyurtma {sum}', menu_empty: 'Menyu hali qo‘shilmagan',
+  out_of_stock: 'Tugagan', ordering_soon: 'Savat va buyurtma berish keyingi bosqichda qo‘shiladi.', other: 'Boshqa',  nav_home: 'Bosh sahifa', nav_search: 'Qidirish', nav_orders: 'Buyurtmalar', nav_profile: 'Profil',
   loading: 'Yuklanmoqda…', retry: 'Qayta urinish', save: 'Saqlash', cancel: 'Bekor qilish', delete: 'O‘chirish', edit: 'Tahrirlash',
   outside_tg: 'Ilovani Telegram ichidan oching', outside_tg_hint: '@taomkeldi_bot → Ilovani ochish',
   offline: 'Server bilan aloqa yo‘q', offline_hint: 'Internetni tekshirib, qayta urinib ko‘ring.',
@@ -51,7 +59,15 @@ const uz = {
 };
 
 const ru = {
-  nav_home: 'Главная', nav_search: 'Поиск', nav_orders: 'Заказы', nav_profile: 'Профиль',
+  search_home: 'Поиск блюд и ресторанов', banner_title: 'Вкусная еда. В несколько касаний.', banner_cta: 'Выбрать',
+  all_cuisines: 'Все', sort_label: 'Сортировка', sort_recommended: 'Рекомендуем', sort_rating: 'Рейтинг', sort_fast: 'Быстрая доставка', sort_cheap_delivery: 'Дешёвая доставка',
+  promo: 'Акции', filtered_empty: 'По этим фильтрам ресторанов нет', reset_filters: 'Сбросить фильтры',
+  eta: '{from}–{to} мин', favorites: 'Избранное', favorites_empty: 'Нет избранных ресторанов', favorites_empty_hint: 'Нажмите сердечко на карточке ресторана.',
+  fav_add: 'Добавить в избранное', fav_remove: 'Убрать из избранного',
+  search_title: 'Поиск', search_min: 'Введите хотя бы 2 буквы', recent: 'Недавние запросы', clear: 'Очистить',
+  found_restaurants: 'Рестораны', found_dishes: 'Блюда', nothing_found: 'Ничего не найдено', nothing_found_hint: 'Попробуйте другое слово.',
+  not_deliverable: 'Не доставляет по выбранному адресу', min_order: 'Минимальный заказ {sum}', menu_empty: 'Меню ещё не добавлено',
+  out_of_stock: 'Нет в наличии', ordering_soon: 'Корзина и оформление заказа появятся на следующем этапе.', other: 'Другое',  nav_home: 'Главная', nav_search: 'Поиск', nav_orders: 'Заказы', nav_profile: 'Профиль',
   loading: 'Загрузка…', retry: 'Повторить', save: 'Сохранить', cancel: 'Отмена', delete: 'Удалить', edit: 'Изменить',
   outside_tg: 'Откройте приложение в Telegram', outside_tg_hint: '@taomkeldi_bot → Открыть приложение',
   offline: 'Нет связи с сервером', offline_hint: 'Проверьте интернет и попробуйте снова.',

@@ -8,6 +8,7 @@ import { createUploadService } from './uploads.js';
 import { createInviteService } from './invites.js';
 import { createGeoService } from './geo.js';
 import { createGeocoderService } from './geocoder.js';
+import { createCatalogService } from './catalog.js';
 
 export function createServices(db, config, { fetchImpl } = {}) {
   const geo = createGeoService();
@@ -19,5 +20,6 @@ export function createServices(db, config, { fetchImpl } = {}) {
   const uploads = createUploadService(config, access);
   const invites = createInviteService(db, access, restaurants);
   const geocoder = createGeocoderService(config, geo, { fetchImpl });
-  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder };
+  const catalog = createCatalogService(db, geo, access);
+  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog };
 }

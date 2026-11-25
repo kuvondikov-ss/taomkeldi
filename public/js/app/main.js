@@ -5,6 +5,9 @@ import { t, setLang } from './i18n.js';
 import { applyTelegramTheme } from '../ui/theme.js';
 import { hydrateIcons } from '../ui/icons.js';
 import { renderHome } from './views/home.js';
+import { renderSearch } from './views/search.js';
+import { renderFavorites } from './views/favorites.js';
+import { renderRestaurant } from './views/restaurant.js';
 import { renderPicker } from './views/picker.js';
 import { renderAddressForm } from './views/address-form.js';
 import { renderAddresses } from './views/addresses.js';
@@ -21,7 +24,9 @@ let cleanup = null;
 // Marshrut → [render, { nav, needsAddress }]
 const ROUTES = [
   [/^$/, renderHome, { nav: 'home', needsAddress: true }],
-  [/^search$/, (el) => renderSoon(el, 'nav_search', 'search_soon'), { nav: 'search', needsAddress: true }],
+  [/^search$/, renderSearch, { nav: 'search', needsAddress: true }],
+  [/^favorites$/, renderFavorites, { needsAddress: true }],
+  [/^r\/(\d+)$/, renderRestaurant, { needsAddress: true }],
   [/^orders$/, renderOrders, { nav: 'orders' }],
   [/^profile$/, renderProfile, { nav: 'profile' }],
   [/^addresses$/, renderAddresses, {}],

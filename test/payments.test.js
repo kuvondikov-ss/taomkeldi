@@ -163,7 +163,7 @@ describe('Onlayn to\'lov (Telegram Payments)', () => {
       if (method === 'sendMessage') return { ok: true, result: { message_id: 1, date: 0, chat: { id: payload.chat_id, type: 'private' }, text: payload.text } };
       return { ok: true, result: true };
     });
-    e.services.payments.setBotApi(bot.api);
+    e.services.setBotApi(bot.api);
   }
   const preCheckout = async (from, payload, amount, currency = 'UZS') => {
     calls.length = 0;

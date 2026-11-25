@@ -348,6 +348,32 @@ const migrations = [
       CREATE INDEX idx_restaurants_group ON restaurants(group_chat_id);
     `,
   },
+  {
+    id: 8,
+    name: 'notification_outbox',
+    sql: `
+      -- Bot xabarlari navbati: yuborilmagan xabar yo'qolmaydi, qayta urinadi, dublikat yuborilmaydi.
+      CREATE TABLE notifications (
+        id          INTEGER PRIMARY KEY,
+        kind        TEXT NOT NULL,                 -- message | sync
+        chat_id     INTEGER,                       -- message: kimga
+        user_id     INTEGER REFERENCES users(id),  -- shaxsiy xabar bo'lsa (bloklaganini bilish uchun)
+        payload     TEXT NOT NULL,                 -- JSON: matn va tugmalar yoki sync nishoni
+        dedupe_key  TEXT UNIQUE,                   -- bir hodisa — bir xabar
+        status      TEXT NOT NULL DEFAULT 'pending', -- pending | sent | failed | blocked | skipped
+        attempts    INTEGER NOT NULL DEFAULT 0,
+        next_at     INTEGER NOT NULL,
+        last_error  TEXT,
+        message_id  INTEGER,
+        created_at  INTEGER NOT NULL,
+        updated_at  INTEGER NOT NULL,
+        sent_at     INTEGER
+      );
+      CREATE INDEX idx_notifications_due ON notifications(status, next_at);
+      -- Foydalanuvchi botni bloklagan: unga cheksiz qayta yuborilmaydi; o'zi botga yozsa tozalanadi.
+      ALTER TABLE users ADD COLUMN bot_blocked_at INTEGER;
+    `,
+  },
 ];
 
 export function migrate(db) {

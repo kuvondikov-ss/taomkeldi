@@ -52,5 +52,10 @@ export function createUserService(db, config) {
     return true;
   }
 
-  return { get, upsertFromTelegram, setLang, langOf, bootstrapAutoAdmin };
+  // Foydalanuvchi botga qayta yozdi/blokdan chiqardi — xabarlar yana yuboriladi.
+  function setBotBlocked(id, blocked) {
+    db.prepare('UPDATE users SET bot_blocked_at = ? WHERE id = ?').run(blocked ? now() : null, id);
+  }
+
+  return { get, upsertFromTelegram, setLang, langOf, bootstrapAutoAdmin, setBotBlocked };
 }

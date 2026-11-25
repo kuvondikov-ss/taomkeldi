@@ -16,8 +16,11 @@ import { createNotifyService } from './notify.js';
 import { createPlatformService } from './platform.js';
 import { createManageService } from './manage.js';
 import { createGroupService } from './group.js';
+import { createOutbox } from './outbox.js';
+import { createTemplates } from './templates.js';
+import { createOrderNotifier } from './order-notify.js';
 
-export function createServices(db, config, { fetchImpl } = {}) {
+export function createServices(db, config, { fetchImpl, logger = console } = {}) {
   // Buyurtma o'zgarishi hodisasi: ('order', orderId, kind). Tinglovchilar (masalan, restoran guruhi xabari)
   // tranzaksiyadan KEYIN, alohida navbatda ishlaydi — asosiy amalni sekinlashtirmaydi va buzmaydi.
   const events = new EventEmitter();
@@ -35,10 +38,13 @@ export function createServices(db, config, { fetchImpl } = {}) {
   const catalog = createCatalogService(db, geo, access);
   const payments = createPaymentService(db, config, { access, orders });
   const checkout = createCheckoutService(db, { geo, addresses, users, payments });
-  const notify = createNotifyService(users);
-  const platform = createPlatformService(db, { access, restaurants, geo, catalog, notify, users });
+  const outbox = createOutbox(db, { logger });
+  const templates = createTemplates(db, config);
+  const notify = createNotifyService(users, outbox);
+  const platform = createPlatformService(db, { access, restaurants, geo, catalog, notify, users, outbox });
   const manage = createManageService(db, { access, geo });
-  const group = createGroupService(db, { access, notify, config });
+  const group = createGroupService(db, { access, notify, config, templates, logger });
+  const orderNotify = createOrderNotifier(db, { users, templates, notify, logger });
   // Buyurtmani o'zgartiradigan amallar muvaffaqiyatli tugagach — 'order' hodisasi.
   const emitAfter = (obj, name, idOf) => {
     const fn = obj[name];
@@ -56,10 +62,26 @@ export function createServices(db, config, { fetchImpl } = {}) {
   emitAfter(payments, 'markRefunded', (_o, a) => a[1]);
   emitAfter(payments, 'applySuccessfulPayment', (out) => (out.outcome === 'duplicate' ? null : out.orderId));
   emitAfter(manage, 'assignCourier', (_o, a) => a[1]);
-  // Restoran guruhidagi asosiy xabar har o'zgarishda yangilanadi (bot ulanmagan bo'lsa — hech narsa qilmaydi).
-  events.on('order', (orderId) => { group.syncOrder(orderId); });
+  // Har o'zgarishda: restoran guruhidagi asosiy xabar, kuryerning jonli xabari, mijozga muhim bosqich xabari.
+  // Vaqtinchalik Telegram xatosida jonli xabarlar outbox orqali qayta yangilanadi.
+  const retryLater = (target, orderId) => (r) => { if (r?.retry) outbox.enqueueSync(target, orderId, { delayMs: r.retryAfter ?? 10_000 }); };
+  events.on('order', (orderId) => {
+    group.syncOrder(orderId).then(retryLater('group', orderId));
+    orderNotify.handle(orderId).then(retryLater('courier', orderId));
+  });
+  outbox.onSync('group', ({ orderId }) => group.syncOrder(orderId));
+  outbox.onSync('courier', ({ orderId }) => orderNotify.courier(orderId));
+
+  // Testlar va to'xtatish uchun: navbatdagi hodisalar va yuborishlar tugashini kutish.
+  async function idle() {
+    await new Promise((res) => setImmediate(res));
+    await Promise.all([group.idle(), orderNotify.idle()]);
+  }
 
   // Bot ishga tushganda: xabar yuborish va onlayn to'lov uchun Telegram API.
-  const setBotApi = (api) => { payments.setBotApi(api); notify.setBotApi(api); group.setBotApi(api); };
-  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, manage, group, setBotApi, events };
+  const setBotApi = (api) => { payments.setBotApi(api); outbox.setBotApi(api); group.setBotApi(api); orderNotify.setBotApi(api); };
+  return {
+    geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, manage, group,
+    outbox, templates, orderNotify, setBotApi, events, idle,
+  };
 }

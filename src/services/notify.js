@@ -1,21 +1,30 @@
-// Foydalanuvchiga bot orqali xabar (foydalanuvchi tilida). Xabar yuborilmasa asosiy amal buzilmaydi — faqat log.
-// Ishonchli yetkazish (outbox, qayta urinish) — 13-bosqich.
+// Foydalanuvchiga bot orqali xabar (foydalanuvchi tilida). Har xabar avval outbox'ga yoziladi va darhol yuborishga urinadi;
+// muvaffaqiyatsiz bo'lsa outbox keyin qayta urinadi. Xabar yuborilmasa asosiy amal buzilmaydi.
 import { t } from '../i18n/index.js';
 
-export function createNotifyService(users, logger = console) {
-  let api = null;
+const BASE = { parse_mode: 'HTML', link_preview_options: { is_disabled: true } };
+
+export function createNotifyService(users, outbox) {
+  // Tayyor HTML matn. dedupeKey — bir hodisa uchun bitta xabar. Qaytaradi: hozir yuborildimi.
+  async function sendText(chatId, text, { dedupeKey = null, reply_markup, userId = chatId > 0 ? chatId : null } = {}) {
+    if (!chatId) return false;
+    const extra = reply_markup ? { ...BASE, reply_markup } : BASE;
+    const { job, duplicate } = outbox.enqueueMessage({ chatId, userId, text, extra, dedupeKey });
+    if (duplicate) return false;
+    return (await outbox.runNow(job)) === 'sent';
+  }
+
   return {
-    setBotApi(a) { api = a; },
-    async send(userId, key, vars = {}) {
-      if (!api || !userId) return false;
+    setBotApi() { /* API outbox orqali beriladi */ },
+    langFor(userId) {
       const u = users.get(userId);
-      try {
-        await api.sendMessage(userId, t(u ? users.langOf(u) : 'uz', key, vars), { parse_mode: 'HTML', link_preview_options: { is_disabled: true } });
-        return true;
-      } catch (e) {
-        logger.error(`Xabar yuborilmadi (${userId}, ${key}):`, e.description || e.message);
-        return false;
-      }
+      return u ? users.langOf(u) : 'uz';
+    },
+    sendText,
+    // Tarjima kaliti bo'yicha (src/i18n/{uz,ru}.js).
+    async send(userId, key, vars = {}, opts = {}) {
+      if (!userId) return false;
+      return sendText(userId, t(this.langFor(userId), key, vars), opts);
     },
   };
 }

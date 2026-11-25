@@ -4,29 +4,14 @@
 import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
-import { t, formatSum } from '../i18n/index.js';
+import { t } from '../i18n/index.js';
+import { classifyTelegramError } from './telegram-errors.js';
+import { PANEL_PREFIX } from './templates.js';
 
+export { classifyTelegramError, PANEL_PREFIX };
 const LANG = 'uz'; // guruh xabarlari tili
-const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const hhmm = (ms) => new Date(ms + 5 * 3600000).toISOString().slice(11, 16); // Toshkent vaqti (UTC+5)
-const MAX_ITEMS = 25;
-export const PANEL_PREFIX = 'o_';
 
-// Telegram xatosini tasniflash.
-export function classifyTelegramError(e) {
-  const d = String(e?.description || e?.message || '').toLowerCase();
-  const code = e?.error_code;
-  if (e?.parameters?.migrate_to_chat_id) return 'migrated';
-  if (d.includes('message is not modified')) return 'not_modified';
-  if (d.includes('message to edit not found') || d.includes('message_id_invalid') || d.includes("message can't be edited")) return 'message_gone';
-  if (d.includes('message thread not found') || d.includes('topic_deleted') || d.includes('topic_closed')) return 'thread_gone';
-  if (d.includes('not enough rights') || d.includes('have no rights') || d.includes('need administrator rights') || d.includes('chat_write_forbidden')) return 'no_rights';
-  if (code === 403 || d.includes('bot was kicked') || d.includes('bot is not a member') || d.includes('chat not found')) return 'removed';
-  if (code === 429) return 'rate_limited';
-  return 'other';
-}
-
-export function createGroupService(db, { access, notify, config, logger = console }) {
+export function createGroupService(db, { access, notify, config, templates, logger = console }) {
   let api = null;
   const locks = new Map(); // buyurtma bo'yicha navbat: ikki hodisa bir vaqtda kelsa ikkita xabar yuborilmaydi
   const getO = (id) => db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
@@ -35,73 +20,9 @@ export function createGroupService(db, { access, notify, config, logger = consol
   const botId = () => Number(String(config.botToken || '').split(':')[0]) || null;
   const visible = (o) => !!o && o.status !== 'pending_payment'; // to'lov kutilayotgan buyurtma restoranga hali ko'rinmaydi
 
-  // ---------- Xabar matni va tugmalari ----------
-  function render(o, r) {
-    const items = db.prepare('SELECT name, qty, line_total FROM order_items WHERE order_id = ? ORDER BY id').all(o.id);
-    const lines = items.slice(0, MAX_ITEMS).map((i) => `• ${esc(i.name)} × ${i.qty} — ${formatSum(i.line_total, LANG)}`);
-    if (items.length > MAX_ITEMS) lines.push(`… +${items.length - MAX_ITEMS}`);
-    const head = o.status === 'new' ? t(LANG, 'g_head_new', { id: o.id }) : t(LANG, 'g_head', { id: o.id, status: t(LANG, `status_${o.status}`) });
-    let addr;
-    if (o.type === 'pickup') addr = esc(t(LANG, 'g_pickup'));
-    else {
-      let d = {};
-      try { d = JSON.parse(o.address_details || '{}') || {}; } catch { d = {}; }
-      addr = [o.address_text, d.entrance && `${t(LANG, 'g_entrance')} ${d.entrance}`, d.floor && `${t(LANG, 'g_floor')} ${d.floor}`,
-        d.apartment && `${t(LANG, 'g_apartment')} ${d.apartment}`, d.comment].filter(Boolean).map(esc).join(', ');
-    }
-    const courier = o.courier_id ? db.prepare('SELECT name FROM couriers WHERE id = ?').get(o.courier_id)?.name : null;
-    const map = o.type === 'delivery' && o.address_lat != null ? ` <a href="https://maps.google.com/?q=${o.address_lat},${o.address_lon}">🗺</a>` : '';
-    const text = [
-      head,
-      `${esc(r.name)} · ${hhmm(o.created_at)}`,
-      '',
-      ...lines,
-      '',
-      `${t(LANG, 'g_items')}: ${formatSum(o.items_total, LANG)}`,
-      o.type === 'delivery' ? `${t(LANG, 'g_delivery')}: ${o.delivery_fee ? formatSum(o.delivery_fee, LANG) : t(LANG, 'g_free')}` : null,
-      `${t(LANG, 'g_total')}: <b>${formatSum(o.total, LANG)}</b>`,
-      `${t(LANG, 'g_payment')}: ${t(LANG, `pm_${o.payment_method}`)} · ${t(LANG, `ps_${o.payment_status}`)}`,
-      '',
-      `${t(LANG, 'g_customer')}: ${esc(o.customer_name || '—')}`,
-      `${t(LANG, 'g_phone')}: ${esc(o.customer_phone || '—')}`,
-      `${t(LANG, 'g_address')}: ${addr || '—'}${map}`,
-      o.comment ? `${t(LANG, 'g_comment')}: ${esc(o.comment)}` : null,
-      o.prep_minutes && o.status === 'accepted' ? t(LANG, 'g_prep', { n: o.prep_minutes }) : null,
-      courier ? `🛵 ${esc(courier)}` : null,
-      o.status === 'cancelled' && o.cancel_reason ? `${t(LANG, 'g_reason')}: ${esc(o.cancel_reason)}` : null,
-    ].filter((x) => x !== null).join('\n');
-    return { text: text.slice(0, 4000), reply_markup: keyboard(o) };
-  }
-
-  // Mini App'ni guruhda web_app tugmasi bilan ochib bo'lmaydi — shaxsiy chatga deep link.
-  const panelUrl = (o) => (config.botUsername ? `https://t.me/${config.botUsername}?start=${PANEL_PREFIX}${o.id}` : null);
-
-  function keyboard(o, mode = 'main') {
-    const rows = [];
-    const cb = (text, act) => ({ text, callback_data: `o:${o.id}:${act}` });
-    const url = panelUrl(o);
-    const panelBtn = url ? [{ text: t(LANG, 'g_btn_panel'), url }] : [];
-    if (mode === 'reject') {
-      rows.push([cb(t(LANG, 'g_rr1'), 'rr1')], [cb(t(LANG, 'g_rr2'), 'rr2')], [cb(t(LANG, 'g_rr3'), 'rr3')], [cb(t(LANG, 'g_btn_back'), 'bk')]);
-      return { inline_keyboard: rows };
-    }
-    const awaitingTransfer = o.payment_method === 'card_transfer' && o.payment_status !== 'paid';
-    if (o.status === 'new' && awaitingTransfer) {
-      rows.push([cb(t(LANG, 'g_btn_pay_ok'), 'po')], [cb(t(LANG, 'g_btn_pay_no'), 'pn'), ...panelBtn]);
-    } else if (o.status === 'new') {
-      rows.push([15, 30, 45].map((n) => cb(t(LANG, 'g_btn_min', { n }), `a${n}`)));
-      rows.push([cb(t(LANG, 'g_btn_reject'), 'rj'), ...panelBtn]);
-    } else if (o.status === 'accepted') {
-      rows.push([cb(t(LANG, 'g_btn_ready'), 'rd')], panelBtn);
-    } else if (o.status === 'ready') {
-      rows.push([o.type === 'pickup' ? cb(t(LANG, 'g_btn_handed'), 'dl') : cb(t(LANG, 'g_btn_on_way'), 'ow')], panelBtn);
-    } else if (o.status === 'on_way') {
-      rows.push([cb(t(LANG, 'g_btn_delivered'), 'dl')], panelBtn);
-    } else {
-      rows.push(panelBtn); // yakunlangan: amal tugmalari olib tashlanadi
-    }
-    return { inline_keyboard: rows.filter((x) => x.length) };
-  }
+  // ---------- Xabar matni va tugmalari (shablonlar: services/templates.js) ----------
+  const render = (o, r) => templates.staffOrder(o, r, LANG);
+  const keyboard = (o, mode = 'main') => templates.staffKeyboard(o, mode, LANG);
 
   // ---------- Holat va zaxira yo'l ----------
   function setError(rid, error) {
@@ -119,10 +40,15 @@ export function createGroupService(db, { access, notify, config, logger = consol
 
   const sendOpts = (msg) => ({ parse_mode: 'HTML', reply_markup: msg.reply_markup, link_preview_options: { is_disabled: true } });
 
+  const TRANSIENT = ['rate_limited', 'network', 'server', 'other'];
+  const retryInfo = (e) => ({ retry: true, retryAfter: e?.parameters?.retry_after ? e.parameters.retry_after * 1000 : undefined, error: e?.description || e?.message });
+
   // Guruh ishlamasa — yangi buyurtma haqida xodimlarga shaxsiy xabar (har xodimga bir marta).
+  // Vaqtinchalik xato bo'lsa — qayta urinish kerakligini qaytaradi (outbox qayta chaqiradi).
   async function staffFallback(o, r) {
-    if (o.status !== 'new') return;
+    if (o.status !== 'new') return null;
     const msg = render(o, r);
+    let retry = null;
     for (const uid of staffIds(r.id)) {
       if (db.prepare("SELECT 1 FROM order_messages WHERE order_id = ? AND kind = 'staff_dm' AND chat_id = ?").get(o.id, uid)) continue;
       try {
@@ -131,8 +57,10 @@ export function createGroupService(db, { access, notify, config, logger = consol
           .run(o.id, uid, m.message_id, now(), now());
       } catch (e) {
         logger.error(`Xodimga (${uid}) buyurtma #${o.id} xabari yuborilmadi:`, e.description || e.message);
+        if (TRANSIENT.includes(classifyTelegramError(e))) retry = retryInfo(e);
       }
     }
+    return retry;
   }
 
   // Ilgari zaxira yo'l bilan yuborilgan shaxsiy xabarlar ham joriy holatga keltiriladi.
@@ -206,8 +134,8 @@ export function createGroupService(db, { access, notify, config, logger = consol
     let r = getR(o.restaurant_id);
     await refreshStaffDms(o, r);
     if (!r.group_chat_id || r.group_status !== 'active') {
-      await staffFallback(o, r);
-      return { sent: false, reason: 'no_group' };
+      const retry = await staffFallback(o, r);
+      return { sent: false, reason: 'no_group', ...(retry || {}) };
     }
     try {
       const res = await sendToGroup(o, r, render(o, r));
@@ -218,11 +146,16 @@ export function createGroupService(db, { access, notify, config, logger = consol
       const kind = classifyTelegramError(e);
       logger.error(`Guruhga buyurtma #${o.id} xabari yuborilmadi (${kind}):`, e.description || e.message);
       r = getR(r.id);
+      if (TRANSIENT.includes(kind)) {
+        // Vaqtinchalik xato (429, tarmoq, Telegram 5xx): xabar yo'qolmaydi — outbox orqali qayta urinadi.
+        setError(r.id, e.description || e.message);
+        return { sent: false, reason: kind, ...retryInfo(e) };
+      }
       if (kind === 'removed' || kind === 'no_rights') await markGroup(r, kind, e.description || e.message);
       else setError(r.id, e.description || e.message);
       // Guruhga yetmagan yangi buyurtma yo'qolmasin.
-      await staffFallback(o, getR(r.id));
-      return { sent: false, reason: kind };
+      const retry = await staffFallback(o, getR(r.id));
+      return { sent: false, reason: kind, ...(retry || {}) };
     }
   }
 

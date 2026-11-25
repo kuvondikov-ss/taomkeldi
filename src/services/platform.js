@@ -6,7 +6,7 @@ import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
 
-export function createPlatformService(db, { access, restaurants, geo, catalog, notify, users }) {
+export function createPlatformService(db, { access, restaurants, geo, catalog, notify, users, outbox }) {
   const getR = (id) => db.prepare('SELECT * FROM restaurants WHERE id = ?').get(id);
   const logEvent = (rid, actorId, type, from, to, reason) => db.prepare(`
     INSERT INTO restaurant_events (restaurant_id, actor_id, type, from_status, to_status, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -128,6 +128,8 @@ export function createPlatformService(db, { access, restaurants, geo, catalog, n
       today: { orders: today.orders, delivered_total: today.delivered_total || 0, cancelled: today.cancelled || 0, in_progress: today.in_progress || 0 },
       users: db.prepare('SELECT COUNT(*) AS n FROM users').get().n,
       couriers_online: db.prepare("SELECT COUNT(*) AS n FROM couriers WHERE status = 'active' AND is_online = 1").get().n,
+      // Bot xabarlari navbati: kutilayotgan va yuborilmay qolgan xabarlar (Telegram ishlamasa ham buyurtmalar panelda).
+      notifications: outbox ? outbox.stats() : null,
     };
   }
 

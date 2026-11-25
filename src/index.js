@@ -39,6 +39,13 @@ const expiryTimer = setInterval(() => {
 }, 60_000);
 expiryTimer.unref();
 
+// Bot xabarlari navbati: yuborilmay qolganlarni qayta urinish (retry_after va orqaga surish hisobga olinadi).
+const outboxTimer = setInterval(() => {
+  services.outbox.processDue().catch((e) => console.error('Xabarlar navbatida xato:', e));
+}, 15_000);
+outboxTimer.unref();
+if (bot) services.outbox.processDue().catch(() => {});
+
 let stopping = false;
 async function shutdown() {
   if (stopping) return;

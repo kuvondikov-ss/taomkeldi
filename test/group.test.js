@@ -46,6 +46,7 @@ async function groupEnv() {
   const topic = (thread) => (thread ? { is_topic_message: true, message_thread_id: thread } : {});
   const clear = () => { calls.length = 0; };
   const of = (method) => calls.filter((c) => c.method === method).map((c) => c.payload);
+  const sentTo = (...chats) => of('sendMessage').filter((m) => chats.includes(m.chat_id));
 
   async function groupCmd(userId, text, { chatId = G1, thread, fromOverride, extra = {} } = {}) {
     const message = { message_id: uid, date: 0, chat: chatOf(chatId), from: fromOverride || from(userId), text, ...topic(thread), ...extra };
@@ -58,14 +59,14 @@ async function groupEnv() {
       update_id: uid++,
       callback_query: { id: String(uid), from: from(userId), chat_instance: '1', data, message: { message_id: messageId, date: 0, chat, text: 'x', ...topic(thread) } },
     });
-    await G.idle();
+    await env.services.idle();
   }
   async function privateCmd(userId, text) {
     const message = { message_id: uid, date: 0, chat: { id: userId, type: 'private', first_name: 'x' }, from: from(userId), text,
       entities: [{ type: 'bot_command', offset: 0, length: text.split(' ')[0].length }] };
     await bot.handleUpdate({ update_id: uid++, message });
   }
-  async function update(u) { await bot.handleUpdate({ update_id: uid++, ...u }); await G.idle(); }
+  async function update(u) { await bot.handleUpdate({ update_id: uid++, ...u }); await env.services.idle(); }
   const answers = () => of('answerCallbackQuery');
   const restaurant = (id) => env.db.prepare('SELECT * FROM restaurants WHERE id = ?').get(id);
   const order = (id) => env.db.prepare('SELECT * FROM orders WHERE id = ?').get(id);
@@ -76,7 +77,7 @@ async function groupEnv() {
     await groupCmd(userId, '/bogla', { chatId, thread });
     await press(userId, `bgc:${rid}`, { chatId, thread });
   }
-  return { ...env, ids, bot, calls, admins, handlers, G, clear, of, groupCmd, press, privateCmd, update, answers, restaurant, order, mainMsg, link };
+  return { ...env, ids, bot, calls, admins, handlers, G, clear, of, sentTo, groupCmd, press, privateCmd, update, answers, restaurant, order, mainMsg, link };
 }
 
 const btns = (p) => (p.reply_markup?.inline_keyboard || []).flat();
@@ -178,8 +179,9 @@ describe('Guruh: /bogla va huquqlar', () => {
     assert.ok(e.of('sendMessage').some((m) => m.chat_id === G1 && /boshqa guruhga/.test(m.text)));
     e.clear();
     e.services.orders.transition(e.services.users.get(101), e.ids.o1, 'accepted', { prepMinutes: 20 });
-    await e.G.idle();
-    assert.equal(e.of('sendMessage')[0].chat_id, G2, 'yangi guruhda yangi asosiy xabar');
+    await e.services.idle();
+    assert.equal(e.sentTo(G2).length, 1, 'yangi guruhda yangi asosiy xabar');
+    assert.equal(e.sentTo(G1).length, 0);
   });
 });
 
@@ -227,7 +229,7 @@ describe('Guruh: asosiy buyurtma xabari va tugmalar', () => {
     const o = e.order(e.ids.o1);
     assert.equal(o.status, 'accepted');
     assert.equal(o.prep_minutes, 30);
-    assert.equal(e.of('sendMessage').length, 0);
+    assert.equal(e.sentTo(G1).length, 0);
     const [ed] = e.of('editMessageText');
     assert.equal(ed.message_id, mid);
     assert.match(ed.text, /Tayyorlanmoqda/);
@@ -237,7 +239,7 @@ describe('Guruh: asosiy buyurtma xabari va tugmalar', () => {
   test('eskirgan tugma: holat o\'zgargan — ogohlantirish va xabar yangilanadi', async () => {
     await e.G.syncOrder(e.ids.o1);
     e.services.orders.transition(e.services.users.get(101), e.ids.o1, 'accepted', { prepMinutes: 15 });
-    await e.G.idle();
+    await e.services.idle();
     e.clear();
     await e.press(102, `o:${e.ids.o1}:a45`);
     assert.match(e.answers()[0].text, /Holat o‘zgargan/);
@@ -266,7 +268,7 @@ describe('Guruh: asosiy buyurtma xabari va tugmalar', () => {
     for (const act of ['a15', 'rd', 'ow', 'dl']) await e.press(101, `o:${e.ids.o1}:${act}`);
     assert.equal(e.order(e.ids.o1).status, 'delivered');
     assert.equal(e.mainMsg(e.ids.o1).length, 1);
-    assert.equal(e.of('sendMessage').length, 1, 'butun oqimda faqat bitta guruh xabari');
+    assert.equal(e.sentTo(G1).length, 1, 'butun oqimda faqat bitta guruh xabari');
   });
 
   test('karta o\'tkazmasi: "To\'lov keldi" tugmasi, tasdiqlangach qabul tugmalari', async () => {
@@ -294,7 +296,7 @@ describe('Guruh: asosiy buyurtma xabari va tugmalar', () => {
     e.handlers.editMessageText = () => ({ error: { error_code: 400, description: 'Bad Request: message to edit not found' } });
     e.clear();
     await e.press(101, `o:${e.ids.o1}:a15`);
-    assert.equal(e.of('sendMessage').length, 1);
+    assert.equal(e.sentTo(G1).length, 1);
     const rows = e.mainMsg(e.ids.o1);
     assert.equal(rows.length, 1);
     assert.notEqual(rows[0].message_id, oldId);
@@ -346,8 +348,8 @@ describe('Guruh: bot chiqarildi, huquq yo\'q, migratsiya, zaxira yo\'l', () => {
     e.clear();
     await e.press(101, `o:${e.ids.o1}:a30`, { privateChat: true });
     assert.equal(e.order(e.ids.o1).status, 'accepted');
-    assert.equal(e.of('editMessageText').length, 2);
-    assert.equal(e.of('sendMessage').length, 0, 'zaxira xabar qayta yuborilmaydi');
+    assert.equal(e.of('editMessageText').filter((m) => [101, 102].includes(m.chat_id)).length, 2);
+    assert.equal(e.sentTo(101, 102).length, 0, 'zaxira xabar qayta yuborilmaydi');
   });
 
   test('yuborishda 403: guruh "removed", yangi buyurtma xodimlarga shaxsiy xabarda', async () => {

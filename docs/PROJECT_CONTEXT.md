@@ -193,3 +193,7 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Guruh ishlamasa (bot chiqarilgan, huquq yo'q, ulanmagan) yangi buyurtma ega va menejerlarga shaxsiy xabarda keladi; o'zlariga bir marta ogohlantirish | Buyurtma yo'qolmasligi |
 | 2026-11-25 | Sinov xabari faqat panelda aniq bosilganda; bot guruhga qo'shilganda faqat qisqa /bogla yo'riqnomasi | Guruhga keraksiz xabar yubormaslik |
 | 2026-11-25 | `pending_payment` buyurtmalar restoran guruhiga yuborilmaydi; karta o'tkazmasida "to'ladim"dan keyin "To'lov keldi / Pul kelmadi" tugmalari | To'lanmagan buyurtma tayyorlanmasligi |
+| 2026-11-25 | Bot xabarlari outbox orqali (`notifications`): avval yoziladi, keyin yuboriladi; 8 tagacha qayta urinish, 429 da retry_after, `dedupe_key`, botni bloklaganlarga to'xtash | Telegram ishlamasa xabar yo'qolmasligi va takrorlanmasligi |
+| 2026-11-25 | Mijozga faqat muhim bosqichlar (yuborildi, to'lov, qabul, olib ketishga tayyor, yo'lda, yetkazildi, bekor/qaytarish); yetkazishda "tayyor" va mijozning o'z bekor qilishi — xabarsiz | Shovqin bo'lmasligi; "qabul qilindi" faqat haqiqatda qabul qilingach |
+| 2026-11-25 | Kuryerga bitta jonli xabar (tahrir), yo'nalish — Google Maps havolasi; naqd summa = naqd va to'lanmagan bo'lsa jami | Kuryer uchun kerakli minimal ma'lumot |
+| 2026-11-25 | Restoran guruhi xabarlari o'zbekcha; mijoz va kuryer — o'z tilida | Guruhda bir nechta til aralashmasligi |

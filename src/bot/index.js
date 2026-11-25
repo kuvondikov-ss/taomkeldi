@@ -20,6 +20,8 @@ export function createBot({ config, services, logger = console, botInfo }) {
     if (ctx.from && !ctx.from.is_bot && relevant) {
       ctx.user = users.upsertFromTelegram(ctx.from);
       if (ctx.user.is_blocked) return;
+      // Botni bloklagan foydalanuvchi qayta yozdi — unga xabarlar yana yuboriladi.
+      if (ctx.chat?.type === 'private' && ctx.user.bot_blocked_at) users.setBotBlocked(ctx.user.id, false);
       ctx.lang = users.langOf(ctx.user);
     } else {
       ctx.lang = 'uz';
@@ -200,6 +202,32 @@ export function createBot({ config, services, logger = console, botInfo }) {
   // --- Restoran guruhi: /bogla, buyurtma tugmalari, bot holati, migratsiya ---
   const groupBot = registerGroupHandlers(bot, { services, logger });
 
+  // --- Shaxsiy chat: foydalanuvchi botni bloklasa/blokdan chiqarsa ---
+  bot.on('my_chat_member', async (ctx) => {
+    if (!isPrivate(ctx)) return;
+    const st = ctx.myChatMember.new_chat_member.status;
+    users.setBotBlocked(ctx.myChatMember.from.id, st === 'kicked');
+  });
+
+  // --- Kuryer tugmalari: c:<id>:pk (olib ketdim), c:<id>:dl (yetkazdim). Vakolat — services.orders (biriktirilgan kuryer). ---
+  bot.callbackQuery(/^c:(\d+):(pk|dl)$/, async (ctx) => {
+    const id = Number(ctx.match[1]);
+    const to = ctx.match[2] === 'pk' ? 'on_way' : 'delivered';
+    try {
+      orders.transition(ctx.user, id, to);
+      return await ctx.answerCallbackQuery({ text: ctx.t('g_ok') });
+    } catch (e) {
+      if (e instanceof AppError && ['INVALID_TRANSITION', 'CONFLICT'].includes(e.code)) {
+        await ctx.answerCallbackQuery({ text: ctx.t('g_stale'), show_alert: true });
+        await services.orderNotify.courier(id);
+        return undefined;
+      }
+      if (e instanceof AppError && ['FORBIDDEN', 'NOT_FOUND'].includes(e.code)) return ctx.answerCallbackQuery({ text: ctx.t('k_not_yours'), show_alert: true });
+      logger.error(`Kuryer tugmasi xatosi (#${id}):`, e.message);
+      return ctx.answerCallbackQuery({ text: ctx.t('g_error'), show_alert: true });
+    }
+  });
+
   // --- Shaxsiy chat buyruqlari ---
   const privateOnly = (fn) => (ctx) => (isPrivate(ctx) ? fn(ctx) : undefined);
   bot.command('menu', privateOnly(openOrder));
@@ -245,8 +273,9 @@ export function createBot({ config, services, logger = console, botInfo }) {
   bot.on('message:successful_payment', async (ctx) => {
     const sp = ctx.message.successful_payment;
     const r = services.payments.applySuccessfulPayment(sp, ctx.from.id);
-    if (r.outcome === 'applied') await ctx.reply(ctx.t('payment_ok', { id: r.orderId }), html);
-    else if (r.outcome === 'late_refund_requested') await ctx.reply(ctx.t('payment_late', { id: r.orderId }), html);
+    // Mijoz xabari outbox orqali (dedupe): hodisa tinglovchisi ham shu kalit bilan yuborsa — takrorlanmaydi.
+    if (r.outcome === 'applied') await services.orderNotify.customer(r.orderId);
+    else if (r.outcome === 'late_refund_requested') await services.notify.send(ctx.from.id, 'payment_late', { id: r.orderId }, { dedupeKey: `cust:${r.orderId}:late` });
     if (r.outcome === 'mismatch' || r.outcome === 'late_refund_requested') {
       logger.warn(`To'lov e'tibor talab qiladi: ${r.outcome}, buyurtma ${r.orderId}, charge ${sp.telegram_payment_charge_id}`);
       for (const adminId of access.platformAdminIds()) {
@@ -258,6 +287,9 @@ export function createBot({ config, services, logger = console, botInfo }) {
       }
     }
   });
+
+  // Har callback javob olsin: eski yoki noma'lum tugma (masalan, oldingi bot versiyasidan) — qisqa izoh.
+  bot.on('callback_query:data', (ctx) => ctx.answerCallbackQuery({ text: ctx.t('btn_stale') }));
 
   bot.catch((err) => {
     const e = err.error;

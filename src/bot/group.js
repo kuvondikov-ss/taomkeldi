@@ -120,8 +120,8 @@ export function registerGroupHandlers(bot, { services, logger = console }) {
   });
 
   // --- Botning guruhdagi holati ---
-  bot.on('my_chat_member', async (ctx) => {
-    if (!isGroup(ctx)) return;
+  bot.on('my_chat_member', async (ctx, next) => {
+    if (!isGroup(ctx)) return next();
     const { old_chat_member: before, new_chat_member: after } = ctx.myChatMember;
     await group.botMembershipChanged(ctx.chat.id, after);
     const wasOut = ['left', 'kicked'].includes(before.status);

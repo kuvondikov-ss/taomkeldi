@@ -18,8 +18,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 10 | Platforma paneli va restoran ulash | ✅ bajarildi lokal, 176/176 test (2026-11-25) |
 | 11 | Restoran panelining bo'limlari | ✅ bajarildi lokal, 190/190 test (2026-11-25) |
 | 12 | Botni restoran guruhiga ulash | ✅ bajarildi lokal, 219/219 test (2026-11-25) |
-| 13 | Bot xabarlari va tugmalar | ⏭ navbatda |
-| 14 | Restoran kuryerlari va dispetcher | — |
+| 13 | Bot xabarlari va tugmalar | ✅ bajarildi lokal, 241/241 test (2026-11-25) |
+| 14 | Restoran kuryerlari va dispetcher | ⏭ navbatda |
 | 15 | Jonli kuzatuv, tarix, profil | — |
 | 16 | "Bepul yetkazib berish" bo'limi | — |
 | 17 | Barcha ekranlarning yakuniy dizayni | — |
@@ -55,6 +55,11 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Guruh tugmalari (qabul 15/30/45, rad sabablari, to'lov keldi/kelmadi, tayyor, kuryerga, yetkazildi), vakolat serverda | 12 | mavjud | `o:<id>:<amal>` → `orders.transition` / `payments`; begona va boshqa restoran xodimi — rad; eskirgan tugma — ogohlantirish + yangilash |
 | Mini App guruhdan — deep link `start=o_<id>` (guruhda web_app yo'q) | 12 | mavjud | shaxsiy chatda faqat xodimga panel tugmasi |
 | Bot chiqarildi / huquq yo'q / supergroup migratsiyasi / o'chirilgan mavzu | 12 | mavjud | `my_chat_member`, `migrate_to_chat_id`, xato tasnifi; xodimlarga shaxsiy xabar va buyurtmalar shaxsiy xabarda (zaxira) |
+| Yagona xabar shablonlari (restoran, mijoz, kuryer), escape, ixcham callback, 4096 chegarasi | 13 | mavjud | `services/templates.js`, katalog — [message-catalog.md](message-catalog.md) |
+| Mijozga faqat muhim bosqichlar, har biri bir marta (dedupe) | 13 | mavjud | `services/order-notify.js`; "qabul qilindi" faqat restoran qabul qilgach |
+| Kuryerga bitta jonli xabar: yo'nalish, naqd summa, "Olib ketdim"/"Yetkazdim"; almashsa eskisi tugmasiz | 13 | mavjud | `c:<id>:pk`, `c:<id>:dl`; "Voz kechish" — 14-bosqich |
+| Ishonchli yuborish: outbox, qayta urinish, retry_after, dedupe, bloklaganlarga to'xtash | 13 | mavjud | `services/outbox.js`, `notifications` jadvali (migratsiya 8); admin ko'rsatkichida navbat |
+| Har callback javob oladi (eski/noma'lum tugma ham) | 13 | mavjud | `bot/index.js` oxirgi `callback_query:data` |
 | Panel: guruh holati, tekshirish, sinov xabari (faqat aniq bosilganda), uzish | 12 | mavjud | `/api/panel/restaurants/:rid/group[/check|/test]`, `views/panel-settings.js` |
 | Mini App tugmasi va menyu tugmasi (HTTPS) | 4 | mavjud | `config.checkWebappUrl`, `setChatMenuButton`; noto'g'ri manzil — /admin'da diagnostika |
 | Taklif havolalari (ega/menejer/kuryer), bir martalik, xesh, muddat | 4 | mavjud | `src/services/invites.js`, `invites` jadvali; 9 ta test |
@@ -120,8 +125,8 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Panel — sozlamalar: ochiq/pauza, ish vaqti (Toshkent vaqti, dam olish kunlari, yarim tundan o'tish), narx/radius/minimal/bepul, olib ketish, to'lov, guruh holati | 11 | mavjud | `views/panel-settings.js`, `shared/hours.js`; ish vaqtidan tashqarida buyurtma olinmaydi (test) |
 | Panel — hisobot: bugun/7 kun, kunlar bo'yicha, o'rtacha, ommabop, naqd va oldindan to'langan; "tushum" (sof foyda emas) | 11 | mavjud | test |
 | Ega va menejer farqi frontend va serverda | 11 | mavjud | `services/manage.js` boshidagi jadval |
-| Restoran guruhi | 12 | yo'q | `group_chat_id`, `order_messages` jadvallari bor |
-| Xabar shablonlari, outbox | 13 | yo'q | — |
+| Restoran guruhi | 12 | mavjud | yuqoridagi 12-bosqich qatorlari |
+| Xabar shablonlari, outbox | 13 | mavjud | yuqoridagi 13-bosqich qatorlari |
 | Kuryerlar, dispetcher | 14 | qisman | Kuryer o'z buyurtmalari API; dispetcher yo'q |
 | Kuzatuv, profil, sevimlilar | 15 | qisman | `/api/orders` tarixi; `favorites` jadvali |
 | Bepul yetkazish | 16 | yo'q | `free_delivery_from` ustuni bor |
@@ -211,6 +216,15 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Sinov: 219/219 (29 ta yangi guruh testi: oddiy a'zo, boshqa restoran xodimi, eskirgan tugma, o'chirilgan xabar, guruh almashtirish, bot chiqarildi, migratsiya, mavzu); brauzerda — guruh kartasi holatlari, tekshirish (bot yo'q — tushunarli xabar), uzish.
 - Telegram'da jonli sinov hali qilinmadi: Railway'da eski bot ishlaydi (deploy foydalanuvchi buyrug'i bilan).
 - Cheklov: guruh xabarlari o'zbekcha; yuborish xatosi qayta urinilmaydi (outbox — 13-bosqich).
+
+## 13-bosqich natijasi
+- Server: `services/templates.js` (barcha buyurtma xabarlari bitta joyda), `services/order-notify.js` (mijoz bosqichlari, kuryer jonli xabari), `services/outbox.js` + `telegram-errors.js`; `notify` endi outbox orqali (darhol urinadi, bo'lmasa keyin). Migratsiya 8: `notifications`, `users.bot_blocked_at`.
+- Bot: kuryer tugmalari, eski tugmalarga javob, bloklash/blokdan chiqish (`my_chat_member`), onlayn to'lov xabari dedupe bilan.
+- Hujjat: [docs/message-catalog.md](message-catalog.md) — har xabar: hodisa, auditoriya, matn, tugmalar, shart, yangilanish usuli (test barcha kalitlar yozilganini tekshiradi).
+- Mini App: platforma ko'rsatkichlarida "Bot xabarlari navbatda" / "Yuborilmagan xabarlar".
+- Sinov: 241/241 (22 ta yangi: mijoz bosqichlari va dublikat yo'qligi, rus tili, bekor/qaytarish, karta oqimi, to'lov muddati, kuryer oqimi va almashtirish, escape va qisqartirish, outbox: dedupe, 5xx, 429, bloklash, guruh qayta yangilanishi). Brauzerda — admin ko'rsatkichlari.
+- Topilgan va tuzatilgan: navbat ishlov beruvchisi ish bo'lmaganda "band" bayrog'ini tozalamas edi (test ushladi).
+- Telegram'da jonli sinov hali yo'q (deploy foydalanuvchi buyrug'i bilan). Kuryer taklifi/dispetcher, jonli joylashuv, baholash — 14–15-bosqichlar.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

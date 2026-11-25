@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 12-bosqich (restoran Telegram guruhi) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 13-bosqich (bot xabarlari, tugmalar va ishonchli yuborish) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -99,7 +99,8 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 ## Bot buyruqlari
 Shaxsiy chat: `/start`, `/menu`, `/orders`, `/admin` (`/panel`), `/courier`, `/help`, `/id`. Guruh: `/bogla`, `/help`.
 Guruhni ulash: botni xodimlar guruhiga qo'shing → guruh admini bo'lgan ega yoki menejer `/bogla` yuboradi (kerak bo'lsa, mavzu ichida) → restoranni tasdiqlaydi. Holat va sinov xabari — panel → Sozlamalar.
-Matnlar: `src/i18n/uz.js`, `src/i18n/ru.js` (kalitlar bir xil bo'lishi shart).
+Matnlar: `src/i18n/uz.js`, `src/i18n/ru.js` (kalitlar bir xil bo'lishi shart). Barcha xabarlar katalogi — [docs/message-catalog.md](docs/message-catalog.md); buyurtma shablonlari — `src/services/templates.js`.
+Xabarlar `notifications` navbati orqali yuboriladi: yuborilmagani har 15 soniyada qayta uriniladi (platforma ko'rsatkichlarida ko'rinadi).
 
 ## Ma'lumot manbalari va litsenziyalar
 - Viloyat chegarasi, xarita plitkalari, manzil qidiruvi: © OpenStreetMap contributors (ODbL 1.0).

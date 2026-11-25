@@ -34,6 +34,8 @@ export async function renderAdmin(el, params, _m, { go }) {
       ['m_active', o.restaurants.active], ['m_pending', o.restaurants.pending], ['m_blocked', o.restaurants.blocked],
       ['m_orders_today', o.today.orders], ['m_in_progress', o.today.in_progress], ['m_delivered_sum', formatSum(o.today.delivered_total)],
       ['m_couriers', o.couriers_online], ['m_users', o.users],
+      // Bot xabarlari navbati: kutilayotgan va yuborilmay qolgan (qayta urinishlardan keyin).
+      ...(o.notifications ? [['m_msg_pending', o.notifications.pending], ['m_msg_failed', o.notifications.failed]] : []),
     ];
     el.querySelector('#metrics').innerHTML = m.map(([k, val]) => `<div class="metric"><span class="metric-value">${val}</span><span class="xs text-2">${t(k)}</span></div>`).join('');
   } catch (e) {

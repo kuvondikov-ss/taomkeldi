@@ -9,6 +9,8 @@ import { renderSearch } from './views/search.js';
 import { renderFavorites } from './views/favorites.js';
 import { renderRestaurant } from './views/restaurant.js';
 import { renderCart } from './views/cart.js';
+import { renderCheckout } from './views/checkout.js';
+import { renderOrder } from './views/order.js';
 import { renderPicker } from './views/picker.js';
 import { renderAddressForm } from './views/address-form.js';
 import { renderAddresses } from './views/addresses.js';
@@ -29,6 +31,8 @@ const ROUTES = [
   [/^favorites$/, renderFavorites, { needsAddress: true }],
   [/^r\/(\d+)$/, renderRestaurant, { needsAddress: true }],
   [/^cart$/, renderCart, { needsAddress: true }],
+  [/^checkout$/, renderCheckout, { needsAddress: true }],
+  [/^order\/(\d+)$/, renderOrder, {}],
   [/^orders$/, renderOrders, { nav: 'orders' }],
   [/^profile$/, renderProfile, { nav: 'profile' }],
   [/^addresses$/, renderAddresses, {}],

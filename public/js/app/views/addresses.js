@@ -34,7 +34,7 @@ export function renderAddresses(el, params, _m, { go }) {
         try {
           if (!a.is_default) await post(`/addresses/${a.id}/default`);
           await reloadAddresses();
-          go('', { replace: choose });
+          go(params.get('back') || '', { replace: choose });
         } catch (err) {
           toast(err instanceof ApiError && err.message ? err.message : t('offline'), { type: 'error' });
         }

@@ -22,9 +22,10 @@ export async function renderOrders(el) {
     }
     list.innerHTML = '';
     for (const o of orders) {
-      const row = document.createElement('div');
+      const row = document.createElement('a');
       row.className = 'list-item';
-      row.innerHTML = `<span class="grow"><span class="h3"></span><br><span class="small text-2">${t(`status_${o.status}`)}</span></span><span class="price">${formatSum(o.total)}</span>`;
+      row.href = `#/order/${o.id}`;
+      row.innerHTML = `<span class="grow"><span class="h3"></span><span class="small text-2">${t(`status_${o.status}`)}</span></span><span class="price">${formatSum(o.total)}</span>${icon('chevron')}`;
       row.querySelector('.h3').textContent = `#${o.id} · ${o.restaurant_name}`;
       list.append(row);
     }

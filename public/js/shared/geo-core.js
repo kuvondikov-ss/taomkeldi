@@ -43,6 +43,15 @@ export function deliveryFee({ delivery_base = 0, delivery_base_m = 0, delivery_p
   return delivery_base + delivery_per_km * Math.ceil(extraM / 1000);
 }
 
+// Bepul yetkazish sharti: faqat free_delivery_from > 0 bo'lsa va TAOMLAR summasi (yetkazishsiz) chegaraga yetsa.
+// free_delivery_from = 0 yoki null — "hamma uchun bepul" degani emas. To'liq bo'lim — 16-bosqich.
+export function freeDelivery({ free_delivery_from }, itemsTotal) {
+  const threshold = Number.isInteger(free_delivery_from) && free_delivery_from > 0 ? free_delivery_from : null;
+  if (!threshold) return { threshold: null, applied: false, left: null };
+  const applied = itemsTotal >= threshold;
+  return { threshold, applied, left: applied ? 0 : threshold - itemsTotal };
+}
+
 // Taxminiy yetkazish vaqti oralig'i (daqiqa): tayyorlash + yo'l (to'g'ri chiziq, ~15 km/soat) + topshirish.
 // Bu baho; aniq vaqt sifatida ko'rsatilmaydi. 5 daqiqaga yaxlitlanadi, oraliq 10 daqiqa.
 export function deliveryEta({ prep_minutes = 20 }, distanceM) {

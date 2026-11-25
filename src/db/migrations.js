@@ -282,6 +282,15 @@ const migrations = [
         ('ichimlik',  'Ichimliklar',       'Напитки',           110);
     `,
   },
+  {
+    id: 4,
+    name: 'checkout',
+    sql: `
+      -- Buyurtma qabul qiluvchining saqlangan ismi (telefon — users.phone).
+      ALTER TABLE users ADD COLUMN contact_name TEXT;
+      CREATE INDEX idx_orders_status ON orders(status, updated_at);
+    `,
+  },
 ];
 
 export function migrate(db) {

@@ -53,6 +53,15 @@ export function oneOf(value, field, allowed) {
   return value;
 }
 
+// O'zbekiston telefon raqami: +998 XX XXX XX XX yoki 9 xonali mahalliy raqam → "+998XXXXXXXXX".
+export function phoneUz(value, field = 'phone') {
+  const digits = String(value ?? '').replace(/\D/g, '');
+  let n = digits;
+  if (n.length === 9) n = `998${n}`;
+  if (!/^998\d{9}$/.test(n)) fail(field, 'phone');
+  return `+${n}`;
+}
+
 // Karta raqami: 16 raqam (bo'shliqlarsiz saqlanadi).
 export function cardNumber(value, field = 'card_number') {
   const s = String(value ?? '').replace(/[\s-]/g, '');

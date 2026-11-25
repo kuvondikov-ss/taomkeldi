@@ -137,3 +137,27 @@ body.fullscreen { overflow: hidden; }
 body.has-cart-bar .page { padding-bottom: calc(var(--cta-h) + 64px + env(safe-area-inset-bottom)); }
 .cart-row .grow { gap: 2px; }
 #to-rest { border: 1px solid var(--border); }
+
+/* --- Checkout va buyurtma (8-bosqich) --- */
+.type-switch { gap: var(--sp-2); }
+.type-switch .chip { justify-content: center; min-height: 44px; }
+.pay-option { cursor: pointer; }
+.pay-option input { width: 20px; height: 20px; accent-color: var(--primary); flex: none; }
+.pay-option .grow, .cart-row .grow { display: flex; flex-direction: column; }
+.comment-box summary { list-style: none; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--surface); }
+.comment-box summary::-webkit-details-marker { display: none; }
+.comment-box[open] summary { border-radius: var(--radius-card) var(--radius-card) 0 0; }
+.comment-box[open] summary .icon:last-child { transform: rotate(90deg); }
+.comment-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; border-top: 0; }
+.sum-row { justify-content: space-between; gap: var(--sp-3); font-variant-numeric: tabular-nums; }
+.total-row { padding-top: var(--sp-2); margin-top: var(--sp-1); border-top: 1px solid var(--border); font-weight: var(--fw-bold); }
+.warn-text { color: var(--warning); }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0; }
+.step { display: flex; align-items: center; gap: var(--sp-3); min-height: 44px; color: var(--text-2); position: relative; }
+.step:not(:last-child)::after { content: ""; position: absolute; left: 11px; top: 34px; bottom: -10px; width: 2px; background: var(--border); }
+.step.done::after { background: var(--brand); }
+.step-dot { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); display: grid; place-items: center; flex: none; background: var(--surface); }
+.step.done .step-dot { background: var(--brand); border-color: var(--brand); color: var(--on-primary); }
+.step.current { color: var(--text); font-weight: var(--fw-semibold); }
+.step.current .step-dot { border-color: var(--primary); box-shadow: 0 0 0 4px var(--secondary); }
+a.list-item { color: inherit; text-decoration: none; }

@@ -14,6 +14,9 @@ export const ERRORS = {
   OUT_OF_AREA:       { status: 422, uz: 'Bu manzil xizmat hududidan tashqarida. Taomkeldi faqat Jizzax viloyatida ishlaydi.', ru: 'Адрес вне зоны обслуживания. Taomkeldi работает только в Джизакской области.' },
   NOT_DELIVERABLE:   { status: 422, uz: 'Bu restoran tanlangan manzilga yetkazib bermaydi.', ru: 'Этот ресторан не доставляет по выбранному адресу.' },
   GEOCODER_UNAVAILABLE: { status: 503, uz: 'Manzil qidiruvi hozir ishlamayapti. Xaritada belgilang.', ru: 'Поиск адреса сейчас недоступен. Отметьте точку на карте.' },
+  PRICE_CHANGED:     { status: 409, uz: 'Narx yoki yetkazish summasi o‘zgardi. Yangi summani tekshirib, qayta tasdiqlang.', ru: 'Изменилась цена или стоимость доставки. Проверьте новую сумму и подтвердите снова.' },
+  CANNOT_ORDER:      { status: 409, uz: 'Buyurtmani hozir rasmiylashtirib bo‘lmaydi. Savatni tekshiring.', ru: 'Сейчас нельзя оформить заказ. Проверьте корзину.' },
+  INVALID_TRANSITION: { status: 409, uz: 'Buyurtma holati allaqachon o‘zgargan. Sahifani yangilang.', ru: 'Статус заказа уже изменился. Обновите страницу.' },
   CONFLICT:          { status: 409, uz: 'Holat o\'zgargan. Sahifani yangilang.', ru: 'Состояние изменилось. Обновите страницу.' },
   INTERNAL:          { status: 500, uz: 'Kutilmagan xato. Birozdan keyin qayta urinib ko\'ring.', ru: 'Непредвиденная ошибка. Попробуйте позже.' },
 };

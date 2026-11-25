@@ -13,8 +13,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 5 | Jizzax hududi va manzil | ✅ bajarildi lokal, 103/103 test (2026-11-25); Telegram ichida sinalmagan |
 | 6 | Bosh sahifa, qidiruv, saralash | ✅ bajarildi lokal, 122/122 test (2026-11-25); banner fotosi qo'yildi |
 | 7 | Restoran menyusi va taom oynasi | ✅ bajarildi lokal, 131/131 test (2026-11-25) |
-| 8 | Savat, checkout, buyurtma holatlari | ⏭ navbatda |
-| 9 | Naqd, karta o'tkazmasi, onlayn to'lov | — |
+| 8 | Savat, checkout, buyurtma holatlari | ✅ bajarildi lokal, 150/150 test (2026-11-25); restoranga xabar — 12/13-bosqichda |
+| 9 | Naqd, karta o'tkazmasi, onlayn to'lov | ⏭ navbatda |
 | 10 | Platforma paneli va restoran ulash | — |
 | 11 | Restoran panelining bo'limlari | — |
 | 12 | Botni restoran guruhiga ulash | — |
@@ -82,7 +82,16 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Savat paneli (soni, summasi, "yetkazish alohida") | 7 | mavjud | `.cart-bar` |
 | Savatdagi taom stop-listga tushsa — ogohlantirish va olib tashlash | 7/8 | mavjud | restoran sahifasi + `/api/cart/check`; checkout 8-bosqichda qayta tekshiradi |
 | Orqaga qaytganda aylantirish va kategoriya holati | 7 | mavjud | `main.js` `scrollMemory` |
-| Savat sahifasi | 8 | qisman | Miqdor, server tekshiruvi (narx o'zgarishi, stop-list, yopiq, radius, minimal summa), jami; rasmiylashtirish 8-bosqichda |
+| Savat: miqdor, narx, olib tashlash, minimal summa, bepul yetkazishgacha qoldiq | 8 | mavjud | `views/cart.js` — checkout bilan bir xil quote |
+| Checkout: turi → manzil → qabul qiluvchi → to'lov → izoh → summalar → bitta tugma | 8 | mavjud | `views/checkout.js`; saqlangan kontakt ixcham + "O'zgartirish" |
+| Quote va buyurtma bitta hisob funksiyasidan; klient summasiga ishonilmaydi | 8 | mavjud | `services/checkout.js` `computeQuote`; testlar |
+| Narx o'zgarsa — yangi summa ko'rsatilib, qayta tasdiq | 8 | mavjud | 409 `PRICE_CHANGED` + yangi quote |
+| Idempotency (takror bosish, tarmoq qayta urinishi) | 8 | mavjud | `idempotency_key` + `BEGIN IMMEDIATE`; parallel so'rov testi |
+| Holatlar va o'tishlar rol/turga qarab; yakunlangan buyurtma qayta ishlamaydi | 8 | mavjud | `orders.transition` (shartli UPDATE); 8 ta test |
+| order_events (kim, qachon, nima) | 8 | mavjud | `created` + har bir `status` hodisasi |
+| Mijoz bekor qilishi (new/pending_payment); keyin — restoran bilan bog'lanish | 8 | mavjud | `POST /api/orders/:id/cancel`, `views/order.js` |
+| To'langan buyurtma bekor qilinsa — `refund_requested` (qaytarildi emas) | 8/9 | mavjud | test |
+| Restoranga yangi buyurtma xabari | 12/13 | yo'q | Hozir buyurtma faqat API/panelda ko'rinadi |
 | Savat, checkout, holat o'tishlari | 8 | yo'q | Asos: `createRecord` |
 | To'lovlar | 9 | yo'q | `payment_status` ustuni bor |
 | Platforma paneli, restoran arizasi | 10 | qisman | `/api/admin/restaurants` (ro'yxat, yaratish) |
@@ -141,6 +150,14 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Tuzatildi: tasdiqlash dialogi natijani tugma bosilganda qaytaradi (fon rejimida `close` hodisasi kechikkan); `.alert` ichida tugma bo'lsa matn torayib qolmaydi.
 - Sinov: 131/131; brauzerda 360 px: ikki bo'limdagi bir xil miqdor, tugagan taom, uzun nom, restoran almashtirish (bekor/tasdiq), taom oynasi, savat tekshiruvi (stop-list, narx o'zgarishi), orqaga qaytganda aylantirish joyi.
 - Savat qurilmada saqlanadi (`localStorage`, foydalanuvchi bo'yicha); narx va mavjudlik har doim serverda qayta tekshiriladi.
+
+## 8-bosqich natijasi
+- Migratsiya 4: `users.contact_name`, `idx_orders_status`.
+- Server: `services/checkout.js` (`computeQuote`, `placeOrder`, `saveContact`), `orders.transition`/`actionsFor`, `geo-core.freeDelivery`; API: `/checkout/quote`, `POST /orders`, `/orders/:id/cancel`, `/panel/orders/:id/status`, `/me/contact`.
+- Mini App: savat (quote), checkout, buyurtma sahifasi (bosqichlar, to'lov holati, bekor qilish, restoranga qo'ng'iroq), buyurtmalar ro'yxatidan o'tish.
+- To'lov: hozircha faqat naqd (`ENABLED_PAYMENTS`); karta o'tkazmasi va onlayn — 9-bosqich.
+- Sinov: 150/150; brauzerda 360 px: savat → checkout (noto'g'ri telefon, olib ketish, ikki marta bosish = bitta buyurtma) → buyurtma sahifasi → restoran qabul qilgandan keyin bekor qilish tugmasi o'rniga qo'ng'iroq.
+- Cheklov: restoran yangi buyurtma haqida hali xabar olmaydi (12/13-bosqich); holat sahifasi 15 soniyada yangilanadi (jonli kuzatuv — 15-bosqich).
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

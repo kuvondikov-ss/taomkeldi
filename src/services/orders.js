@@ -6,6 +6,33 @@ import * as v from '../lib/validate.js';
 
 export const ORDER_STATUSES = ['pending_payment', 'new', 'accepted', 'ready', 'on_way', 'delivered', 'cancelled'];
 export const PAYMENT_STATUSES = ['unpaid', 'claimed', 'paid', 'refund_requested', 'refunded'];
+export const TERMINAL = ['delivered', 'cancelled'];
+
+// Qonuniy o'tishlar: joriy holat → yangi holat → kim bajara oladi.
+// Rollar: customer, staff (ega/menejer), courier (biriktirilgan), admin (platforma), system.
+const FLOW = {
+  pending_payment: { new: ['system', 'staff', 'admin'], cancelled: ['customer', 'staff', 'admin', 'system'] },
+  new: { accepted: ['staff', 'admin'], cancelled: ['customer', 'staff', 'admin'] },
+  accepted: { ready: ['staff', 'admin'], cancelled: ['staff', 'admin'] },
+  ready: { on_way: ['staff', 'courier', 'admin'], delivered: ['staff', 'admin'], cancelled: ['staff', 'admin'] },
+  on_way: { delivered: ['courier', 'staff', 'admin'] },
+};
+
+// viewer_role → oqimdagi rol
+const flowRole = (viewRole) => ({ owner: 'staff', manager: 'staff', customer: 'customer', courier: 'courier', admin: 'admin' }[viewRole] || null);
+
+// Buyurtma turi va to'lovga qarab qo'shimcha shartlar. Ruxsat bo'lmasa — sabab kodi, bo'lsa — null.
+function blockReason(order, to, role, opts = {}) {
+  const allowed = FLOW[order.status]?.[to];
+  if (!allowed) return 'invalid_transition';
+  if (!allowed.includes(role)) return 'forbidden';
+  if (order.type === 'pickup' && to === 'on_way') return 'pickup_has_no_courier';
+  if (order.type === 'delivery' && order.status === 'ready' && to === 'delivered') return 'must_be_on_way';
+  // Oldindan to'lanadigan buyurtma to'lov tasdiqlanmaguncha tayyorlashga qabul qilinmaydi.
+  if (to === 'accepted' && order.payment_method !== 'cash' && order.payment_status !== 'paid') return 'payment_not_confirmed';
+  if (to === 'cancelled' && (role === 'staff' || role === 'admin') && !opts.reason) return 'reason_required';
+  return null;
+}
 
 export function createOrderService(db, access) {
   const getStmt = db.prepare('SELECT * FROM orders WHERE id = ?');
@@ -15,6 +42,16 @@ export function createOrderService(db, access) {
     return { ...order, items: itemsStmt.all(order.id) };
   }
 
+  // Ko'ruvchi uchun mumkin bo'lgan amallar (UI tugmalari shu ro'yxatdan chiziladi).
+  function actionsFor(order, viewRole) {
+    const role = flowRole(viewRole);
+    if (!role || TERMINAL.includes(order.status)) return [];
+    return Object.keys(FLOW[order.status] || {}).filter((to) => {
+      const r = blockReason(order, to, role, { reason: 'x' });
+      return r === null;
+    });
+  }
+
   // Huquqi bo'lmasa NOT_FOUND: begona buyurtma mavjudligini oshkor qilmaymiz.
   function getForActor(actor, orderId) {
     const order = getStmt.get(orderId);
@@ -22,7 +59,55 @@ export function createOrderService(db, access) {
     if (!role) throw new AppError('NOT_FOUND');
     const view = withItems(order);
     view.viewer_role = role;
+    const r = db.prepare('SELECT id, name, phone, address_text, lat, lon FROM restaurants WHERE id = ?').get(order.restaurant_id);
+    view.restaurant = { ...r };
+    try { view.address_details = order.address_details ? JSON.parse(order.address_details) : null; } catch { view.address_details = null; }
+    view.events = db.prepare('SELECT type, from_status, to_status, actor_role, data, created_at FROM order_events WHERE order_id = ? ORDER BY created_at, id')
+      .all(order.id).map((e) => ({ ...e, data: e.data ? JSON.parse(e.data) : null }));
+    view.actions = actionsFor(order, role);
     return view;
+  }
+
+  // Holatni o'zgartirish. Shartli yangilash (WHERE status = joriy) — eski tugma yoki ikki kishi bir vaqtda
+  // bosganda ikkinchisi INVALID_TRANSITION oladi; yakunlangan buyurtma qayta ishga tushmaydi.
+  function transition(actor, orderId, to, opts = {}) {
+    v.oneOf(to, 'to', ORDER_STATUSES);
+    const reason = v.str(opts.reason, 'reason', { optional: true, max: 300 });
+    const prep = opts.prepMinutes == null ? null : v.int(opts.prepMinutes, 'prep_minutes', { min: 5, max: 180 });
+    return tx(db, () => {
+      const order = getStmt.get(v.id(orderId));
+      const viewRole = actor === 'system' ? 'system' : access.orderViewRole(actor, order);
+      if (!viewRole) throw new AppError('NOT_FOUND');
+      const role = actor === 'system' ? 'system' : flowRole(viewRole);
+      if (role === 'courier') {
+        const mine = access.courierRows(actor).some((c) => c.id === order.courier_id);
+        if (!mine) throw new AppError('FORBIDDEN');
+      }
+      const block = blockReason(order, to, role, { reason });
+      if (block === 'forbidden') throw new AppError('FORBIDDEN');
+      if (block === 'invalid_transition') throw new AppError('INVALID_TRANSITION', { details: { status: order.status } });
+      if (block) throw new AppError('CONFLICT', { details: { reason: block, status: order.status } });
+
+      const t = now();
+      let paymentStatus = order.payment_status;
+      // Naqd: yetkazilganda (yoki olib ketishda topshirilganda) pul olingan deb belgilanadi.
+      if (to === 'delivered' && order.payment_method === 'cash') paymentStatus = 'paid';
+      // To'langan buyurtma bekor qilinsa — qaytarish SO'RALADI (qaytarilgani alohida tasdiqlanadi).
+      if (to === 'cancelled' && order.payment_status === 'paid') paymentStatus = 'refund_requested';
+
+      const res = db.prepare(`
+        UPDATE orders SET status = ?, payment_status = ?, cancel_reason = COALESCE(?, cancel_reason),
+          prep_minutes = COALESCE(?, prep_minutes), updated_at = ?
+        WHERE id = ? AND status = ?
+      `).run(to, paymentStatus, to === 'cancelled' ? reason : null, prep, t, order.id, order.status);
+      if (res.changes !== 1) throw new AppError('INVALID_TRANSITION');
+      db.prepare(`INSERT INTO order_events (order_id, actor_id, actor_role, type, from_status, to_status, data, created_at)
+        VALUES (?, ?, ?, 'status', ?, ?, ?, ?)`).run(
+        order.id, actor === 'system' ? null : actor.id, role, order.status, to,
+        JSON.stringify({ reason: reason || undefined, prep_minutes: prep || undefined, payment_status: paymentStatus !== order.payment_status ? paymentStatus : undefined }), t,
+      );
+      return getStmt.get(order.id);
+    });
   }
 
   function listForCustomer(actor, { limit = 20 } = {}) {
@@ -128,5 +213,5 @@ export function createOrderService(db, access) {
     db.prepare('UPDATE orders SET courier_id = ?, updated_at = ? WHERE id = ?').run(courierId, now(), orderId);
   }
 
-  return { getForActor, listForCustomer, listForRestaurant, listForCourier, createRecord, assignCourierRaw };
+  return { getForActor, listForCustomer, listForRestaurant, listForCourier, createRecord, assignCourierRaw, transition, actionsFor };
 }

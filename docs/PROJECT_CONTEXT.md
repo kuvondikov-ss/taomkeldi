@@ -181,6 +181,9 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Aksiya = mavjud mahsulotda `old_price > price` | Soxta chegirma ko'rsatmaslik |
 | 2026-11-25 | Taxminiy yetkazish vaqti: tayyorlash + masofa/15 km/soat + 5 daq, 10 daqiqalik oraliq | Aniq countdown va'da qilinmaydi |
 | 2026-11-25 | So'nggi qidiruvlar qurilmada (localStorage) saqlanadi | Serverga ortiqcha shaxsiy ma'lumot yozmaslik |
+| 2026-11-25 | Holat o'tishlari jadvali (`services/orders.js` `FLOW`): mijoz faqat `pending_payment`/`new` da bekor qiladi; xodim bekor qilishi sabab bilan; yetkazishda `ready → on_way → delivered`, olib ketishda `ready → delivered`; oldindan to'lovda `accepted` faqat `paid` dan keyin | Promptdagi qoidalar; eski tugma va parallel bosish shartli UPDATE bilan himoyalangan |
+| 2026-11-25 | Naqd buyurtma `delivered` bo'lganda `payment_status = paid`; to'langan buyurtma bekor qilinsa `refund_requested` | Refund so'rovi va haqiqiy qaytarish alohida |
+| 2026-11-25 | Bepul yetkazish: `free_delivery_from > 0` va taomlar summasi ≥ chegara (yetkazishsiz); 0/null — bepul emas | 16-bosqich qoidasi oldindan |
 | 2026-11-25 | Oddiy botdagi "matn bilan buyurtma" oqimi yangi kodga ko'chirilmadi | Yangi modelda buyurtma restoran va mahsulotlarga bog'langan; Mini App orqali 8-bosqichda |
 | 2026-11-25 | Original logo olindi: `public/brand/taomkeldi-original.svg` (shior: "Taomingiz eshigingizgacha"). Variantlar `scripts/brand-variants.mjs` bilan yasaladi — geometriya o'zgarmaydi, faqat kesish va qora yozuv rangi (to'q fon uchun) | 3-bosqich talabi: original SVG'dan full/mark, yorug'/to'q variantlar |
 | 2026-11-25 | Palitra logodagi yashil ranglardan olinadi (promptdagi to'q ko'k/to'q sariq palitra o'rniga) — foydalanuvchi tasdiqladi; asosiy tugma `#21583A` + oq matn (8.3:1), `#679C76` faqat bezak (oq fonda 3.2:1). Batafsil: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Logo yashil: `#679C76`, `#21583A`, `#92B88F`, `#B5CFAE`, yozuv `#232323` |

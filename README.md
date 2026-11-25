@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 7-bosqich (restoran menyusi, taom oynasi, savat) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 8-bosqich (savat, checkout, buyurtma holatlari) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -65,6 +65,11 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | GET | `/api/restaurants/:id?address_id=` | restoran sahifasi va menyu |
 | GET | `/api/search?q=&address_id=` | restoran va taom qidiruvi |
 | POST | `/api/cart/check` | savatni tekshirish: joriy narx, stop-list, restoran holati, minimal summa |
+| POST | `/api/checkout/quote` | yakuniy hisob (taomlar, yetkazish, bepul yetkazish, jami, to'lov usullari, muammolar) |
+| POST | `/api/orders` | buyurtma yaratish (`idempotency_key`, `expected_total`); 409 `PRICE_CHANGED` / `CANNOT_ORDER` |
+| POST | `/api/orders/:id/cancel` | mijoz bekor qilishi (faqat ruxsat etilgan bosqichda) |
+| POST | `/api/panel/orders/:id/status` | xodim/kuryer/admin: holatni o'zgartirish (`to`, `reason`, `prep_minutes`) |
+| PUT | `/api/me/contact` | qabul qiluvchi ismi va telefoni |
 | GET/PUT/DELETE | `/api/favorites`, `/api/favorites/:rid` | sevimlilar |
 | GET | `/api/cuisines`; PUT `/api/panel/restaurants/:rid/cuisines` | oshxona turlari |
 | PUT | `/api/panel/restaurants/:rid/location` | restoran nuqtasi va radiusi (ega, menejer) |

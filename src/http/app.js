@@ -59,7 +59,7 @@ export function createApp({ config, services, logger = console }) {
     const a = req.actor;
     res.json({
       ok: true,
-      user: { id: a.id, first_name: a.first_name, last_name: a.last_name, username: a.username, phone: a.phone, lang: services.users.langOf(a) },
+      user: { id: a.id, first_name: a.first_name, last_name: a.last_name, username: a.username, phone: a.phone, contact_name: a.contact_name, lang: services.users.langOf(a) },
       roles: services.access.rolesOf(a),
     });
   });
@@ -130,6 +130,27 @@ export function createApp({ config, services, logger = console }) {
   api.put('/favorites/:rid', (req, res) => res.json({ ok: true, ...services.catalog.setFavorite(req.actor, req.params.rid, true) }));
   api.delete('/favorites/:rid', (req, res) => res.json({ ok: true, ...services.catalog.setFavorite(req.actor, req.params.rid, false) }));
   api.get('/cuisines', (_req, res) => res.json({ ok: true, cuisines: services.catalog.allCuisines() }));
+
+  api.put('/me/contact', (req, res) => {
+    const u = services.checkout.saveContact(req.actor, req.body || {});
+    res.json({ ok: true, contact: { name: u.contact_name, phone: u.phone } });
+  });
+
+  // --- Checkout: quote va buyurtma bitta hisob funksiyasidan ---
+  api.post('/checkout/quote', (req, res) => res.json({ ok: true, quote: services.checkout.computeQuote(req.actor, req.body || {}) }));
+  api.post('/orders', (req, res) => {
+    const { orderId, duplicate } = services.checkout.placeOrder(req.actor, req.body || {});
+    res.status(duplicate ? 200 : 201).json({ ok: true, duplicate, order: services.orders.getForActor(req.actor, orderId) });
+  });
+  api.post('/orders/:id/cancel', (req, res) => {
+    services.orders.transition(req.actor, v.id(req.params.id), 'cancelled', { reason: req.body?.reason });
+    res.json({ ok: true, order: services.orders.getForActor(req.actor, v.id(req.params.id)) });
+  });
+  // Restoran xodimi / kuryer / admin: holatni o'zgartirish (panel UI — 11/14-bosqichlar).
+  api.post('/panel/orders/:id/status', (req, res) => {
+    services.orders.transition(req.actor, v.id(req.params.id), req.body?.to, { reason: req.body?.reason, prepMinutes: req.body?.prep_minutes });
+    res.json({ ok: true, order: services.orders.getForActor(req.actor, v.id(req.params.id)) });
+  });
 
   // --- Mijoz buyurtmalari ---
   api.get('/orders', (req, res) => res.json({ ok: true, orders: services.orders.listForCustomer(req.actor) }));

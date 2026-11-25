@@ -104,6 +104,26 @@ export function createApp({ config, services, logger = console }) {
     },
   );
 
+  // --- Taklif havolalari (ega — platforma admini; menejer — ega; kuryer — ega/menejer) ---
+  const inviteView = (inv) => ({
+    id: inv.id, kind: inv.kind, courier_id: inv.courierId, expires_at: inv.expiresAt,
+    link: config.botUsername ? `https://t.me/${config.botUsername}?start=${inv.payload}` : null,
+    start_payload: inv.payload,
+  });
+  api.get('/panel/restaurants/:rid/invites', (req, res) => {
+    res.json({ ok: true, invites: services.invites.list(req.actor, v.id(req.params.rid, 'rid')) });
+  });
+  api.post('/panel/restaurants/:rid/invites', (req, res) => {
+    const inv = services.invites.create(req.actor, v.id(req.params.rid, 'rid'), {
+      kind: req.body?.kind, courierId: req.body?.courier_id,
+    });
+    res.status(201).json({ ok: true, invite: inviteView(inv) });
+  });
+  api.delete('/panel/restaurants/:rid/invites/:id', (req, res) => {
+    services.invites.revoke(req.actor, v.id(req.params.rid, 'rid'), req.params.id);
+    res.json({ ok: true });
+  });
+
   // --- Platforma administratori ---
   api.get('/admin/restaurants', (req, res) => res.json({ ok: true, restaurants: services.restaurants.listAll(req.actor) }));
   api.post('/admin/restaurants', (req, res) => {

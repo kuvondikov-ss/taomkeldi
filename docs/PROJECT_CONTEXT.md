@@ -170,6 +170,9 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Hozirgi oddiy bot 2-bosqichgacha o'zgarishsiz ishlab turadi | 1-bosqichda biznes qoidalari o'zgartirilmaydi |
 | 2026-11-25 | initData: `hash`dan boshqa barcha maydonlar (shu jumladan `signature`) data-check-string'ga kiradi; standart eskirish 24 soat | Rasmiy algoritm; `signature` faqat uchinchi tomon tekshiruvi uchun |
 | 2026-11-25 | Platforma admini production'da faqat `PLATFORM_ADMIN_IDS`dan | Tasodifiy odam admin bo'lmasligi uchun |
+| 2026-11-25 | Taklif havolalari: `inv_<token>`, faqat xesh saqlanadi, 7 kun, bir martalik; ega taklifi — faqat platforma admini, menejer — ega, kuryer — ega/menejer | Maxfiy taklif ommaviy havola bilan adashmasligi; dublikatsiz rol berish |
+| 2026-11-25 | "Buyurtma berish" reply tugmasi Mini App'ni to'g'ridan-to'g'ri emas, inline web_app tugmasi orqali ochadi | Inline/menyu tugmasidan ochilgan Mini App initData oladi |
+| 2026-11-25 | Bot guruhlarda faqat buyruq yozganlarni bazaga yozadi | Ortiqcha shaxsiy ma'lumot yig'ilmasligi |
 | 2026-11-25 | Oddiy botdagi "matn bilan buyurtma" oqimi yangi kodga ko'chirilmadi | Yangi modelda buyurtma restoran va mahsulotlarga bog'langan; Mini App orqali 8-bosqichda |
 | 2026-11-25 | Original logo olindi: `public/brand/taomkeldi-original.svg` (shior: "Taomingiz eshigingizgacha"). Variantlar `scripts/brand-variants.mjs` bilan yasaladi — geometriya o'zgarmaydi, faqat kesish va qora yozuv rangi (to'q fon uchun) | 3-bosqich talabi: original SVG'dan full/mark, yorug'/to'q variantlar |
 | 2026-11-25 | Palitra logodagi yashil ranglardan olinadi (promptdagi to'q ko'k/to'q sariq palitra o'rniga) — foydalanuvchi tasdiqladi; asosiy tugma `#21583A` + oq matn (8.3:1), `#679C76` faqat bezak (oq fonda 3.2:1). Batafsil: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Logo yashil: `#679C76`, `#21583A`, `#92B88F`, `#B5CFAE`, yozuv `#232323` |

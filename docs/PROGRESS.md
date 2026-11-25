@@ -9,8 +9,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 1 | Loyiha pasporti va ish qoidalari | ✅ bajarildi (2026-11-25) |
 | 2 | Texnik asos, ma'lumotlar va rollar | ✅ bajarildi lokal, 40/40 test (2026-11-25); deploy qilinmagan |
 | 3 | Brend, logo va dizayn tizimi | ✅ bajarildi, 43/43 test (2026-11-25) — [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) |
-| 4 | Bot kirishi, menyusi va tillari | ⏭ navbatda |
-| 5 | Jizzax hududi va manzil | — |
+| 4 | Bot kirishi, menyusi va tillari | ✅ bajarildi lokal, 75/75 test (2026-11-25); Telegram'da jonli sinalmagan |
+| 5 | Jizzax hududi va manzil | ⏭ navbatda |
 | 6 | Bosh sahifa, qidiruv, saralash | — |
 | 7 | Restoran menyusi va taom oynasi | — |
 | 8 | Savat, checkout, buyurtma holatlari | — |
@@ -48,11 +48,15 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Idempotency (dublikat buyurtma himoyasi) | 2/8 | qisman | `createRecord` `idempotencyKey`; checkout API 8-bosqichda |
 | order_events (kim, qachon, nima) | 2/8 | qisman | `created` hodisasi yoziladi; holat o'tishlari 8-bosqichda |
 | Dizayn tizimi, logo | 3 | mavjud | `public/css/tokens.css`, `components.css`, `js/ui/*`, `brand/*`; `test/design.test.js` |
-| `/start` | 4 | qisman | `src/bot/index.js`: matn + ota brend; rolga qarab tugmalar yo'q |
-| `/id` (`/myid` alias), `/help` | 4 | mavjud | `src/bot/index.js` |
-| `/menu /orders /admin /courier /bogla /panel`, taklif deep-linklari | 4 | yo'q | — |
-| UZ/RU tarjima fayllari | 4 | qisman | Xato matnlari va bot matnlari uz/ru; markaziy i18n fayllari yo'q |
-| Til tanlovi saqlanadi | 4 | qisman | `PUT /api/me/lang`, `users.langOf`; UI yo'q |
+| `/start` aynan matn, asosiy tugmalar, rolga qarab tugmalar | 4 | mavjud | `src/bot/index.js` `mainKeyboard`; testlar "Bot: /start va rolga qarab menyu" |
+| `/menu /orders /admin /panel /courier /help /id` | 4 | mavjud | `src/bot/index.js`; testlar |
+| `/bogla` (guruh) | 4/12 | qisman | Vakolat tekshiriladi; guruhni ulashning o'zi 12-bosqichda |
+| Mini App tugmasi va menyu tugmasi (HTTPS) | 4 | mavjud | `config.checkWebappUrl`, `setChatMenuButton`; noto'g'ri manzil — /admin'da diagnostika |
+| Taklif havolalari (ega/menejer/kuryer), bir martalik, xesh, muddat | 4 | mavjud | `src/services/invites.js`, `invites` jadvali; 9 ta test |
+| Restoran ulash yo'li (bot orqali ariza) | 4/10 | qisman | Ariza → `pending` restoran + adminga xabar; tasdiqlash 10-bosqichda |
+| UZ/RU markaziy tarjima fayllari | 4 | mavjud | `src/i18n/{uz,ru}.js`; kalitlar tengligi testi |
+| Til: Telegram'dan taxmin, tanlov ustun; bot va Mini App bir xil | 4 | mavjud | `users.langOf`, `lang:` tugmalari, `/api/me`; test "Tillar" |
+| Guruhda shaxsiy menyu/web_app tugmasi chiqmaydi | 4 | mavjud | testlar "Bot: guruh" |
 | Jizzax chegarasi, radius | 5 | yo'q | Manzil koordinatasi faqat diapazon bo'yicha tekshiriladi |
 | Saqlangan manzillar | 5 | qisman | `/api/addresses` (ro'yxat, qo'shish, o'chirish); tahrirlash va asosiyni almashtirish yo'q |
 | Restoranlar ro'yxati, qidiruv | 6 | yo'q | — |
@@ -75,9 +79,16 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Sinalmagan: bot Telegram bilan jonli (Railway'dagi bot bilan to'qnashmaslik uchun lokal bot yoqilmadi); Mini App haqiqiy Telegram ichida (HTTPS manzil yo'q).
 
 ## Keyingi bosqichlar uchun bog'liqliklar
-- 4-bosqich: Mini App uchun HTTPS manzil (`WEBAPP_URL`) — bot menyusidan ochish uchun; Telegram ichidagi sinov ham shunga bog'liq.
-- Deploy (alohida topshiriq bilan): Railway volume → `DATA_DIR`, Railway domeni → `WEBAPP_URL`, Node versiyasi.
-- GitHub: repozitoriy hali yo'q; foydalanuvchi ommaviy (public) repozitoriy so'radi — chiqarishdan oldin tarkibni ko'rib chiqish kerak.
+- Mini App uchun HTTPS manzil (`WEBAPP_URL`) — deployda Railway domeni; usiz bot ilova tugmasini ko'rsatmaydi va buni ochiq aytadi.
+- Deploy (alohida topshiriq bilan): Railway volume → `DATA_DIR`, Node versiyasi, `PLATFORM_ADMIN_IDS`.
+- Kod: https://github.com/kuvondikov-ss/taomkeldi (ochiq).
+
+## 4-bosqich natijasi
+- Yangi: `src/i18n/{index,uz,ru}.js`, `src/services/invites.js`, migratsiya 2 (`invites` jadvali, `restaurants.applicant_id`), `test/bot.test.js`.
+- O'zgardi: `src/bot/index.js` (to'liq qayta yozildi), `src/config.js` (`checkWebappUrl`, `BOT_USERNAME`), `src/services/{restaurants,access,index}.js`, `src/http/app.js` (taklif API), `public/index.html` (til).
+- Taklif havolasi: `t.me/<bot>?start=inv_<token>`; token bazada faqat SHA-256 xeshi; 7 kun; bir martalik; yangi egasi/kuryer havolasi avvalgisini bekor qiladi. Ommaviy havolalar (`r_<id>`) rol bermaydi.
+- Sinov: 75/75 (botga 32 ta yangi test — Telegram API ushlab olinib, oflayn).
+- Sinalmagan: haqiqiy Telegram'da (Railway'dagi eski bot shu tokenda ishlayapti — bir vaqtda ikkita nusxa bo'lmaydi); Mini App tugmasi (HTTPS manzil yo'q).
 
 ## 3-bosqich natijasi
 - Palitra logodan (yashil), Montserrat (o'z serverimizdan), tokenlar, light/dark, reduced-motion.

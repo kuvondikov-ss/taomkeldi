@@ -5,6 +5,7 @@ import { createRestaurantService } from './restaurants.js';
 import { createOrderService } from './orders.js';
 import { createAddressService } from './addresses.js';
 import { createUploadService } from './uploads.js';
+import { createInviteService } from './invites.js';
 
 export function createServices(db, config) {
   const users = createUserService(db, config);
@@ -13,5 +14,6 @@ export function createServices(db, config) {
   const orders = createOrderService(db, access);
   const addresses = createAddressService(db);
   const uploads = createUploadService(config, access);
-  return { users, access, restaurants, orders, addresses, uploads };
+  const invites = createInviteService(db, access, restaurants);
+  return { users, access, restaurants, orders, addresses, uploads, invites };
 }

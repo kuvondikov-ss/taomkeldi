@@ -18,6 +18,22 @@ function intEnv(env, name, fallback) {
   return n;
 }
 
+// Mini App manzilini tekshirish: Telegram faqat ommaviy HTTPS manzilni ochadi.
+export function checkWebappUrl(value) {
+  if (!value) return { ok: false, reason: 'WEBAPP_URL berilmagan' };
+  let u;
+  try {
+    u = new URL(value);
+  } catch {
+    return { ok: false, reason: 'WEBAPP_URL noto\'g\'ri manzil' };
+  }
+  if (u.protocol !== 'https:') return { ok: false, reason: 'WEBAPP_URL https:// bilan boshlanishi kerak' };
+  if (['localhost', '127.0.0.1', '[::1]'].includes(u.hostname) || u.hostname.endsWith('.local')) {
+    return { ok: false, reason: 'WEBAPP_URL lokal manzil — Telegram uni ocha olmaydi' };
+  }
+  return { ok: true, reason: null, url: u.toString().replace(/\/$/, '') };
+}
+
 export function loadConfig(env = process.env) {
   const isProduction =
     env.NODE_ENV === 'production' || env.RAILWAY_ENVIRONMENT_NAME === 'production';
@@ -35,6 +51,9 @@ export function loadConfig(env = process.env) {
     dbPath: env.DB_PATH || path.join(dataDir, 'taomkeldi.db'),
     uploadsDir: env.UPLOADS_DIR || path.join(dataDir, 'uploads'),
     webappUrl: env.WEBAPP_URL || '',
+    webapp: checkWebappUrl(env.WEBAPP_URL),
+    // Taklif havolalari uchun. Bot ishga tushganda getMe orqali to'ldiriladi.
+    botUsername: env.BOT_USERNAME || '',
     // Platforma adminlari faqat shu aniq ID'lardan (ADMIN_CHAT_ID — eski nom, moslik uchun).
     platformAdminIds: parseIds(env.PLATFORM_ADMIN_IDS || env.ADMIN_CHAT_ID),
     // initData eskirish chegarasi (soniya). Standart: 24 soat.
@@ -49,6 +68,7 @@ export function loadConfig(env = process.env) {
 
   if (devAuthRequested && isProduction) config.warnings.push('DEV_AUTH production muhitida e\'tiborsiz qoldirildi.');
   if (autoAdminRequested && isProduction) config.warnings.push('AUTO_ADMIN production muhitida e\'tiborsiz qoldirildi.');
+  if (!config.webapp.ok) config.warnings.push(`Mini App: ${config.webapp.reason}. Bot "Ilovani ochish" tugmasini ko'rsatmaydi.`);
   if (isProduction && config.platformAdminIds.length === 0) {
     config.warnings.push('PLATFORM_ADMIN_IDS berilmagan: platforma administratori yo\'q.');
   }

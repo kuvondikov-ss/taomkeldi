@@ -1,0 +1,82 @@
+// Русские тексты. Ключи должны совпадать с uz.js (проверяется тестом).
+export default {
+  start: '<b>Добро пожаловать в Taomkeldi!</b>\nЗаказывайте еду из кафе и ресторанов Джизака.\n<i>DasturXona\'ning yangi loyihasi.</i>',
+
+  btn_order: 'Сделать заказ',
+  btn_orders: 'Мои заказы',
+  btn_help: 'Помощь',
+  btn_connect: 'Подключить ресторан',
+  btn_panel: 'Панель ресторана',
+  btn_courier: 'Панель курьера',
+  btn_admin: 'Управление платформой',
+  btn_open_app: 'Открыть приложение',
+  btn_cancel: 'Отмена',
+  btn_send_phone: 'Отправить номер',
+
+  app_not_ready: 'Приложение ещё не подключено. Скоро заработает.',
+  order_open: 'Выберите ресторан и блюда в приложении:',
+
+  orders_empty: 'У вас пока нет заказов.',
+  orders_title: '<b>Ваши последние заказы</b>',
+  order_line: '#{id} · {restaurant} · {total} · {status}',
+
+  status_pending_payment: 'Ожидает оплаты',
+  status_new: 'Новый',
+  status_accepted: 'Готовится',
+  status_ready: 'Готов',
+  status_on_way: 'В пути',
+  status_delivered: 'Доставлен',
+  status_cancelled: 'Отменён',
+
+  role_owner: 'владелец',
+  role_manager: 'менеджер',
+  rstatus_pending: 'на рассмотрении',
+  rstatus_active: 'активен',
+  rstatus_blocked: 'заблокирован',
+  rstatus_rejected: 'отклонён',
+
+  help: '<b>Помощь</b>\n'
+    + '/menu — открыть приложение\n'
+    + '/orders — мои заказы\n'
+    + '/id — ваш Telegram ID\n'
+    + '/help — эта справка\n\n'
+    + 'Владельцам ресторанов: /admin — панель ресторана\n'
+    + 'Курьерам: /courier — панель курьера\n\n'
+    + 'Выберите язык:',
+  lang_set: 'Язык: русский.',
+
+  no_access: 'Этот раздел вам недоступен.',
+  panel_title: '<b>Ваши рестораны</b>',
+  panel_line: '{name} — {role}, {status}',
+  courier_title: '<b>Рестораны, где вы курьер</b>',
+  courier_line: '{name} — {online}',
+  courier_online: 'на смене',
+  courier_offline: 'не на смене',
+  admin_title: '<b>Платформа</b>\nАктивных ресторанов: {active}\nЗаявок на рассмотрении: {pending}\nЗаблокировано: {blocked}',
+  webapp_ok: 'Адрес Mini App: настроен правильно.',
+  webapp_bad: 'Адрес Mini App: {reason}',
+  panel_in_app: 'Полное управление открывается в приложении.',
+
+  id: 'Ваш ID: <code>{user}</code>\nChat ID: <code>{chat}</code>',
+
+  group_start: 'Я бот Taomkeldi. Чтобы подключить группу сотрудников ресторана, владелец или менеджер отправляет в этой группе /bogla.',
+  bogla_private: 'Отправьте /bogla в группе сотрудников ресторана.',
+  bogla_not_staff: 'Подключить группу может только владелец или менеджер ресторана.',
+  bogla_soon: 'Подключение группы к ресторану заработает на следующем этапе. Пока заказы приходят в панель ресторана.',
+
+  invite_owner: 'Вы подключены как <b>владелец</b> ресторана <b>{restaurant}</b>.\nУправление: /admin',
+  invite_manager: 'Вы подключены как <b>менеджер</b> ресторана <b>{restaurant}</b>.\nУправление: /admin',
+  invite_courier: 'Вы подключены как <b>курьер</b> ресторана <b>{restaurant}</b>.\n\nПорядок работы:\n1. Выйдя на смену, нажмите «На смене» в панели курьера.\n2. Везя заказ, включите трансляцию геопозиции в Telegram.\n3. В конце смены нажмите «Смена окончена».\n\nПанель: /courier',
+  invite_already: 'Вы уже подключены к ресторану <b>{restaurant}</b>.',
+  invite_invalid: 'Ссылка-приглашение недействительна, уже использована или устарела. Попросите в ресторане новую.',
+  invite_blocked: 'Этот ресторан сейчас неактивен. Ссылка не работает.',
+
+  apply_name: 'Напишите название ресторана:',
+  apply_phone: 'Отправьте номер телефона для связи:',
+  apply_phone_invalid: 'Неверный номер. Например: +998 90 123 45 67',
+  apply_done: 'Заявка принята: <b>{name}</b>.\nАдминистратор рассмотрит её и свяжется с вами.',
+  apply_exists: 'Ваша заявка на рассмотрении: <b>{name}</b>.',
+  apply_admin: '<b>Новая заявка ресторана #{id}</b>\n{name}\nТелефон: {phone}\nЗаявитель: {user}',
+  cancelled: 'Отменено.',
+  menu_hint: 'Выберите в меню.',
+};

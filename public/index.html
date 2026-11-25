@@ -29,30 +29,36 @@
   <script type="module">
     import { hydrateIcons } from '/js/ui/icons.js';
     import { applyTelegramTheme } from '/js/ui/theme.js';
+    // Til: server qaytargan foydalanuvchi tili (bot bilan bir xil); undan oldin — Telegram tili.
+    const T = {
+      uz: { outside: 'Ilovani Telegram ichidan oching', outsideHint: '@taomkeldi_bot → Ilovani ochish', hello: 'Salom, {name}!', soon: 'Taomkeldi tez orada ishga tushadi.', offline: 'Server bilan aloqa yo‘q', retry: 'Birozdan keyin qayta urinib ko‘ring.' },
+      ru: { outside: 'Откройте приложение в Telegram', outsideHint: '@taomkeldi_bot → Открыть приложение', hello: 'Здравствуйте, {name}!', soon: 'Taomkeldi скоро заработает.', offline: 'Нет связи с сервером', retry: 'Попробуйте немного позже.' },
+    };
     hydrateIcons();
     const tg = applyTelegramTheme();
     tg?.ready();
+    let lang = tg?.initDataUnsafe?.user?.language_code?.startsWith('ru') ? 'ru' : 'uz'; // faqat dastlabki ko'rinish uchun
+    const L = (k, v = {}) => T[lang][k].replace('{name}', v.name ?? '');
     const title = document.getElementById('title');
     const text = document.getElementById('text');
+    const fail = (a, b) => { document.getElementById('state').parentElement.classList.add('state-error'); title.textContent = a; text.textContent = b; };
     if (!tg) {
-      title.textContent = 'Ilovani Telegram ichidan oching';
-      text.textContent = '@taomkeldi_bot → Ilovani ochish';
+      title.textContent = L('outside');
+      text.textContent = L('outsideHint');
     } else {
       try {
-        const res = await fetch('/api/me', { headers: { Authorization: `tma ${tg.initData}` } });
+        const res = await fetch('/api/me', { headers: { Authorization: `tma ${tg.initData}`, 'Accept-Language': lang } });
         const body = await res.json();
         if (body.ok) {
-          title.textContent = `Salom, ${body.user.first_name}!`;
-          text.textContent = 'Taomkeldi tez orada ishga tushadi.';
+          lang = body.user.lang;
+          document.documentElement.lang = lang;
+          title.textContent = L('hello', { name: body.user.first_name });
+          text.textContent = L('soon');
         } else {
-          document.getElementById('state').parentElement.classList.add('state-error');
-          title.textContent = body.error.message;
-          text.textContent = '';
+          fail(body.error.message, '');
         }
       } catch {
-        document.getElementById('state').parentElement.classList.add('state-error');
-        title.textContent = 'Server bilan aloqa yo‘q';
-        text.textContent = 'Birozdan keyin qayta urinib ko‘ring.';
+        fail(L('offline'), L('retry'));
       }
     }
   </script>

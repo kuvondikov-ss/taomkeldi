@@ -78,8 +78,17 @@ export function createAccessService(db, config) {
     return null;
   }
 
+  // Platforma adminlariga xabar yuborish uchun ID'lar.
+  function platformAdminIds() {
+    const ids = new Set(config.platformAdminIds);
+    if (!config.isProduction) {
+      for (const r of db.prepare('SELECT id FROM users WHERE is_platform_admin = 1').all()) ids.add(r.id);
+    }
+    return [...ids];
+  }
+
   return {
-    isPlatformAdmin, staffRole, courierRows, rolesOf,
+    isPlatformAdmin, staffRole, courierRows, rolesOf, platformAdminIds,
     requireRestaurantStaff, requirePlatformAdmin, orderViewRole,
   };
 }

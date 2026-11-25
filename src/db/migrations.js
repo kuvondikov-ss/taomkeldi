@@ -234,6 +234,30 @@ const migrations = [
       CREATE INDEX idx_order_events_order ON order_events(order_id, created_at);
     `,
   },
+  {
+    id: 2,
+    name: 'invites_and_applications',
+    sql: `
+      -- Bir martalik taklif havolalari. Token o'zi saqlanmaydi, faqat SHA-256 xeshi.
+      CREATE TABLE invites (
+        id            INTEGER PRIMARY KEY,
+        token_hash    TEXT NOT NULL UNIQUE,
+        kind          TEXT NOT NULL CHECK (kind IN ('owner','manager','courier')),
+        restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
+        courier_id    INTEGER REFERENCES couriers(id),   -- kind='courier' bo'lsa
+        created_by    INTEGER REFERENCES users(id),
+        created_at    INTEGER NOT NULL,
+        expires_at    INTEGER NOT NULL,
+        used_by       INTEGER REFERENCES users(id),
+        used_at       INTEGER,
+        revoked_at    INTEGER
+      );
+      CREATE INDEX idx_invites_restaurant ON invites(restaurant_id, kind);
+
+      -- Restoran arizasi (bot orqali): ariza beruvchi tasdiqlangach egasi bo'ladi (10-bosqich).
+      ALTER TABLE restaurants ADD COLUMN applicant_id INTEGER REFERENCES users(id);
+    `,
+  },
 ];
 
 export function migrate(db) {

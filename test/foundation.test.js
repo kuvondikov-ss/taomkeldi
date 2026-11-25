@@ -5,6 +5,7 @@ import { setup, seed, call, makeInitData, tgUser, TEST_TOKEN } from './helpers.j
 import { validateInitData } from '../src/http/initData.js';
 import { loadConfig } from '../src/config.js';
 import { openDb } from '../src/db/index.js';
+import { latestMigrationId } from '../src/db/migrations.js';
 import { createServices } from '../src/services/index.js';
 
 describe('initData tekshiruvi', () => {
@@ -54,7 +55,8 @@ describe('Konfiguratsiya xavfsizligi', () => {
     const c = loadConfig({ NODE_ENV: 'production', DEV_AUTH: '1', AUTO_ADMIN: '1', PLATFORM_ADMIN_IDS: '1' });
     assert.equal(c.devAuth, false);
     assert.equal(c.autoAdmin, false);
-    assert.equal(c.warnings.length, 2);
+    assert.ok(c.warnings.some((w) => w.startsWith('DEV_AUTH')));
+    assert.ok(c.warnings.some((w) => w.startsWith('AUTO_ADMIN')));
   });
 
   test('Railway production muhiti ham production deb aniqlanadi', () => {
@@ -362,7 +364,7 @@ describe('AUTO_ADMIN va saqlanish', () => {
     const o = services2.orders.getForActor(services2.users.get(301), ids.o1);
     assert.equal(o.total, 75000);
     const migs = db2.prepare('SELECT COUNT(*) AS n FROM schema_migrations').get().n;
-    assert.equal(migs, 1);
+    assert.equal(migs, latestMigrationId);
     db2.close();
 
     const db3 = openDb(dbPath); // uchinchi marta ochish ham xatosiz

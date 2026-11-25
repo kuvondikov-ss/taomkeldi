@@ -202,3 +202,7 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Kuryer olib ketishdan oldin voz kecha oladi (o'sha buyurtma unga qayta taklif qilinmaydi); olib ketgach — faqat "Muammo" (restoran hal qiladi) | Promptdagi qoida; buyurtma yo'lda "egasiz" qolmasligi |
 | 2026-11-25 | Smena har restoran uchun alohida (`couriers.is_online`); joylashuv faqat ishdagi kuryer yozuvlariga yoziladi | Kuryer bir nechta restoranda ishlashi mumkin; ishdan tashqarida kuzatilmaydi |
 | 2026-11-25 | Kuryer haqi (to'lovi) tizimda hisoblanmaydi; "bepul yetkazish" faqat mijozning `delivery_fee` si | Promptdagi ogohlantirish; hisob-kitob restoran va kuryer o'rtasida |
+| 2026-11-25 | Kuzatuv chegaralari bitta faylda (`public/js/shared/tracking.js`): jonli ≤ 3 daq, "oxirgi" ≤ 20 daq, keyin yashirin; yo'l vaqti faqat jonli nuqtadan, ~15 km/soat to'g'ri chiziq | Promptdagi qoida; yolg'on aniqlik bermaslik |
+| 2026-11-25 | Mijoz kuryer joylashuvini faqat "yo'lda" bosqichida ko'radi; xodim — kuryer biriktirilgan har faol bosqichda | Kuryer shaxsiy harakati keraksiz oshkor bo'lmasligi |
+| 2026-11-25 | Joylashuv yozish sharti: kuryer ishda YOKI faol (accepted/ready/on_way) buyurtmasi bor | Smenani yopgan, lekin yetkazayotgan kuryer kuzatuvdan chiqib qolmasligi |
+| 2026-11-25 | Baho — buyurtmaga bitta yozuv (`order_ratings`), qayta baholash farq bilan `rating_sum` ni tuzatadi | Reyting sonini sun'iy oshirib bo'lmasligi |

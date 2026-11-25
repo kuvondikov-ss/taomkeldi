@@ -20,6 +20,7 @@ import { createOutbox } from './outbox.js';
 import { createTemplates } from './templates.js';
 import { createOrderNotifier } from './order-notify.js';
 import { createDispatchService } from './dispatch.js';
+import { createTrackingService } from './tracking.js';
 
 export function createServices(db, config, { fetchImpl, logger = console } = {}) {
   // Buyurtma o'zgarishi hodisasi: ('order', orderId, kind). Tinglovchilar (masalan, restoran guruhi xabari)
@@ -47,6 +48,7 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
   const group = createGroupService(db, { access, notify, config, templates, logger });
   const orderNotify = createOrderNotifier(db, { users, templates, notify, logger });
   const dispatch = createDispatchService(db, { access, users, templates, notify, orders, emitOrder, logger });
+  const tracking = createTrackingService(db, { access, catalog });
   // Buyurtmani o'zgartiradigan amallar muvaffaqiyatli tugagach — 'order' hodisasi.
   const emitAfter = (obj, name, idOf) => {
     const fn = obj[name];
@@ -93,6 +95,6 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
   const setBotApi = (api) => { payments.setBotApi(api); outbox.setBotApi(api); group.setBotApi(api); orderNotify.setBotApi(api); dispatch.setBotApi(api); };
   return {
     geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, manage, group,
-    outbox, templates, orderNotify, dispatch, setBotApi, events, idle,
+    outbox, templates, orderNotify, dispatch, tracking, setBotApi, events, idle,
   };
 }

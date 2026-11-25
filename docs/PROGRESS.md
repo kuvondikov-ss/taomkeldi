@@ -20,8 +20,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 12 | Botni restoran guruhiga ulash | ✅ bajarildi lokal, 219/219 test (2026-11-25) |
 | 13 | Bot xabarlari va tugmalar | ✅ bajarildi lokal, 241/241 test (2026-11-25) |
 | 14 | Restoran kuryerlari va dispetcher | ✅ bajarildi lokal, 259/259 test (2026-11-25) |
-| 15 | Jonli kuzatuv, tarix, profil | ⏭ navbatda |
-| 16 | "Bepul yetkazib berish" bo'limi | — |
+| 15 | Jonli kuzatuv, tarix, profil | ✅ bajarildi lokal, 273/273 test (2026-11-25) |
+| 16 | "Bepul yetkazib berish" bo'limi | ⏭ navbatda |
 | 17 | Barcha ekranlarning yakuniy dizayni | — |
 | 18 | Yakuniy sinov, Railway, topshirish | — |
 
@@ -128,7 +128,7 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Restoran guruhi | 12 | mavjud | yuqoridagi 12-bosqich qatorlari |
 | Xabar shablonlari, outbox | 13 | mavjud | yuqoridagi 13-bosqich qatorlari |
 | Kuryerlar, dispetcher | 14 | mavjud | quyidagi 14-bosqich natijasi |
-| Kuzatuv, profil, sevimlilar | 15 | qisman | `/api/orders` tarixi; `favorites` jadvali |
+| Kuzatuv, profil, sevimlilar | 15 | mavjud | quyidagi 15-bosqich natijasi |
 | Bepul yetkazish | 16 | yo'q | `free_delivery_from` ustuni bor |
 
 ## 2-bosqich natijasi
@@ -235,6 +235,16 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Oldindan to'langan buyurtma: "Mijozdan olinadi: 0 so'm — oldindan to'langan"; naqdda aniq jami. Bepul yetkazish faqat mijozning `delivery_fee` si; kuryer haqi tizimda hisoblanmaydi (avtomatik nol qilinmaydi).
 - Sinov: 259/259 (18 ta yangi: ikki kuryer bir vaqtda, oflayn kuryer, boshqa restoran kuryeri, qayta biriktirish, voz kechish oldin/keyin, bekor qilish, biriktirilmagan odam "Yetkazdim", hech kim olmadi, kuryer ishga chiqqanda taklif, dashboard API, taklif havolasi → smena, joylashuv). Brauzerda: kuryer ekrani (qorong'i mavzu), taklifni qabul qilish, voz kechish (tasdiq bilan), panel ogohlantirishi.
 - Telegram'da jonli sinov hali yo'q (deploy foydalanuvchi buyrug'i bilan).
+
+## 15-bosqich natijasi
+- Kuzatuv: `GET /api/orders/:id/tracking` (`services/tracking.js`). Buyurtma sahifasi tartibi: raqam va haqiqiy holat (+ ma'lumot bo'lsa taxminiy vaqt) → to'lov → xarita (restoran, manzil, kuryer), joylashuv yangilangan vaqt, kuryerga qo'ng'iroq → baholash/qayta buyurtma → yig'iladigan "Holat tarixi" va "Buyurtma tafsilotlari". Katta dekorativ belgi yo'q.
+- Chegaralar bitta faylda — `public/js/shared/tracking.js` (server va Mini App): 3 daqiqagacha jonli, 20 daqiqagacha "Oxirgi joylashuv" (xira nuqta, taxminiy vaqt hisoblanmaydi), undan eski — yashiriladi; kuryer ekrani ~15 s (yo'lda) / ~60 s. Masofa va vaqt — to'g'ri chiziq bo'yicha, animatsiya va countdown yo'q.
+- Maxfiylik: kuryer koordinatasi mijozga faqat o'z buyurtmasi "yo'lda" bo'lganda, xodimga — kuryer biriktirilgan faol buyurtmada; yetkazilgan/bekor qilingan buyurtmada qaytmaydi; begona buyurtma — 404.
+- Joylashuv manbalari: Telegram (oddiy/jonli) va kuryer ekrani (`POST /api/courier/location`, brauzer GPS faqat ilova ochiq bo'lganda — ekranda shunday yozilgan). Faol buyurtmali kuryer "Ishni tugatdim" bossa ham joylashuv yoziladi.
+- Baholash (`order_ratings`, migratsiya 10): faqat yetkazilgan o'z buyurtmasi; qayta baholash o'zgartiradi, restoran reyting sonini oshirmaydi.
+- Qayta buyurtma: `POST /api/orders/:id/reorder` — joriy narx, mavjudlik, restoran holati va yetkazish qayta tekshiriladi; o'zgarishlar tasdiq oynasida.
+- Tarix: sana, taomlar soni, jami, holat, baho; faol buyurtmalar "kuzatish". Profil: ism va telefon (tahrirlanadi), manzillar, sevimlilar, buyurtmalar, til, yordam, loyiha haqida ("DasturXona'ning yangi loyihasi"), ish rollari "Ish bo'limlari"da.
+- Sinov: 273/273 (14 ta yangi: chegaralar, yangi/eski/juda eski joylashuv, kuryer almashishi, GPS uzilishi, yetkazilgandan keyin, begona buyurtma, offline kuryer, baholash, qayta buyurtma, tarix, til). Brauzerda: xarita va kuryer (jonli va "oxirgi"), baholash, qayta buyurtma → savat, profil kontakti, rus tili.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

@@ -86,10 +86,10 @@ export function registerCourierHandlers(bot, { services, logger = console, reply
     }
   });
 
-  // --- Joylashuv (oddiy yoki jonli): kuryerning faol restoran yozuvlariga yoziladi (kuzatuv — 15-bosqich) ---
+  // --- Joylashuv (oddiy yoki jonli): ishdagi yoki faol buyurtmasi bor kuryer yozuvlariga (services/tracking.js) ---
   async function onLocation(ctx, msg, { live }) {
     if (ctx.chat?.type !== 'private' || !msg?.location) return;
-    const n = services.dispatch.saveLocation(ctx.from.id, msg.location);
+    const n = services.tracking.saveCourierLocation(ctx.from.id, msg.location);
     if (n && !live) await ctx.reply(ctx.t('k_location_ok'));
   }
   bot.on('message:location', (ctx) => onLocation(ctx, ctx.message, { live: !!ctx.message.location.live_period }));

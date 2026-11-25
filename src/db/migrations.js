@@ -398,6 +398,23 @@ const migrations = [
       ALTER TABLE couriers ADD COLUMN online_changed_at INTEGER;
     `,
   },
+  {
+    id: 10,
+    name: 'order_ratings',
+    sql: `
+      -- Baho: bitta buyurtma — bitta yozuv (qayta baholash o'zgartiradi, restoran reyting sonini oshirmaydi).
+      CREATE TABLE order_ratings (
+        order_id      INTEGER PRIMARY KEY REFERENCES orders(id),
+        restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
+        customer_id   INTEGER NOT NULL REFERENCES users(id),
+        stars         INTEGER NOT NULL CHECK (stars BETWEEN 1 AND 5),
+        comment       TEXT,
+        created_at    INTEGER NOT NULL,
+        updated_at    INTEGER NOT NULL
+      );
+      CREATE INDEX idx_order_ratings_restaurant ON order_ratings(restaurant_id, created_at);
+    `,
+  },
 ];
 
 export function migrate(db) {

@@ -227,15 +227,6 @@ export function createDispatchService(db, { access, users, templates, notify, or
   const pickup = (user, orderId) => orders.transition(user, v.id(orderId), 'on_way');
   const deliver = (user, orderId) => orders.transition(user, v.id(orderId), 'delivered');
 
-  // Telegram joylashuvi (oddiy yoki jonli): ishdagi kuryer yozuvlariga. Qaytaradi: nechta yozuv yangilandi.
-  function saveLocation(userId, loc) {
-    const lat = Number(loc?.latitude);
-    const lon = Number(loc?.longitude);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return 0;
-    return db.prepare("UPDATE couriers SET last_lat = ?, last_lon = ?, last_location_at = ? WHERE user_id = ? AND status = 'active' AND is_online = 1")
-      .run(lat, lon, now(), userId).changes;
-  }
-
   // ---------- Kuryer ekrani ----------
   function dashboard(user, at = now()) {
     const rows = myRows(user);
@@ -276,6 +267,6 @@ export function createDispatchService(db, { access, users, templates, notify, or
 
   return {
     setBotApi(a) { api = a; },
-    myRows, setOnline, dispatch, onOrderChanged, accept, decline, release, reportProblem, pickup, deliver, dashboard, saveLocation,
+    myRows, setOnline, dispatch, onOrderChanged, accept, decline, release, reportProblem, pickup, deliver, dashboard,
   };
 }

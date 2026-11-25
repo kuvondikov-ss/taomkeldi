@@ -232,3 +232,19 @@ a.list-item { color: inherit; text-decoration: none; }
 .courier-links a { display: inline-flex; align-items: center; gap: 4px; }
 .courier-collect { display: flex; justify-content: space-between; align-items: center; padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-md); background: var(--surface-2); }
 .courier-order a.link { color: var(--brand); font-weight: var(--fw-semibold); text-decoration: underline; text-underline-offset: 2px; }
+/* Jonli kuzatuv (15-bosqich) */
+.track { overflow: hidden; }
+.track-map { height: 240px; background: var(--surface-2); }
+.track-status { margin: var(--sp-1) 0 0; }
+.track-pin span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--surface); border: 2px solid var(--brand); box-shadow: var(--shadow-sm); font-size: 15px; line-height: 1; }
+.track-pin.pin-courier span { border-color: var(--warning); }
+.track-pin.is-stale span { opacity: .55; border-style: dashed; }
+.courier-contact { gap: var(--sp-3); }
+.stars { gap: var(--sp-1); }
+.star-btn { background: none; border: 0; padding: 4px; color: var(--border); cursor: pointer; min-width: 40px; min-height: 40px; }
+.star-btn.on { color: var(--warning); }
+.star-btn.on svg { fill: currentColor; }
+details > summary { list-style: none; cursor: pointer; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] > summary .icon:last-child { transform: rotate(90deg); }
+details > summary.card-body { flex-direction: row; align-items: center; gap: var(--sp-2); }

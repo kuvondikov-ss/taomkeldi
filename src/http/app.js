@@ -175,7 +175,19 @@ export function createApp({ config, services, logger = console }) {
 
   // --- Mijoz buyurtmalari ---
   api.get('/orders', (req, res) => res.json({ ok: true, orders: services.orders.listForCustomer(req.actor) }));
-  api.get('/orders/:id', (req, res) => res.json({ ok: true, order: services.orders.getForActor(req.actor, v.id(req.params.id)) }));
+  api.get('/orders/:id', (req, res) => {
+    const order = services.orders.getForActor(req.actor, v.id(req.params.id));
+    if (order.viewer_role === 'customer') order.rating = services.tracking.ratingOf(order.id);
+    res.json({ ok: true, order });
+  });
+  // --- Kuzatuv, baholash, qayta buyurtma (15-bosqich) ---
+  api.get('/orders/:id/tracking', (req, res) => res.json({ ok: true, tracking: services.tracking.track(req.actor, req.params.id) }));
+  api.post('/orders/:id/rating', (req, res) => res.json({ ok: true, rating: services.tracking.rate(req.actor, req.params.id, req.body || {}) }));
+  api.post('/orders/:id/reorder', (req, res) => {
+    const point = services.addresses.resolvePoint(req.actor, req.body || {});
+    res.json({ ok: true, ...services.tracking.reorder(req.actor, req.params.id, point) });
+  });
+  api.post('/courier/location', (req, res) => res.json({ ok: true, ...services.tracking.courierPing(req.actor, req.body || {}) }));
 
   // --- Kuryer ---
   api.get('/courier/orders', (req, res) => res.json({ ok: true, orders: services.orders.listForCourier(req.actor) }));

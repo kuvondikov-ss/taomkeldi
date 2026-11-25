@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 14-bosqich (restoran kuryerlari va dispetcher) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 15-bosqich (jonli kuzatuv, tarix va profil) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -54,6 +54,10 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | DELETE | `/api/addresses/:id` | o'z manzili |
 | GET | `/api/orders`, `/api/orders/:id` | mijoz (o'ziniki), xodim (o'z restorani), kuryer (o'ziga biriktirilgan), admin |
 | GET | `/api/courier/orders` | kuryer |
+| GET | `/api/orders/:id/tracking` | kuzatuv: holat, taxminiy vaqt, kuryer, joylashuv (faqat ruxsat etilgan holatda; `live`/`stale`) |
+| POST | `/api/orders/:id/rating` `{stars, comment}` | baho (faqat yetkazilgan o'z buyurtmasi; qayta — o'zgartirish) |
+| POST | `/api/orders/:id/reorder` `{address_id}` | qayta buyurtma: joriy narx va mavjudlik |
+| POST | `/api/courier/location` `{lat, lon}` | kuryer ekranidan joylashuv (javobda keyingi yuborish oralig'i) |
 | GET | `/api/courier/dashboard` | kuryer ekrani: smenalar, joriy buyurtmalar, takliflar, bugungi statistika, tarix |
 | POST | `/api/courier/shift` `{courier_id, online}` | Ishga chiqdim / Ishni tugatdim |
 | POST | `/api/courier/offers/:id/accept\|decline` | taklif: birinchi qabul qilgan oladi (409 `taken`) |

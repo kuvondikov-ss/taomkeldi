@@ -6,6 +6,7 @@ import { t, formatSum } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
 import { toast, confirmDialog, setLoading } from '../../ui/components.js';
 import { stateBlock } from './cards.js';
+import { PING_ACTIVE_MS, PING_IDLE_MS } from '../../shared/tracking.js';
 
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const errText = (e) => (e instanceof ApiError && e.message ? e.message : t('offline'));
@@ -76,6 +77,38 @@ export async function renderCourier(el) {
   const body = el.querySelector('#c-body');
   let timer = null;
   let busy = false;
+  let last = null;      // oxirgi dashboard
+  let pingTimer = null;
+  let geoState = null;  // 'ok' | 'denied' | 'unsupported'
+
+  // Joylashuv: ekran ochiq bo'lganda — yo'ldagi buyurtma bo'lsa ~15 s, aks holda ~60 s (shared/tracking.js).
+  // Fonda yoki yopiq ilovada brauzer GPS bermaydi — buni va'da qilmaymiz, Telegram jonli joylashuvi tavsiya qilinadi.
+  const needsGps = (d) => !!d && (d.active.length > 0 || d.shifts.some((s) => s.is_online));
+  function schedulePing(delay) {
+    clearTimeout(pingTimer);
+    if (!needsGps(last) || geoState === 'denied' || geoState === 'unsupported') return;
+    const onWay = last.active.some((o) => o.status === 'on_way');
+    pingTimer = setTimeout(ping, delay ?? (onWay ? PING_ACTIVE_MS : PING_IDLE_MS));
+  }
+  function ping() {
+    if (!navigator.geolocation) { geoState = 'unsupported'; paintGeo(); return; }
+    if (document.visibilityState !== 'visible') { schedulePing(); return; }
+    navigator.geolocation.getCurrentPosition(async (p) => {
+      try { await post('/courier/location', { lat: p.coords.latitude, lon: p.coords.longitude }); geoState = 'ok'; } catch { /* keyingi urinishda */ }
+      paintGeo();
+      schedulePing();
+    }, (err) => {
+      geoState = err.code === 1 ? 'denied' : geoState;
+      paintGeo();
+      schedulePing();
+    }, { enableHighAccuracy: true, timeout: 10_000, maximumAge: 10_000 });
+  }
+  function paintGeo() {
+    const n = body.querySelector('#gps-note');
+    if (!n) return;
+    n.textContent = geoState === 'denied' ? t('k_gps_denied') : geoState === 'unsupported' ? t('k_gps_unsupported') : t('k_gps_note');
+    n.classList.toggle('warn-text', geoState === 'denied' || geoState === 'unsupported');
+  }
 
   async function run(btn, fn, ok) {
     if (busy) return;
@@ -105,6 +138,8 @@ export async function renderCourier(el) {
     }
     body.removeAttribute('aria-busy');
     body.innerHTML = '';
+    const firstGps = !needsGps(last) && needsGps(d);
+    last = d;
     const anyOnline = d.shifts.some((s) => s.is_online);
 
     // 1) Smena
@@ -115,7 +150,11 @@ export async function renderCourier(el) {
         <span class="grow"><b>${esc(s.restaurant_name)}</b><br><span class="xs text-2">${s.is_online ? t('k_on_shift') : t('k_off_shift')}</span></span></label>`).join('')}</div>`;
     shifts.querySelectorAll('[data-shift]').forEach((inp) => inp.addEventListener('change', () => run(inp.closest('label'), () => post('/courier/shift', { courier_id: Number(inp.dataset.shift), online: inp.checked }),
       inp.checked ? t('k_shift_on_toast') : t('k_shift_off_toast'))));
+    if (needsGps(d)) shifts.querySelector('.card-body').insertAdjacentHTML('beforeend', '<p class="xs text-2" id="gps-note"></p>');
     body.append(shifts);
+    paintGeo();
+    if (firstGps) schedulePing(0);
+    else if (!needsGps(d)) clearTimeout(pingTimer);
 
     // 2) Joriy buyurtmalar
     if (d.active.length) {
@@ -171,5 +210,5 @@ export async function renderCourier(el) {
   await load();
   // Takliflar va holat o'zgarishi uchun davriy yangilash (ekran ochiq va hech narsa bajarilmayotganda).
   timer = setInterval(() => { if (!busy && document.visibilityState === 'visible') load(); }, REFRESH_MS);
-  return () => clearInterval(timer);
+  return () => { clearInterval(timer); clearTimeout(pingTimer); };
 }

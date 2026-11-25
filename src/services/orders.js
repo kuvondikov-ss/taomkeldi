@@ -128,7 +128,9 @@ export function createOrderService(db, access, config) {
 
   function listForCustomer(actor, { limit = 20 } = {}) {
     return db.prepare(`
-      SELECT o.id, o.restaurant_id, r.name AS restaurant_name, o.status, o.payment_status, o.total, o.created_at
+      SELECT o.id, o.restaurant_id, r.name AS restaurant_name, o.status, o.type, o.payment_status, o.total, o.created_at,
+        (SELECT SUM(qty) FROM order_items WHERE order_id = o.id) AS items_count,
+        (SELECT stars FROM order_ratings WHERE order_id = o.id) AS rating
       FROM orders o JOIN restaurants r ON r.id = o.restaurant_id
       WHERE o.customer_id = ? ORDER BY o.created_at DESC, o.id DESC LIMIT ?
     `).all(actor.id, limit);

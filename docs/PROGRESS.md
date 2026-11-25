@@ -17,8 +17,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 9 | Naqd, karta o'tkazmasi, onlayn to'lov | ✅ bajarildi lokal, 166/166 test (2026-11-25); onlayn to'lov haqiqiy provayder bilan sinalmagan |
 | 10 | Platforma paneli va restoran ulash | ✅ bajarildi lokal, 176/176 test (2026-11-25) |
 | 11 | Restoran panelining bo'limlari | ✅ bajarildi lokal, 190/190 test (2026-11-25) |
-| 12 | Botni restoran guruhiga ulash | ⏭ navbatda |
-| 13 | Bot xabarlari va tugmalar | — |
+| 12 | Botni restoran guruhiga ulash | ✅ bajarildi lokal, 219/219 test (2026-11-25) |
+| 13 | Bot xabarlari va tugmalar | ⏭ navbatda |
 | 14 | Restoran kuryerlari va dispetcher | — |
 | 15 | Jonli kuzatuv, tarix, profil | — |
 | 16 | "Bepul yetkazib berish" bo'limi | — |
@@ -50,7 +50,12 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Dizayn tizimi, logo | 3 | mavjud | `public/css/tokens.css`, `components.css`, `js/ui/*`, `brand/*`; `test/design.test.js` |
 | `/start` aynan matn, asosiy tugmalar, rolga qarab tugmalar | 4 | mavjud | `src/bot/index.js` `mainKeyboard`; testlar "Bot: /start va rolga qarab menyu" |
 | `/menu /orders /admin /panel /courier /help /id` | 4 | mavjud | `src/bot/index.js`; testlar |
-| `/bogla` (guruh) | 4/12 | qisman | Vakolat tekshiriladi; guruhni ulashning o'zi 12-bosqichda |
+| `/bogla` (guruh) | 12 | mavjud | `src/bot/group.js`: xodim + guruh admini + bot yoza oladi; anonim admin rad; mavzu (topic); boshqa guruhga ko'chirish; testlar "Guruh: /bogla va huquqlar" |
+| Guruhda bitta asosiy buyurtma xabari (yuborish → tahrir → o'chirilsa nazoratli yangi nusxa) | 12 | mavjud | `services/group.js` `syncOrder`, `order_messages`; buyurtma bo'yicha navbat (dublikat yo'q) |
+| Guruh tugmalari (qabul 15/30/45, rad sabablari, to'lov keldi/kelmadi, tayyor, kuryerga, yetkazildi), vakolat serverda | 12 | mavjud | `o:<id>:<amal>` → `orders.transition` / `payments`; begona va boshqa restoran xodimi — rad; eskirgan tugma — ogohlantirish + yangilash |
+| Mini App guruhdan — deep link `start=o_<id>` (guruhda web_app yo'q) | 12 | mavjud | shaxsiy chatda faqat xodimga panel tugmasi |
+| Bot chiqarildi / huquq yo'q / supergroup migratsiyasi / o'chirilgan mavzu | 12 | mavjud | `my_chat_member`, `migrate_to_chat_id`, xato tasnifi; xodimlarga shaxsiy xabar va buyurtmalar shaxsiy xabarda (zaxira) |
+| Panel: guruh holati, tekshirish, sinov xabari (faqat aniq bosilganda), uzish | 12 | mavjud | `/api/panel/restaurants/:rid/group[/check|/test]`, `views/panel-settings.js` |
 | Mini App tugmasi va menyu tugmasi (HTTPS) | 4 | mavjud | `config.checkWebappUrl`, `setChatMenuButton`; noto'g'ri manzil — /admin'da diagnostika |
 | Taklif havolalari (ega/menejer/kuryer), bir martalik, xesh, muddat | 4 | mavjud | `src/services/invites.js`, `invites` jadvali; 9 ta test |
 | Restoran ulash yo'li (bot orqali ariza) | 4/10 | qisman | Ariza → `pending` restoran + adminga xabar; tasdiqlash 10-bosqichda |
@@ -198,6 +203,14 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Vakolatlar: ega+menejer — buyurtmalar, menyu, kuryerlar, ish holati/vaqti, hisobot; faqat ega — ma'lumot, yetkazish narxi/hududi, minimal/bepul, olib ketish, to'lov, xodimlar.
 - Sinov: 190/190 (13 ta yangi panel testi + tarjima kalitlari testi); brauzerda ega sifatida: buyurtmani qabul qilish → kuryer biriktirish → tayyor → yo'lga, menyu, sozlamalarni saqlash, hisobot.
 - Tuzatildi: Mini App tarjimasida takroriy kalit (`profile_title`) — endi test ushlaydi.
+
+## 12-bosqich natijasi
+- Server: `services/group.js` (xabar matni va tugmalari, sinxronlash, zaxira yo'l, ulash/uzish, tekshirish, sinov), migratsiya 7 (`group_title`, `group_status`, `group_linked_at/by`, `group_error`); buyurtma o'zgarishi hodisasi (`services.events`) — tranzaksiyadan keyin guruh xabarini yangilaydi.
+- Bot: `src/bot/group.js` — `/bogla` (tanlash → tasdiqlash, har bosqichda huquq qayta tekshiriladi), buyurtma tugmalari, `my_chat_member`, migratsiya, `/start o_<id>`.
+- Mini App: sozlamalarda guruh kartasi (holat, mavzu, oxirgi xato, Tekshirish / Sinov xabari / Uzish); tayyorlik ro'yxatida guruh faqat faol holatda "bajarilgan".
+- Sinov: 219/219 (29 ta yangi guruh testi: oddiy a'zo, boshqa restoran xodimi, eskirgan tugma, o'chirilgan xabar, guruh almashtirish, bot chiqarildi, migratsiya, mavzu); brauzerda — guruh kartasi holatlari, tekshirish (bot yo'q — tushunarli xabar), uzish.
+- Telegram'da jonli sinov hali qilinmadi: Railway'da eski bot ishlaydi (deploy foydalanuvchi buyrug'i bilan).
+- Cheklov: guruh xabarlari o'zbekcha; yuborish xatosi qayta urinilmaydi (outbox — 13-bosqich).
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

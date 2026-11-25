@@ -114,9 +114,10 @@ Qoidalar:
 ### Bot — restoran guruhi
 | Kirish | Natija |
 |---|---|
-| `/bogla` | Vakolatli xodim guruhni restoranga ulaydi |
+| `/bogla` | Restoran egasi/menejeri, shu guruh admini bo'lsa, guruhni (yoki mavzuni) restoranga ulaydi; bot yoza olishi shart |
 | `/start` guruhda | Faqat `/bogla` bo'yicha qisqa ko'rsatma |
-| Yangi buyurtma xabari | Bitta asosiy xabar, holatga qarab tahrirlanadi, inline tugmalar |
+| Yangi buyurtma xabari | Bitta asosiy xabar, holatga qarab tahrirlanadi, inline tugmalar; o'chirilsa — yangi nusxa |
+| "Panelda ochish" | `t.me/<bot>?start=o_<id>` — shaxsiy chatda faqat xodimga Mini App tugmasi |
 
 ### Mini App — mijoz
 1. Manzil tanlash (geolokatsiya / xarita pini / qidiruv / saqlangan manzil); Jizzax tashqarisi — xato holati
@@ -187,3 +188,8 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Oddiy botdagi "matn bilan buyurtma" oqimi yangi kodga ko'chirilmadi | Yangi modelda buyurtma restoran va mahsulotlarga bog'langan; Mini App orqali 8-bosqichda |
 | 2026-11-25 | Original logo olindi: `public/brand/taomkeldi-original.svg` (shior: "Taomingiz eshigingizgacha"). Variantlar `scripts/brand-variants.mjs` bilan yasaladi — geometriya o'zgarmaydi, faqat kesish va qora yozuv rangi (to'q fon uchun) | 3-bosqich talabi: original SVG'dan full/mark, yorug'/to'q variantlar |
 | 2026-11-25 | Palitra logodagi yashil ranglardan olinadi (promptdagi to'q ko'k/to'q sariq palitra o'rniga) — foydalanuvchi tasdiqladi; asosiy tugma `#21583A` + oq matn (8.3:1), `#679C76` faqat bezak (oq fonda 3.2:1). Batafsil: [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) | Logo yashil: `#679C76`, `#21583A`, `#92B88F`, `#B5CFAE`, yozuv `#232323` |
+| 2026-11-25 | Restoran guruhi: guruh a'zoligi/adminligi rol bermaydi — har tugma bosuvchining restoran roli serverda tekshiriladi; ulash uchun xodim + guruh admini + bot yoza olishi kerak | Guruhga begona odam qo'shilsa ham buyurtmani boshqara olmaydi |
+| 2026-11-25 | Guruhda bitta asosiy xabar (`order_messages.kind = group_main`), har o'zgarishda tahrirlanadi; o'chirilgan bo'lsa yangisi yuboriladi va id almashtiriladi; buyurtma bo'yicha navbat | Guruhda shovqin va dublikat bo'lmasligi |
+| 2026-11-25 | Guruh ishlamasa (bot chiqarilgan, huquq yo'q, ulanmagan) yangi buyurtma ega va menejerlarga shaxsiy xabarda keladi; o'zlariga bir marta ogohlantirish | Buyurtma yo'qolmasligi |
+| 2026-11-25 | Sinov xabari faqat panelda aniq bosilganda; bot guruhga qo'shilganda faqat qisqa /bogla yo'riqnomasi | Guruhga keraksiz xabar yubormaslik |
+| 2026-11-25 | `pending_payment` buyurtmalar restoran guruhiga yuborilmaydi; karta o'tkazmasida "to'ladim"dan keyin "To'lov keldi / Pul kelmadi" tugmalari | To'lanmagan buyurtma tayyorlanmasligi |

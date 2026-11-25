@@ -220,3 +220,7 @@ a.list-item { color: inherit; text-decoration: none; }
 .bar-row { display: grid; grid-template-columns: 44px 1fr auto; gap: var(--sp-2); align-items: center; }
 .bar { height: 10px; border-radius: 5px; background: var(--surface-2); overflow: hidden; }
 .bar span { display: block; height: 100%; background: var(--brand); border-radius: 5px; min-width: 2px; }
+/* Restoran Telegram guruhi (sozlamalar) */
+.group-steps { margin: 0; padding-left: 1.2em; display: grid; gap: var(--sp-1); }
+.group-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.group-unlink { color: var(--danger); }

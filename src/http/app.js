@@ -214,6 +214,12 @@ export function createApp({ config, services, logger = console }) {
   api.put('/panel/restaurants/:rid/operations', (req, res) => { M.updateOperations(req.actor, rid(req), req.body || {}); res.json({ ok: true, restaurant: services.restaurants.getForPanel(req.actor, rid(req)) }); });
   api.put('/panel/restaurants/:rid/profile', (req, res) => { M.updateProfile(req.actor, rid(req), req.body || {}); res.json({ ok: true, restaurant: services.restaurants.getForPanel(req.actor, rid(req)) }); });
   api.get('/panel/restaurants/:rid/report', (req, res) => res.json({ ok: true, report: M.report(req.actor, rid(req)) }));
+  // --- Restoran Telegram guruhi (12-bosqich). Ulash — guruhda /bogla orqali. ---
+  const G = services.group;
+  api.get('/panel/restaurants/:rid/group', (req, res) => res.json({ ok: true, group: G.status(req.actor, rid(req)) }));
+  api.post('/panel/restaurants/:rid/group/check', async (req, res) => res.json({ ok: true, group: await G.check(req.actor, rid(req)) }));
+  api.post('/panel/restaurants/:rid/group/test', async (req, res) => res.json({ ok: true, group: await G.sendTest(req.actor, rid(req)) }));
+  api.delete('/panel/restaurants/:rid/group', (req, res) => res.json({ ok: true, group: G.unlink(req.actor, rid(req)) }));
 
   api.put('/panel/restaurants/:rid/cuisines', (req, res) => {
     res.json({ ok: true, cuisines: services.catalog.setRestaurantCuisines(req.actor, v.id(req.params.rid, 'rid'), req.body?.cuisine_ids) });

@@ -144,7 +144,7 @@ export function createPlatformService(db, { access, restaurants, geo, catalog, n
       { key: 'delivery', done: r.lat != null && r.lon != null && r.delivery_radius_m > 0 },
       { key: 'payment', done: !!(r.pay_cash || (r.pay_card_transfer && r.card_number && r.card_holder)) },
       { key: 'couriers', done: has("SELECT 1 FROM couriers WHERE restaurant_id = ? AND status = 'active' AND user_id IS NOT NULL", r.id) },
-      { key: 'group', done: r.group_chat_id != null },
+      { key: 'group', done: r.group_chat_id != null && (r.group_status || 'active') === 'active' },
     ];
     return {
       restaurant: { id: r.id, name: r.name, status: r.status, status_reason: r.status_reason, is_open: r.is_open === 1 },

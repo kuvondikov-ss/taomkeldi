@@ -171,9 +171,9 @@ describe('Bot: guruh', () => {
     assert.equal((await e.send(301, '/menu', { chat: 'group' })).length, 0);
   });
 
-  test('/bogla: xodim emas — rad; xodim — keyingi bosqich; shaxsiy chatda — ko\'rsatma', async () => {
+  test('/bogla: xodim emas — rad; guruh admini emas — rad; shaxsiy chatda — ko\'rsatma', async () => {
     assert.ok((await e.send(301, '/bogla', { chat: 'group' }))[0].text.includes('faqat restoran egasi yoki menejeri'));
-    assert.ok((await e.send(101, '/bogla', { chat: 'group' }))[0].text.includes('keyingi bosqich'));
+    assert.ok((await e.send(101, '/bogla', { chat: 'group' }))[0].text.includes('guruh administratori'));
     assert.ok((await e.send(101, '/bogla'))[0].text.includes('guruhida yuboring'));
   });
 

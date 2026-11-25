@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 11-bosqich (restoran paneli bo'limlari) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 12-bosqich (restoran Telegram guruhi) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -93,9 +93,12 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | PUT | `/api/panel/restaurants/:rid/operations` | ochiq/pauza, ish vaqti, tayyorlash vaqti, dispetcher (ega, menejer) |
 | PUT | `/api/panel/restaurants/:rid/profile` | ma'lumot, rasm, yetkazish narxi/hududi, minimal, bepul, olib ketish (faqat ega) |
 | GET | `/api/panel/restaurants/:rid/report` | hisobot (tushum — xarajatsiz) |
+| GET/DELETE | `/api/panel/restaurants/:rid/group` | guruh holati / uzish (ega, menejer) |
+| POST | `/api/panel/restaurants/:rid/group/check`, `/group/test` | botni tekshirish / sinov xabari (faqat aniq bosilganda) |
 
 ## Bot buyruqlari
 Shaxsiy chat: `/start`, `/menu`, `/orders`, `/admin` (`/panel`), `/courier`, `/help`, `/id`. Guruh: `/bogla`, `/help`.
+Guruhni ulash: botni xodimlar guruhiga qo'shing → guruh admini bo'lgan ega yoki menejer `/bogla` yuboradi (kerak bo'lsa, mavzu ichida) → restoranni tasdiqlaydi. Holat va sinov xabari — panel → Sozlamalar.
 Matnlar: `src/i18n/uz.js`, `src/i18n/ru.js` (kalitlar bir xil bo'lishi shart).
 
 ## Ma'lumot manbalari va litsenziyalar

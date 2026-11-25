@@ -1,8 +1,8 @@
 // Restoran paneli — sozlamalar (ish holati: ega+menejer; ma'lumot, yetkazish, to'lov: faqat ega) va hisobot.
-import { get, put, upload, ApiError } from '../api.js';
+import { get, put, post, del, upload, ApiError } from '../api.js';
 import { t, formatSum } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
-import { toast, setLoading } from '../../ui/components.js';
+import { toast, setLoading, confirmDialog } from '../../ui/components.js';
 import { stateBlock } from './cards.js';
 import { parseHours } from '../../shared/hours.js';
 
@@ -71,10 +71,11 @@ export async function renderPanelSettings(el, _p, rid) {
       ${owner ? `<button class="btn btn-primary" type="submit">${t('save')}</button>` : ''}
     </div></form>
 
-    <div class="card"><div class="card-body stack">
+    <div class="card" id="group-card"><div class="card-body stack">
       <h3 class="h3">${t('group_title')}</h3>
-      <p class="small ${r.group_chat_id ? '' : 'text-2'}">${r.group_chat_id ? t('group_linked') : t('group_not_linked')}</p>
+      <div class="stack" id="group-box"><p class="small text-2">…</p></div>
     </div></div>`;
+  renderGroupBox(el.querySelector('#group-box'), rid);
 
   const P = el.querySelector('#profile');
   const set = (name, val) => { if (P.elements[name]) P.elements[name].value = val ?? ''; };
@@ -129,6 +130,65 @@ export async function renderPanelSettings(el, _p, rid) {
       await put(`/panel/restaurants/${rid}/payment-methods`, { cash: PM.elements.cash.checked, card_transfer: PM.elements.card_transfer.checked, online: PM.elements.online.checked });
     });
   }
+}
+
+// Telegram guruhi: holat, tekshirish, sinov xabari (faqat aniq bosilganda), uzish. Ulash — guruhda /bogla.
+async function renderGroupBox(box, rid) {
+  let g;
+  try { g = (await get(`/panel/restaurants/${rid}/group`)).group; } catch (e) {
+    box.innerHTML = `<p class="small text-2"></p>`;
+    box.firstChild.textContent = errText(e);
+    return;
+  }
+  const draw = (state) => {
+    g = state;
+    if (!g.linked) {
+      const add = g.bot_username ? `https://t.me/${g.bot_username}?startgroup=bogla` : null;
+      box.innerHTML = `
+        <p class="small text-2">${t('group_not_linked')}</p>
+        <ol class="small group-steps"><li>${t('group_step1')}</li><li>${t('group_step2')}</li><li>${t('group_step3')}</li></ol>
+        ${add ? `<a class="btn btn-secondary" id="g-add" href="${add}" target="_blank" rel="noopener">${t('group_add_bot')}</a>` : ''}`;
+      box.querySelector('#g-add')?.addEventListener('click', (ev) => {
+        const tg = window.Telegram?.WebApp;
+        if (tg?.openTelegramLink) { ev.preventDefault(); tg.openTelegramLink(add); }
+      });
+      return;
+    }
+    const tone = { active: 'success', removed: 'danger', no_rights: 'warning' }[g.status] || '';
+    box.innerHTML = `
+      <div class="row"><span class="badge ${tone ? `badge-${tone}` : ''}">${t(`group_st_${g.status}`)}</span><b class="grow" id="g-title"></b></div>
+      ${g.thread_id ? `<p class="small text-2">${t('group_topic')}</p>` : ''}
+      ${g.status !== 'active' ? `<p class="small text-2">${t(`group_hint_${g.status}`)}</p>` : ''}
+      ${g.error ? `<p class="small text-2" id="g-err"></p>` : ''}
+      <div class="group-actions">
+        <button class="btn btn-secondary" id="g-check" type="button">${t('group_check')}</button>
+        <button class="btn btn-secondary" id="g-test" type="button">${t('group_test')}</button>
+        <button class="btn btn-ghost group-unlink" id="g-unlink" type="button">${t('group_unlink')}</button>
+      </div>`;
+    box.querySelector('#g-title').textContent = g.title || String(g.chat_id);
+    if (g.error) box.querySelector('#g-err').textContent = `${t('group_last_error')}: ${g.error === 'topic_deleted' ? t('group_topic_deleted') : g.error}`;
+    const act = (id, fn, okText) => box.querySelector(id).addEventListener('click', async (ev) => {
+      const b = ev.currentTarget;
+      setLoading(b, true);
+      try {
+        const res = await fn();
+        if (res) draw(res.group);
+        if (okText) toast(okText, { type: 'success' });
+      } catch (ex) {
+        if (ex.details?.group) draw(ex.details.group);
+        const reason = ex.details?.reason;
+        toast(reason && t(`group_err_${reason}`) !== `group_err_${reason}` ? t(`group_err_${reason}`) : errText(ex), { type: 'error', timeout: 5000 });
+      } finally { if (b.isConnected) setLoading(b, false); }
+    });
+    act('#g-check', () => post(`/panel/restaurants/${rid}/group/check`), null);
+    act('#g-test', () => post(`/panel/restaurants/${rid}/group/test`), t('group_test_sent'));
+    box.querySelector('#g-unlink').addEventListener('click', async () => {
+      const ok = await confirmDialog({ title: t('group_unlink_q'), text: t('group_unlink_text'), confirm: t('group_unlink'), cancel: t('cancel'), danger: true });
+      if (!ok) return;
+      try { draw((await del(`/panel/restaurants/${rid}/group`)).group); toast(t('saved_ok'), { type: 'success' }); } catch (ex) { toast(errText(ex), { type: 'error' }); }
+    });
+  };
+  draw(g);
 }
 
 export async function renderPanelReport(el, _p, rid) {

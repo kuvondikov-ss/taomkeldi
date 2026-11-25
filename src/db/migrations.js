@@ -335,6 +335,19 @@ const migrations = [
       CREATE INDEX idx_restaurant_events ON restaurant_events(restaurant_id, created_at);
     `,
   },
+  {
+    id: 7,
+    name: 'restaurant_group',
+    sql: `
+      -- Restoran xodimlari guruhi (group_chat_id, group_thread_id 1-migratsiyada bor).
+      ALTER TABLE restaurants ADD COLUMN group_title TEXT;
+      ALTER TABLE restaurants ADD COLUMN group_status TEXT;        -- active | removed | no_rights | NULL (ulanmagan)
+      ALTER TABLE restaurants ADD COLUMN group_linked_at INTEGER;
+      ALTER TABLE restaurants ADD COLUMN group_linked_by INTEGER REFERENCES users(id);
+      ALTER TABLE restaurants ADD COLUMN group_error TEXT;          -- oxirgi yuborish xatosi (panelda ko'rinadi)
+      CREATE INDEX idx_restaurants_group ON restaurants(group_chat_id);
+    `,
+  },
 ];
 
 export function migrate(db) {

@@ -4,6 +4,7 @@ import { Bot, InlineKeyboard, Keyboard, GrammyError, HttpError } from 'grammy';
 import { t, keyOfLabel, formatSum, LANGS } from '../i18n/index.js';
 import { INVITE_PREFIX } from '../services/invites.js';
 import { AppError } from '../lib/errors.js';
+import { registerGroupHandlers } from './group.js';
 
 const CONVO_TTL_MS = 15 * 60 * 1000;
 
@@ -77,6 +78,8 @@ export function createBot({ config, services, logger = console, botInfo }) {
       ctx.user = users.get(ctx.user.id);
     }
     const payload = ctx.match?.trim();
+    // Guruhdagi "Panelda ochish" havolasi: faqat restoran xodimiga buyurtma paneli ochiladi.
+    if (groupBot.isPanelLink(payload)) return groupBot.openOrderFromLink(ctx, payload, replyWithApp);
     if (payload?.startsWith(INVITE_PREFIX)) await handleInvite(ctx, payload);
     // Boshqa payload'lar (masalan, ommaviy r_<id> reklama havolasi) hech qanday rol bermaydi.
     await ctx.reply(ctx.t('start'), { ...html, reply_markup: mainKeyboard(ctx) });
@@ -194,13 +197,8 @@ export function createBot({ config, services, logger = console, botInfo }) {
     }
   }
 
-  // --- Guruh: /bogla (to'liq ulash — 12-bosqich) ---
-  bot.command('bogla', async (ctx) => {
-    if (isPrivate(ctx)) return ctx.reply(ctx.t('bogla_private'));
-    const roles = access.rolesOf(ctx.user);
-    if (!roles.staff.length) return ctx.reply(ctx.t('bogla_not_staff'));
-    return ctx.reply(ctx.t('bogla_soon'));
-  });
+  // --- Restoran guruhi: /bogla, buyurtma tugmalari, bot holati, migratsiya ---
+  const groupBot = registerGroupHandlers(bot, { services, logger });
 
   // --- Shaxsiy chat buyruqlari ---
   const privateOnly = (fn) => (ctx) => (isPrivate(ctx) ? fn(ctx) : undefined);

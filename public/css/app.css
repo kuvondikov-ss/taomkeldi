@@ -161,3 +161,12 @@ body.has-cart-bar .page { padding-bottom: calc(var(--cta-h) + 64px + env(safe-ar
 .step.current { color: var(--text); font-weight: var(--fw-semibold); }
 .step.current .step-dot { border-color: var(--primary); box-shadow: 0 0 0 4px var(--secondary); }
 a.list-item { color: inherit; text-decoration: none; }
+
+/* --- To'lov (9-bosqich) --- */
+.transfer { gap: var(--sp-3); }
+.copy-row { display: flex; align-items: center; gap: var(--sp-3); }
+.copy-row .grow { display: flex; flex-direction: column; gap: 2px; }
+.copy-row .btn { min-height: 40px; padding: 0 var(--sp-3); flex: none; }
+.mono { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.alert:not([class*="alert-"]) { background: var(--surface-2); }
+.card-no { white-space: nowrap; font-size: clamp(15px, 4.4vw, 18px); }

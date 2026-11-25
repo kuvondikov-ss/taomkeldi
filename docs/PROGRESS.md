@@ -14,8 +14,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 6 | Bosh sahifa, qidiruv, saralash | ✅ bajarildi lokal, 122/122 test (2026-11-25); banner fotosi qo'yildi |
 | 7 | Restoran menyusi va taom oynasi | ✅ bajarildi lokal, 131/131 test (2026-11-25) |
 | 8 | Savat, checkout, buyurtma holatlari | ✅ bajarildi lokal, 150/150 test (2026-11-25); restoranga xabar — 12/13-bosqichda |
-| 9 | Naqd, karta o'tkazmasi, onlayn to'lov | ⏭ navbatda |
-| 10 | Platforma paneli va restoran ulash | — |
+| 9 | Naqd, karta o'tkazmasi, onlayn to'lov | ✅ bajarildi lokal, 166/166 test (2026-11-25); onlayn to'lov haqiqiy provayder bilan sinalmagan |
+| 10 | Platforma paneli va restoran ulash | ⏭ navbatda |
 | 11 | Restoran panelining bo'limlari | — |
 | 12 | Botni restoran guruhiga ulash | — |
 | 13 | Bot xabarlari va tugmalar | — |
@@ -92,6 +92,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Mijoz bekor qilishi (new/pending_payment); keyin — restoran bilan bog'lanish | 8 | mavjud | `POST /api/orders/:id/cancel`, `views/order.js` |
 | To'langan buyurtma bekor qilinsa — `refund_requested` (qaytarildi emas) | 8/9 | mavjud | test |
 | Restoranga yangi buyurtma xabari | 12/13 | yo'q | Hozir buyurtma faqat API/panelda ko'rinadi |
+| Naqd: mijoz to'lov summasini, kuryer olinadigan summani ko'radi; yetkazilganda `paid` | 9 | mavjud | `collect_amount`; olib ketishda "restoranda to'laysiz" |
+| Karta o'tkazmasi: karta/egasi/summa, nusxalash, "To'ladim" → claimed+new → "To'lov keldi" → paid | 9 | mavjud | `services/payments.js`; brauzerda butun yo'l |
+| Tasdiqlanmagan o'tkazma qabul qilinmaydi; pul kelmasa sabab bilan rad | 9 | mavjud | testlar |
+| 30 daqiqalik muddat, kech to'lovda yordam matni | 9 | mavjud | `expirePending` (har daqiqa), `PAYMENT_TIMEOUT_MIN` |
+| Karta rekvizitini faqat ega o'zgartiradi, menejerga maskalangan; CVV va h.k. so'ralmaydi | 9 | mavjud | 2-bosqichdan + to'lov usullari API'si faqat egaga |
+| Onlayn (Telegram Payments): faqat token bo'lsa; pre_checkout tekshiruvi; `paid` faqat successful_payment'dan; takror to'lov hisoblanmaydi | 9 | qisman | Kod va testlar (Telegram API soxtalashtirilgan); haqiqiy provayder (Click/Payme) tokeni bilan sinalmagan |
+| Qaytarish: so'raldi (`refund_requested`) va qaytarildi (`refunded`) alohida | 9 | mavjud | "qaytarildi"ni faqat ega/admin belgilaydi |
 | Savat, checkout, holat o'tishlari | 8 | yo'q | Asos: `createRecord` |
 | To'lovlar | 9 | yo'q | `payment_status` ustuni bor |
 | Platforma paneli, restoran arizasi | 10 | qisman | `/api/admin/restaurants` (ro'yxat, yaratish) |
@@ -158,6 +165,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - To'lov: hozircha faqat naqd (`ENABLED_PAYMENTS`); karta o'tkazmasi va onlayn — 9-bosqich.
 - Sinov: 150/150; brauzerda 360 px: savat → checkout (noto'g'ri telefon, olib ketish, ikki marta bosish = bitta buyurtma) → buyurtma sahifasi → restoran qabul qilgandan keyin bekor qilish tugmasi o'rniga qo'ng'iroq.
 - Cheklov: restoran yangi buyurtma haqida hali xabar olmaydi (12/13-bosqich); holat sahifasi 15 soniyada yangilanadi (jonli kuzatuv — 15-bosqich).
+
+## 9-bosqich natijasi
+- Migratsiya 5: `payments` jadvali (charge id UNIQUE), `orders.payment_claimed_at/paid_at/refunded_at/invoice_nonce`.
+- Server: `services/payments.js`; bot: `pre_checkout_query`, `successful_payment`; API: `/orders/:id/payment-claim`, `/orders/:id/invoice`, `/panel/orders/:id/payment` (confirm/reject/refunded), `/panel/restaurants/:rid/payment-methods`.
+- Mini App: checkout'da usul izohlari; buyurtma sahifasida karta bloki (nusxalash, muddat, "To'ladim"), tekshirilmoqda/tasdiqlandi, onlayn "To'lash" (`openInvoice`), muddat o'tgani/rad etilgani haqida yordam.
+- Sinov: 166/166 (16 ta yangi: takror "To'ladim", soxta chaqiruv, begona mijoz, tasdiqlanmagan o'tkazmani qabul qilish, kech to'lov, takror to'lov hodisasi, summa mos emas, muddat).
+- Onlayn to'lov uchun kerak: @BotFather → Payments → provayder (masalan Click yoki Payme) → `PAYMENT_PROVIDER_TOKEN`; restoran sozlamasida onlayn yoqilgan bo'lishi.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

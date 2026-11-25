@@ -146,6 +146,27 @@ export function createApp({ config, services, logger = console }) {
     services.orders.transition(req.actor, v.id(req.params.id), 'cancelled', { reason: req.body?.reason });
     res.json({ ok: true, order: services.orders.getForActor(req.actor, v.id(req.params.id)) });
   });
+  // --- To'lovlar ---
+  api.post('/orders/:id/payment-claim', (req, res) => {
+    const r = services.payments.claimTransfer(req.actor, v.id(req.params.id));
+    res.json({ ok: true, already: r.already, order: services.orders.getForActor(req.actor, v.id(req.params.id)) });
+  });
+  api.post('/orders/:id/invoice', async (req, res) => {
+    res.json({ ok: true, ...(await services.payments.createInvoice(req.actor, v.id(req.params.id))) });
+  });
+  // Xodim: confirm ("To'lov keldi"), reject (pul kelmadi, sabab bilan), refunded (faqat ega/admin).
+  api.post('/panel/orders/:id/payment', (req, res) => {
+    const id = v.id(req.params.id);
+    const action = v.oneOf(req.body?.action, 'action', ['confirm', 'reject', 'refunded']);
+    if (action === 'confirm') services.payments.confirmTransfer(req.actor, id);
+    else if (action === 'reject') services.payments.rejectTransfer(req.actor, id, req.body?.reason);
+    else services.payments.markRefunded(req.actor, id);
+    res.json({ ok: true, order: services.orders.getForActor(req.actor, id) });
+  });
+  api.put('/panel/restaurants/:rid/payment-methods', (req, res) => {
+    res.json({ ok: true, restaurant: services.restaurants.updatePaymentMethods(req.actor, v.id(req.params.rid, 'rid'), req.body || {}) });
+  });
+
   // Restoran xodimi / kuryer / admin: holatni o'zgartirish (panel UI — 11/14-bosqichlar).
   api.post('/panel/orders/:id/status', (req, res) => {
     services.orders.transition(req.actor, v.id(req.params.id), req.body?.to, { reason: req.body?.reason, prepMinutes: req.body?.prep_minutes });

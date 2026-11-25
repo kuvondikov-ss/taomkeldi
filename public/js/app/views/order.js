@@ -47,6 +47,7 @@ export async function renderOrder(el, _p, m, { go }) {
           <div><h1 class="h2">${t('order_title', { id: o.id })}</h1><p class="small text-2 rname"></p></div>
           <span class="badge ${cancelled ? 'badge-danger' : o.status === 'delivered' ? 'badge-success' : 'badge-warning'}">${stepLabel(o.status, o.type)}</span>
         </div>
+        <div id="payment" class="stack"></div>
         ${cancelled ? `<div class="alert alert-danger">${icon('info')}<span class="creason"></span></div>` : `
         <ol class="steps">${steps.map((s, i) => `<li class="step ${i < curIdx ? 'done' : i === curIdx ? 'current' : ''}">
           <span class="step-dot">${i < curIdx ? icon('check', { className: 'icon-sm' }) : ''}</span>
@@ -74,6 +75,8 @@ export async function renderOrder(el, _p, m, { go }) {
     if (el.querySelector('.paddr')) el.querySelector('.paddr').textContent = `${t('pickup_from')}: ${o.restaurant.address_text || o.restaurant.name}`;
     if (cancelled) el.querySelector('.creason').textContent = `${t('step_cancelled')}${cancelEvent?.data?.reason ? `. ${t('cancel_reason', { reason: cancelEvent.data.reason })}` : ''}`;
 
+    drawPayment(o);
+
     const actions = el.querySelector('#actions');
     if (canCancel) {
       const b = Object.assign(document.createElement('button'), { className: 'btn btn-danger btn-block', type: 'button', textContent: t('cancel_order') });
@@ -98,6 +101,88 @@ export async function renderOrder(el, _p, m, { go }) {
         a.querySelector('span').textContent = t('contact_restaurant');
         actions.append(a);
       }
+    }
+  }
+
+  // --- To'lov bloki ---
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); toast(t('copied'), { type: 'success' }); } catch { toast(text); }
+  }
+  const alertBox = (kind, iconName, text) => {
+    const a = document.createElement('div');
+    a.className = kind ? `alert alert-${kind}` : 'alert';
+    a.innerHTML = `${icon(iconName)}<span></span>`;
+    a.querySelector('span').textContent = text;
+    return a;
+  };
+
+  function drawPayment(o) {
+    const box = el.querySelector('#payment');
+    box.innerHTML = '';
+    const cancelEvent = o.events.find((e) => e.to_status === 'cancelled');
+    if (o.status === 'cancelled') {
+      if (cancelEvent?.data?.reason === 'payment_timeout') box.append(alertBox('warning', 'clock', t('expired_note')));
+      else if (o.payment_method === 'card_transfer' && o.events.some((e) => e.type === 'status' && e.to_status === 'cancelled') && o.payment_claimed_at) box.append(alertBox('warning', 'alert', t('rejected_note')));
+      return;
+    }
+    if (o.payment_method === 'cash') {
+      if (o.status !== 'delivered') box.append(alertBox('', 'receipt', o.type === 'pickup' ? `${t('cash_to_pay', { sum: formatSum(o.total) })}. ${t('cash_pickup_note')}` : t('cash_to_pay', { sum: formatSum(o.total) })));
+      return;
+    }
+    // Kartaga o'tkazma — to'lov kutilmoqda: karta, egasi, aniq summa, nusxalash, "To'ladim".
+    if (o.payment_method === 'card_transfer' && o.status === 'pending_payment' && o.payment_details) {
+      const d = o.payment_details;
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `<div class="card-body stack transfer">
+        <h2 class="h3">${t('transfer_title')}</h2>
+        <div class="copy-row"><span class="grow"><span class="xs text-2">${t('card_number')}</span><span class="h3 mono card-no"></span></span><button class="btn btn-secondary small" data-copy="card">${icon('copy', { className: 'icon-sm' })}${t('copy')}</button></div>
+        <div class="copy-row"><span class="grow"><span class="xs text-2">${t('card_holder')}</span><span class="holder"></span></span></div>
+        <div class="copy-row"><span class="grow"><span class="xs text-2">${t('amount')}</span><span class="h3 price">${formatSum(d.amount)}</span></span><button class="btn btn-secondary small" data-copy="amount">${icon('copy', { className: 'icon-sm' })}${t('copy')}</button></div>
+        <p class="small" style="color:var(--warning)">${t('transfer_deadline', { time: time(d.expires_at) })}</p>
+        <button class="btn btn-primary btn-lg btn-block" id="i-paid">${t('i_paid')}</button>
+      </div>`;
+      card.querySelector('.card-no').textContent = d.card_number.replace(/(\d{4})(?=\d)/g, '$1 ');
+      card.querySelector('.holder').textContent = d.card_holder;
+      card.querySelector('[data-copy="card"]').addEventListener('click', () => copy(d.card_number));
+      card.querySelector('[data-copy="amount"]').addEventListener('click', () => copy(String(d.amount)));
+      card.querySelector('#i-paid').addEventListener('click', async (e) => {
+        if (!(await confirmDialog({ title: t('i_paid_confirm'), text: t('i_paid_text'), confirm: t('i_paid'), cancel: t('cancel') }))) return;
+        e.target.disabled = true;
+        try {
+          const { order } = await post(`/orders/${o.id}/payment-claim`, {});
+          draw(order);
+        } catch (err) {
+          toast(err instanceof ApiError && err.message ? err.message : t('offline'), { type: 'error' });
+          load();
+        }
+      });
+      box.append(card);
+      return;
+    }
+    if (o.payment_method === 'card_transfer' && o.payment_status === 'claimed') box.append(alertBox('warning', 'clock', t('transfer_checking')));
+    if (o.payment_method !== 'cash' && o.payment_status === 'paid' && o.status !== 'delivered') box.append(alertBox('success', 'check', t('transfer_paid')));
+    // Onlayn to'lov — Telegram invoice. "To'landi" holatini faqat server (Telegram xabari) belgilaydi.
+    if (o.payment_method === 'online' && o.status === 'pending_payment') {
+      box.append(alertBox('warning', 'clock', t('online_wait', { time: time(o.payment_expires_at) })));
+      const b = Object.assign(document.createElement('button'), { className: 'btn btn-primary btn-lg btn-block', type: 'button', textContent: t('pay_now', { sum: formatSum(o.total) }) });
+      b.addEventListener('click', async () => {
+        const tg = window.Telegram?.WebApp;
+        if (!tg?.initData || !tg.openInvoice) return toast(t('online_unavailable'), { type: 'error' });
+        b.disabled = true;
+        try {
+          const { link } = await post(`/orders/${o.id}/invoice`, {});
+          tg.openInvoice(link, (status) => {
+            b.disabled = false;
+            if (status === 'failed') toast(t('payment_failed'), { type: 'error' });
+            setTimeout(load, status === 'paid' ? 1500 : 0); // natijani serverdan olamiz
+          });
+        } catch (err) {
+          b.disabled = false;
+          toast(err instanceof ApiError && err.message ? err.message : t('offline'), { type: 'error' });
+        }
+      });
+      box.append(b);
     }
   }
 

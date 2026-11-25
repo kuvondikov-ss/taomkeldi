@@ -1,6 +1,13 @@
 // Mini App matnlari (uz/ru). Til — serverdagi foydalanuvchi tili (bot bilan bir xil).
 const uz = {
-  checkout: 'Rasmiylashtirish', checkout_title: 'Buyurtmani rasmiylashtirish', type_delivery: 'Yetkazib berish', type_pickup: 'Olib ketish',
+  pay_card_hint: 'Buyurtmadan keyin karta raqami va summa ko‘rsatiladi', pay_online_hint: 'Telegram orqali xavfsiz to‘lov',
+  transfer_title: 'Kartaga o‘tkazing', card_number: 'Karta raqami', card_holder: 'Karta egasi', amount: 'Summa', copy: 'Nusxalash', copied: 'Nusxalandi',
+  transfer_deadline: '{time} gacha o‘tkazing, aks holda buyurtma bekor qilinadi', i_paid: 'To‘ladim', i_paid_confirm: 'Pulni o‘tkazdingizmi?', i_paid_text: 'Restoran tushumni tekshiradi. Tekshirilmaguncha taom tayyorlanmaydi.',
+  transfer_checking: 'To‘lov tekshirilmoqda. Restoran tushumni tasdiqlagach tayyorlashni boshlaydi.', transfer_paid: 'To‘lov tasdiqlandi',
+  pay_now: 'To‘lash · {sum}', online_wait: 'To‘lov kutilmoqda. {time} gacha to‘lang.', online_unavailable: 'Onlayn to‘lovni bu yerda ochib bo‘lmaydi. Ilovani Telegram ichida oching.',
+  payment_failed: 'To‘lov amalga oshmadi', cash_to_pay: 'To‘lanadigan summa: {sum}', cash_pickup_note: 'Pulni restoranda topshirishda to‘laysiz',
+  expired_note: 'To‘lov muddati o‘tgani uchun buyurtma bekor qilindi. Agar pul o‘tkazgan bo‘lsangiz, restoran bilan bog‘laning — qaytarish shu yerda ko‘rib chiqiladi.',
+  rejected_note: 'Restoran to‘lov kelmaganini bildirdi. Agar pul o‘tkazgan bo‘lsangiz, chek bilan restoranga murojaat qiling.',  checkout: 'Rasmiylashtirish', checkout_title: 'Buyurtmani rasmiylashtirish', type_delivery: 'Yetkazib berish', type_pickup: 'Olib ketish',
   pickup_from: 'Olib ketish manzili', recipient: 'Qabul qiluvchi', change: 'O‘zgartirish', f_name: 'Ism', f_phone: 'Telefon', f_phone_ph: '+998 90 123 45 67',
   phone_invalid: 'Telefon raqami noto‘g‘ri. Masalan: +998 90 123 45 67', name_invalid: 'Ismni kiriting',
   payment: 'To‘lov usuli', pay_cash: 'Naqd pul', pay_card_transfer: 'Kartaga o‘tkazma', pay_online: 'Onlayn to‘lov', pay_cash_hint_delivery: 'Kuryerga naqd to‘laysiz', pay_cash_hint_pickup: 'Restoranda naqd to‘laysiz',
@@ -84,7 +91,14 @@ const uz = {
 };
 
 const ru = {
-  checkout: 'Оформить', checkout_title: 'Оформление заказа', type_delivery: 'Доставка', type_pickup: 'Самовывоз',
+  pay_card_hint: 'После заказа будут показаны номер карты и сумма', pay_online_hint: 'Безопасная оплата через Telegram',
+  transfer_title: 'Переведите на карту', card_number: 'Номер карты', card_holder: 'Владелец карты', amount: 'Сумма', copy: 'Скопировать', copied: 'Скопировано',
+  transfer_deadline: 'Переведите до {time}, иначе заказ будет отменён', i_paid: 'Я оплатил', i_paid_confirm: 'Вы перевели деньги?', i_paid_text: 'Ресторан проверит поступление. До проверки заказ не готовится.',
+  transfer_checking: 'Оплата проверяется. Ресторан начнёт готовить после подтверждения.', transfer_paid: 'Оплата подтверждена',
+  pay_now: 'Оплатить · {sum}', online_wait: 'Ожидается оплата. Оплатите до {time}.', online_unavailable: 'Онлайн-оплату здесь открыть нельзя. Откройте приложение в Telegram.',
+  payment_failed: 'Оплата не прошла', cash_to_pay: 'К оплате: {sum}', cash_pickup_note: 'Оплата в ресторане при получении',
+  expired_note: 'Заказ отменён: истёк срок оплаты. Если вы уже перевели деньги, свяжитесь с рестораном — возврат рассмотрят там.',
+  rejected_note: 'Ресторан сообщил, что оплата не поступила. Если вы переводили, обратитесь в ресторан с чеком.',  checkout: 'Оформить', checkout_title: 'Оформление заказа', type_delivery: 'Доставка', type_pickup: 'Самовывоз',
   pickup_from: 'Адрес самовывоза', recipient: 'Получатель', change: 'Изменить', f_name: 'Имя', f_phone: 'Телефон', f_phone_ph: '+998 90 123 45 67',
   phone_invalid: 'Неверный номер. Например: +998 90 123 45 67', name_invalid: 'Введите имя',
   payment: 'Способ оплаты', pay_cash: 'Наличные', pay_card_transfer: 'Перевод на карту', pay_online: 'Онлайн-оплата', pay_cash_hint_delivery: 'Оплата наличными курьеру', pay_cash_hint_pickup: 'Оплата наличными в ресторане',

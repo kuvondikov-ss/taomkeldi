@@ -99,7 +99,11 @@ export function renderCheckout(el, _p, _m, { go }) {
     box.innerHTML = q.payment_methods.map((m) => `
       <label class="list-item pay-option">
         <input type="radio" name="pay" value="${m}" ${ui.payment === m ? 'checked' : ''}>
-        <span class="grow"><span class="h3">${t(`pay_${m}`)}</span>${m === 'cash' ? `<span class="small text-2">${t(ui.type === 'pickup' ? 'pay_cash_hint_pickup' : 'pay_cash_hint_delivery')}</span>` : ''}</span>
+        <span class="grow"><span class="h3">${t(`pay_${m}`)}</span><span class="small text-2">${{
+          cash: t(ui.type === 'pickup' ? 'pay_cash_hint_pickup' : 'pay_cash_hint_delivery'),
+          card_transfer: t('pay_card_hint'),
+          online: t('pay_online_hint'),
+        }[m]}</span></span>
       </label>`).join('');
     box.querySelectorAll('input[name="pay"]').forEach((r) => r.addEventListener('change', () => { ui.payment = r.value; }));
   }

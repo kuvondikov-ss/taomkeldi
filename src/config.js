@@ -63,6 +63,13 @@ export function loadConfig(env = process.env) {
     // Faqat test/bootstrap: admin hali yo'q bo'lsa birinchi /start bosgan admin bo'ladi. Production'da o'chiq.
     autoAdmin: autoAdminRequested && !isProduction,
     uploadMaxBytes: intEnv(env, 'UPLOAD_MAX_BYTES', 5 * 1024 * 1024),
+    // Onlayn to'lov (Telegram Payments). Token bo'lmasa onlayn to'lov umuman ko'rsatilmaydi.
+    payments: {
+      providerToken: env.PAYMENT_PROVIDER_TOKEN || '',
+      currency: env.PAYMENT_CURRENCY || 'UZS',
+      // Karta o'tkazmasi / onlayn to'lov kutish muddati (daqiqa).
+      pendingTimeoutMin: intEnv(env, 'PAYMENT_TIMEOUT_MIN', 30),
+    },
     // Xarita plitkalari (Mini App). OSM standart serveri faqat kichik yuklama uchun; ko'p foydalanuvchida
     // provayderni MAP_TILE_URL orqali almashtiring va attribution'ni saqlang.
     map: {

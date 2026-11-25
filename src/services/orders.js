@@ -34,7 +34,7 @@ function blockReason(order, to, role, opts = {}) {
   return null;
 }
 
-export function createOrderService(db, access) {
+export function createOrderService(db, access, config) {
   const getStmt = db.prepare('SELECT * FROM orders WHERE id = ?');
   const itemsStmt = db.prepare('SELECT id, product_id, name, price, qty, line_total FROM order_items WHERE order_id = ? ORDER BY id');
 
@@ -65,6 +65,22 @@ export function createOrderService(db, access) {
     view.events = db.prepare('SELECT type, from_status, to_status, actor_role, data, created_at FROM order_events WHERE order_id = ? ORDER BY created_at, id')
       .all(order.id).map((e) => ({ ...e, data: e.data ? JSON.parse(e.data) : null }));
     view.actions = actionsFor(order, role);
+    // Kuryer mijozdan qancha oladi: naqd — jami; oldindan to'langan — 0.
+    view.collect_amount = order.payment_method === 'cash' ? (order.payment_status === 'paid' ? 0 : order.total)
+      : (order.payment_status === 'paid' ? 0 : null);
+    // Karta o'tkazmasi rekvizitlari — faqat shu buyurtma mijoziga va faqat to'lov kutilayotganda.
+    if (role === 'customer' && order.payment_method === 'card_transfer' && order.status === 'pending_payment') {
+      const rc = db.prepare('SELECT card_number, card_holder FROM restaurants WHERE id = ?').get(order.restaurant_id);
+      view.payment_details = {
+        card_number: rc.card_number, card_holder: rc.card_holder, amount: order.total,
+        expires_at: order.created_at + (config?.payments?.pendingTimeoutMin ?? 30) * 60000,
+      };
+    }
+    if (order.payment_method !== 'cash' && order.status === 'pending_payment') {
+      view.payment_expires_at = order.created_at + (config?.payments?.pendingTimeoutMin ?? 30) * 60000;
+    }
+    delete view.invoice_nonce;
+    delete view.idempotency_key;
     return view;
   }
 
@@ -89,7 +105,7 @@ export function createOrderService(db, access) {
       if (block) throw new AppError('CONFLICT', { details: { reason: block, status: order.status } });
 
       const t = now();
-      let paymentStatus = order.payment_status;
+      let paymentStatus = opts.paymentStatus || order.payment_status;
       // Naqd: yetkazilganda (yoki olib ketishda topshirilganda) pul olingan deb belgilanadi.
       if (to === 'delivered' && order.payment_method === 'cash') paymentStatus = 'paid';
       // To'langan buyurtma bekor qilinsa — qaytarish SO'RALADI (qaytarilgani alohida tasdiqlanadi).

@@ -234,6 +234,31 @@ export function createBot({ config, services, logger = console, botInfo }) {
     }
   });
 
+  // --- Onlayn to'lov (Telegram Payments) ---
+  // Oxirgi tekshiruv: buyurtma, summa, valyuta, holat. 10 soniya ichida javob berish shart.
+  bot.on('pre_checkout_query', async (ctx) => {
+    const r = services.payments.validatePreCheckout(ctx.preCheckoutQuery);
+    if (r.ok) await ctx.answerPreCheckoutQuery(true);
+    else await ctx.answerPreCheckoutQuery(false, { error_message: r.error });
+  });
+  // "To'landi" faqat shu xabardan: summa/valyuta/payload tekshiriladi, takror to'lov hisoblanmaydi.
+  bot.on('message:successful_payment', async (ctx) => {
+    const sp = ctx.message.successful_payment;
+    const r = services.payments.applySuccessfulPayment(sp, ctx.from.id);
+    if (r.outcome === 'applied') await ctx.reply(ctx.t('payment_ok', { id: r.orderId }), html);
+    else if (r.outcome === 'late_refund_requested') await ctx.reply(ctx.t('payment_late', { id: r.orderId }), html);
+    if (r.outcome === 'mismatch' || r.outcome === 'late_refund_requested') {
+      logger.warn(`To'lov e'tibor talab qiladi: ${r.outcome}, buyurtma ${r.orderId}, charge ${sp.telegram_payment_charge_id}`);
+      for (const adminId of access.platformAdminIds()) {
+        try {
+          await bot.api.sendMessage(adminId, `To'lov e'tibor talab qiladi: ${r.outcome}\nBuyurtma: #${r.orderId ?? '—'}\nSumma: ${sp.total_amount} ${sp.currency}\nCharge: ${sp.telegram_payment_charge_id}`);
+        } catch (e) {
+          logger.error('Adminga to\'lov xabari yuborilmadi:', e.description || e.message);
+        }
+      }
+    }
+  });
+
   bot.catch((err) => {
     const e = err.error;
     if (e instanceof GrammyError) logger.error('Telegram xatosi:', e.description);

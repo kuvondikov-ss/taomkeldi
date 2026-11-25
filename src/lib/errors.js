@@ -17,6 +17,7 @@ export const ERRORS = {
   PRICE_CHANGED:     { status: 409, uz: 'Narx yoki yetkazish summasi o‘zgardi. Yangi summani tekshirib, qayta tasdiqlang.', ru: 'Изменилась цена или стоимость доставки. Проверьте новую сумму и подтвердите снова.' },
   CANNOT_ORDER:      { status: 409, uz: 'Buyurtmani hozir rasmiylashtirib bo‘lmaydi. Savatni tekshiring.', ru: 'Сейчас нельзя оформить заказ. Проверьте корзину.' },
   INVALID_TRANSITION: { status: 409, uz: 'Buyurtma holati allaqachon o‘zgargan. Sahifani yangilang.', ru: 'Статус заказа уже изменился. Обновите страницу.' },
+  PAYMENT_UNAVAILABLE: { status: 503, uz: 'Onlayn to‘lov hozir ishlamayapti. Boshqa usulni tanlang.', ru: 'Онлайн-оплата сейчас недоступна. Выберите другой способ.' },
   CONFLICT:          { status: 409, uz: 'Holat o\'zgargan. Sahifani yangilang.', ru: 'Состояние изменилось. Обновите страницу.' },
   INTERNAL:          { status: 500, uz: 'Kutilmagan xato. Birozdan keyin qayta urinib ko\'ring.', ru: 'Непредвиденная ошибка. Попробуйте позже.' },
 };

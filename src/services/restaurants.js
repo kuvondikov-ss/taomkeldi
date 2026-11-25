@@ -148,6 +148,25 @@ export function createRestaurantService(db, access, geo) {
     return toPanelView(getRaw(restaurantId), 'owner');
   }
 
+  // To'lov usullari — faqat restoran egasi. Karta o'tkazmasini yoqish uchun karta rekvizitlari kerak.
+  function updatePaymentMethods(actor, restaurantId, data) {
+    const r = getRaw(restaurantId);
+    if (!r) throw new AppError('NOT_FOUND');
+    access.requireRestaurantStaff(actor, restaurantId, { ownerOnly: true });
+    const flag = (x, field) => {
+      if (typeof x !== 'boolean') throw new AppError('VALIDATION', { details: { field } });
+      return x ? 1 : 0;
+    };
+    const cash = flag(data.cash, 'cash');
+    const card = flag(data.card_transfer, 'card_transfer');
+    const online = flag(data.online, 'online');
+    if (card && !(r.card_number && r.card_holder)) throw new AppError('VALIDATION', { details: { field: 'card_transfer', reason: 'card_missing' } });
+    if (!cash && !card && !online) throw new AppError('VALIDATION', { details: { field: 'methods', reason: 'none' } });
+    db.prepare('UPDATE restaurants SET pay_cash = ?, pay_card_transfer = ?, pay_online = ?, updated_at = ? WHERE id = ?')
+      .run(cash, card, online, now(), restaurantId);
+    return toPanelView(getRaw(restaurantId), 'owner');
+  }
+
   // Ichki: xodim qo'shish. Takliflar orqali chaqiriladi (4-bosqich); takror chaqiruv dublikat yaratmaydi.
   function addStaff(restaurantId, userId, role, invitedBy = null) {
     v.oneOf(role, 'role', ['owner', 'manager']);
@@ -195,7 +214,7 @@ export function createRestaurantService(db, access, geo) {
   }
 
   return {
-    getRaw, getForPanel, create, listAll, updatePayment,
+    getRaw, getForPanel, create, listAll, updatePayment, updatePaymentMethods,
     createApplication, pendingApplicationOf, statusCounts,
     listForPoint, getPublic, assertCanDeliver, updateLocation,
     addStaff, addCourier, addCategory, addProduct, setProductPrice,

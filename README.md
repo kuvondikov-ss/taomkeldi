@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 8-bosqich (savat, checkout, buyurtma holatlari) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 9-bosqich (naqd, karta o'tkazmasi, onlayn to'lov) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -70,6 +70,10 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | POST | `/api/orders/:id/cancel` | mijoz bekor qilishi (faqat ruxsat etilgan bosqichda) |
 | POST | `/api/panel/orders/:id/status` | xodim/kuryer/admin: holatni o'zgartirish (`to`, `reason`, `prep_minutes`) |
 | PUT | `/api/me/contact` | qabul qiluvchi ismi va telefoni |
+| POST | `/api/orders/:id/payment-claim` | mijoz: "To'ladim" (karta o'tkazmasi) |
+| POST | `/api/orders/:id/invoice` | mijoz: onlayn to'lov havolasi (Telegram Payments) |
+| POST | `/api/panel/orders/:id/payment` | xodim: `confirm` / `reject` (sabab bilan) / `refunded` (ega, admin) |
+| PUT | `/api/panel/restaurants/:rid/payment-methods` | ega: naqd / karta o'tkazmasi / onlayn |
 | GET/PUT/DELETE | `/api/favorites`, `/api/favorites/:rid` | sevimlilar |
 | GET | `/api/cuisines`; PUT `/api/panel/restaurants/:rid/cuisines` | oshxona turlari |
 | PUT | `/api/panel/restaurants/:rid/location` | restoran nuqtasi va radiusi (ega, menejer) |

@@ -10,18 +10,20 @@ import { createGeoService } from './geo.js';
 import { createGeocoderService } from './geocoder.js';
 import { createCatalogService } from './catalog.js';
 import { createCheckoutService } from './checkout.js';
+import { createPaymentService } from './payments.js';
 
 export function createServices(db, config, { fetchImpl } = {}) {
   const geo = createGeoService();
   const users = createUserService(db, config);
   const access = createAccessService(db, config);
   const restaurants = createRestaurantService(db, access, geo);
-  const orders = createOrderService(db, access);
+  const orders = createOrderService(db, access, config);
   const addresses = createAddressService(db, geo);
   const uploads = createUploadService(config, access);
   const invites = createInviteService(db, access, restaurants);
   const geocoder = createGeocoderService(config, geo, { fetchImpl });
   const catalog = createCatalogService(db, geo, access);
-  const checkout = createCheckoutService(db, { geo, addresses, users });
-  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout };
+  const payments = createPaymentService(db, config, { access, orders });
+  const checkout = createCheckoutService(db, { geo, addresses, users, payments });
+  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments };
 }

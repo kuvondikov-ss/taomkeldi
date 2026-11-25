@@ -291,6 +291,30 @@ const migrations = [
       CREATE INDEX idx_orders_status ON orders(status, updated_at);
     `,
   },
+  {
+    id: 5,
+    name: 'payments',
+    sql: `
+      ALTER TABLE orders ADD COLUMN payment_claimed_at INTEGER;   -- mijoz "To'ladim" bosgan vaqt
+      ALTER TABLE orders ADD COLUMN paid_at INTEGER;              -- to'lov tasdiqlangan vaqt
+      ALTER TABLE orders ADD COLUMN refunded_at INTEGER;
+      ALTER TABLE orders ADD COLUMN invoice_nonce TEXT;           -- onlayn to'lov payload'i uchun tasodifiy qism
+
+      -- Onlayn to'lov hodisalari. telegram_payment_charge_id UNIQUE — bir to'lov ikki marta hisoblanmaydi.
+      CREATE TABLE payments (
+        id                         INTEGER PRIMARY KEY,
+        order_id                   INTEGER NOT NULL REFERENCES orders(id),
+        provider                   TEXT NOT NULL,
+        telegram_payment_charge_id TEXT NOT NULL UNIQUE,
+        provider_payment_charge_id TEXT,
+        amount                     INTEGER NOT NULL,   -- eng kichik birlikda (UZS uchun tiyin)
+        currency                   TEXT NOT NULL,
+        outcome                    TEXT NOT NULL,      -- applied | late_refund_requested
+        created_at                 INTEGER NOT NULL
+      );
+      CREATE INDEX idx_payments_order ON payments(order_id);
+    `,
+  },
 ];
 
 export function migrate(db) {

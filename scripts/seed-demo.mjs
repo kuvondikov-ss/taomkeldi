@@ -56,5 +56,7 @@ if (markaz) {
   db.prepare(`UPDATE restaurants SET pickup_enabled = 1, phone = '+998901112233', address_text = 'Jizzax sh., Sh. Rashidov ko‘chasi 5 (DEMO)',
     min_order = 30000, free_delivery_from = 100000 WHERE id = ?`).run(markaz);
 }
+// 9-bosqich: karta o'tkazmasi (DEMO karta).
+if (markaz) db.prepare("UPDATE restaurants SET pay_card_transfer = 1, card_number = '8600000000000000', card_holder = 'DEMO KARTA' WHERE id = ?").run(markaz);
 console.log('Tayyor. Brauzerda: http://localhost:3917/?dev=301');
 db.close();

@@ -79,6 +79,8 @@ export default {
   apply_done: 'Arizangiz qabul qilindi: <b>{name}</b>.\nAdministrator ko‘rib chiqib, siz bilan bog‘lanadi.',
   apply_exists: 'Sizning arizangiz ko‘rib chiqilmoqda: <b>{name}</b>.',
   apply_admin: '<b>Yangi restoran arizasi #{id}</b>\n{name}\nTelefon: {phone}\nAriza beruvchi: {user}',
+  payment_ok: '✅ To‘lov qabul qilindi. Buyurtma #{id} restoranga yuborildi.',
+  payment_late: 'To‘lov keldi, lekin buyurtma #{id} allaqachon bekor qilingan. Pulni qaytarish so‘raldi — administrator siz bilan bog‘lanadi.',
   cancelled: 'Bekor qilindi.',
   menu_hint: 'Menyudan tanlang.',
 };

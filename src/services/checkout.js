@@ -5,16 +5,16 @@ import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
 import { freeDelivery } from '../../public/js/shared/geo-core.js';
 
-// Hozircha to'liq ishlaydigan to'lov usullari. Karta o'tkazmasi va onlayn to'lov — 9-bosqich.
-export const ENABLED_PAYMENTS = ['cash'];
-
-export function createCheckoutService(db, { geo, addresses, users }) {
+export function createCheckoutService(db, { geo, addresses, users, payments }) {
+  // Mavjud to'lov usullari: restoran yoqqan va ishlashga tayyor bo'lganlari.
+  //  - karta o'tkazmasi: karta raqami va egasi kiritilgan bo'lsa;
+  //  - onlayn: PAYMENT_PROVIDER_TOKEN va bot ulangan bo'lsa (aks holda umuman ko'rsatilmaydi).
   function paymentMethods(r) {
     const m = [];
     if (r.pay_cash) m.push('cash');
-    if (r.pay_card_transfer && r.card_number) m.push('card_transfer');
-    if (r.pay_online) m.push('online');
-    return m.filter((x) => ENABLED_PAYMENTS.includes(x));
+    if (r.pay_card_transfer && r.card_number && r.card_holder) m.push('card_transfer');
+    if (r.pay_online && payments?.onlineAvailable()) m.push('online');
+    return m;
   }
 
   // Yagona hisob. Natijada muammolar ro'yxati (problems) — bo'sh bo'lsa buyurtma berish mumkin.

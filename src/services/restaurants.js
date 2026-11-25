@@ -2,8 +2,59 @@ import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
 
-export function createRestaurantService(db, access) {
+export function createRestaurantService(db, access, geo) {
   const getStmt = db.prepare('SELECT * FROM restaurants WHERE id = ?');
+
+  // Mijozga ko'rinadigan maydonlar (to'lov rekvizitlari, guruh va h.k. yo'q).
+  const PUBLIC_FIELDS = ['id', 'name', 'description', 'address_text', 'lat', 'lon', 'is_open', 'min_order',
+    'free_delivery_from', 'pickup_enabled', 'logo_path', 'cover_path', 'delivery_radius_m'];
+  const toPublic = (r, delivery) => ({
+    ...Object.fromEntries(PUBLIC_FIELDS.map((k) => [k, r[k]])),
+    is_open: r.is_open === 1,
+    delivery,
+  });
+
+  // Nuqtani qamrab oladigan FAOL restoranlar. Yopiqlari ham qaytadi (is_open=false) — buyurtma olinmaydi.
+  // Yetkazish masofasi — to'g'ri chiziq (distance_method), yo'l masofasi emas.
+  function listForPoint(point) {
+    const rows = db.prepare("SELECT * FROM restaurants WHERE status = 'active' AND lat IS NOT NULL AND lon IS NOT NULL").all();
+    return rows
+      .map((r) => ({ r, d: geo.deliveryFor(r, point) }))
+      .filter(({ d }) => d.deliverable)
+      .sort((a, b) => (b.r.is_open - a.r.is_open) || (a.d.distance_m - b.d.distance_m))
+      .map(({ r, d }) => toPublic(r, d));
+  }
+
+  // Bitta restoran (mijoz uchun). Faol bo'lmasa — topilmadi. Yetkazib bermasa ham ko'rsatiladi, delivery.deliverable=false.
+  function getPublic(restaurantId, point) {
+    const r = getRaw(restaurantId);
+    if (!r || r.status !== 'active') throw new AppError('NOT_FOUND');
+    return toPublic(r, point ? geo.deliveryFor(r, point) : null);
+  }
+
+  // Checkout (8-bosqich) shu funksiyani chaqiradi: faol, ochiq va manzilga yetkazadigan bo'lishi shart.
+  function assertCanDeliver(restaurantId, point) {
+    const r = getRaw(restaurantId);
+    if (!r || r.status !== 'active') throw new AppError('NOT_FOUND');
+    if (!r.is_open) throw new AppError('CONFLICT', { details: { reason: 'restaurant_closed' } });
+    const d = geo.deliveryFor(r, point);
+    if (!d.deliverable) throw new AppError('NOT_DELIVERABLE', { details: { reason: d.reason } });
+    return { restaurant: r, delivery: d };
+  }
+
+  // Restoran joylashuvi va yetkazish radiusi (ega/menejer). Nuqta Jizzax viloyati ichida bo'lishi shart.
+  function updateLocation(actor, restaurantId, data) {
+    if (!getRaw(restaurantId)) {
+      if (!access.isPlatformAdmin(actor)) throw new AppError('FORBIDDEN');
+      throw new AppError('NOT_FOUND');
+    }
+    access.requireRestaurantStaff(actor, restaurantId);
+    const { lat, lon } = geo.requireServiceArea(data.lat, data.lon);
+    const radius = v.int(data.delivery_radius_m ?? getRaw(restaurantId).delivery_radius_m, 'delivery_radius_m', { min: 500, max: 60000 });
+    db.prepare('UPDATE restaurants SET lat = ?, lon = ?, address_text = COALESCE(?, address_text), delivery_radius_m = ?, updated_at = ? WHERE id = ?')
+      .run(lat, lon, v.str(data.address_text, 'address_text', { optional: true, max: 300 }), radius, now(), restaurantId);
+    return getForPanel(actor, restaurantId);
+  }
 
   function getRaw(id) {
     return getStmt.get(id) || null;
@@ -146,6 +197,7 @@ export function createRestaurantService(db, access) {
   return {
     getRaw, getForPanel, create, listAll, updatePayment,
     createApplication, pendingApplicationOf, statusCounts,
+    listForPoint, getPublic, assertCanDeliver, updateLocation,
     addStaff, addCourier, addCategory, addProduct, setProductPrice,
     tx: (fn) => tx(db, fn),
   };

@@ -10,8 +10,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 2 | Texnik asos, ma'lumotlar va rollar | ✅ bajarildi lokal, 40/40 test (2026-11-25); deploy qilinmagan |
 | 3 | Brend, logo va dizayn tizimi | ✅ bajarildi, 43/43 test (2026-11-25) — [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) |
 | 4 | Bot kirishi, menyusi va tillari | ✅ bajarildi lokal, 75/75 test (2026-11-25); Telegram'da jonli sinalmagan |
-| 5 | Jizzax hududi va manzil | ⏭ navbatda |
-| 6 | Bosh sahifa, qidiruv, saralash | — |
+| 5 | Jizzax hududi va manzil | ✅ bajarildi lokal, 103/103 test (2026-11-25); Telegram ichida sinalmagan |
+| 6 | Bosh sahifa, qidiruv, saralash | ⏭ navbatda |
 | 7 | Restoran menyusi va taom oynasi | — |
 | 8 | Savat, checkout, buyurtma holatlari | — |
 | 9 | Naqd, karta o'tkazmasi, onlayn to'lov | — |
@@ -57,9 +57,15 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | UZ/RU markaziy tarjima fayllari | 4 | mavjud | `src/i18n/{uz,ru}.js`; kalitlar tengligi testi |
 | Til: Telegram'dan taxmin, tanlov ustun; bot va Mini App bir xil | 4 | mavjud | `users.langOf`, `lang:` tugmalari, `/api/me`; test "Tillar" |
 | Guruhda shaxsiy menyu/web_app tugmasi chiqmaydi | 4 | mavjud | testlar "Bot: guruh" |
-| Jizzax chegarasi, radius | 5 | yo'q | Manzil koordinatasi faqat diapazon bo'yicha tekshiriladi |
-| Saqlangan manzillar | 5 | qisman | `/api/addresses` (ro'yxat, qo'shish, o'chirish); tahrirlash va asosiyni almashtirish yo'q |
-| Restoranlar ro'yxati, qidiruv | 6 | yo'q | — |
+| Jizzax VILOYATI chegarasi (frontend va backend bir xil fayl/kod) | 5 | mavjud | `public/geo/jizzax.json` (OSM relation/196254), `public/js/shared/geo-core.js`; 10 ta chegara testi |
+| Manzil tanlash: GPS/Telegram joylashuvi, xarita pini, qidiruv, saqlangan | 5 | mavjud | `public/js/app/views/picker.js`; brauzerda tekshirildi (GPS rad/xato/muvaffaqiyat, qidiruv topilmadi) |
+| Manzil tanlanmaguncha restoranlar/qidiruv yopiq | 5 | mavjud | `main.js` `needsAddress` |
+| Hududdan tashqari nuqta: xabar + "Manzilni o'zgartirish" | 5 | mavjud | picker; server `OUT_OF_AREA` 422 |
+| Saqlangan manzillar: qo'shish, tahrirlash, o'chirish, asosiy | 5 | mavjud | `/api/addresses`, `views/addresses.js`; testlar |
+| Restoran koordinatasi + radius, faqat qamrab oladiganlar | 5 | mavjud | `restaurants.listForPoint`, `PUT /api/panel/restaurants/:rid/location`; testlar |
+| Yopiq restoran holati, buyurtma olinmasligi | 5/8 | qisman | Ro'yxatda `is_open`; `assertCanDeliver` tayyor, checkout 8-bosqichda |
+| Yetkazish hisobi bitta funksiyada, "to'g'ri chiziq" deb yoziladi | 5 | mavjud | `geo-core.deliveryFee`, `distance_method: straight_line` |
+| Restoranlar ro'yxati (to'liq bosh sahifa), qidiruv | 6 | qisman | Bosh sahifada manzilga mos ro'yxat bor; qidiruv, banner, saralash 6-bosqichda |
 | Menyu va taom oynasi | 7 | yo'q | Jadvallar bor, API yo'q |
 | Savat, checkout, holat o'tishlari | 8 | yo'q | Asos: `createRecord` |
 | To'lovlar | 9 | yo'q | `payment_status` ustuni bor |
@@ -96,6 +102,15 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Logo variantlari, bot avatari PNG (512), favikon, placeholder.
 - Sinov: 43/43; kontrast skripti — barcha juftliklar AA; 320 va 430 px, yorug'/to'q mavzuda brauzerda ko'rildi.
 - Tekshirilmagan: Telegram ichida (HTTPS yo'q), 360/390 px alohida.
+
+## 5-bosqich natijasi
+- Chegara: `scripts/fetch-jizzax-boundary.mjs` bilan OSM Nominatim'dan olindi (viloyat, ~1000 nuqta, ~50 m soddalashtirish). © OpenStreetMap contributors, ODbL.
+- Server: `services/geo.js` (hudud, yetkazish), `services/geocoder.js` (Nominatim proksi: 1 so'rov/s, kesh, natijalar viloyat bilan cheklangan), `addresses` (hudud tekshiruvi, tahrir, asosiy), `restaurants` (`listForPoint`, `getPublic`, `assertCanDeliver`, `updateLocation`).
+- Mini App: ilova qobig'i (marshrutlar, pastki navigatsiya, Telegram BackButton), xarita tanlovi (Leaflet), manzil shakli, manzillar, bosh sahifa (manzilga mos restoranlar), profil (til), buyurtmalar.
+- Lokal ko'rish: `node --env-file=.env.preview scripts/seed-demo.mjs`, keyin `http://localhost:3917/?dev=301` (faqat `DEV_AUTH=1`).
+- Sinov: 103/103; brauzerda 390 px: xarita, hududdan tashqari ogohlantirish, GPS (rad etildi / vaqt tugadi / muvaffaqiyat — brauzer API almashtirilib), qidiruv (qisqa / topilmadi), saqlash → bosh sahifa.
+- Sinalmagan: Telegram ichida (LocationManager, haqiqiy GPS ruxsati), iOS/Android klaviaturasi, 320 px'da xarita ekrani.
+- Cheklovlar: OSM plitka serveri faqat kichik yuklama uchun — ko'p foydalanuvchida `MAP_TILE_URL` bilan provayder kerak. Masofa to'g'ri chiziq bo'yicha.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

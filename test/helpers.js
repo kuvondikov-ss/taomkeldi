@@ -11,12 +11,12 @@ import { signInitData } from '../src/http/initData.js';
 export const TEST_TOKEN = '123456:TEST-token-for-unit-tests-only';
 const silent = { log() {}, warn() {}, error() {} };
 
-export async function setup(envOverrides = {}) {
+export async function setup(envOverrides = {}, { fetchImpl } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'taomkeldi-test-'));
-  const env = { BOT_TOKEN: TEST_TOKEN, DATA_DIR: dir, PLATFORM_ADMIN_IDS: '900', NODE_ENV: 'test', ...envOverrides };
+  const env = { BOT_TOKEN: TEST_TOKEN, DATA_DIR: dir, PLATFORM_ADMIN_IDS: '900', NODE_ENV: 'test', GEOCODER_ENABLED: '0', ...envOverrides };
   const config = loadConfig(env);
   const db = openDb(config.dbPath);
-  const services = createServices(db, config);
+  const services = createServices(db, config, { fetchImpl });
   const app = createApp({ config, services, logger: silent });
   const server = await new Promise((resolve) => {
     const s = app.listen(0, () => resolve(s));

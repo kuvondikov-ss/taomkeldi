@@ -6,61 +6,23 @@
   <title>Taomkeldi</title>
   <link rel="icon" type="image/svg+xml" href="/brand/taomkeldi-favicon.svg">
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css">
   <link rel="stylesheet" href="/css/tokens.css">
   <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/app.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/vendor/leaflet/leaflet.js"></script>
 </head>
 <body>
-  <!-- Mini App asosi: server bilan initData orqali ulanishni tekshiradi.
-       Haqiqiy ekranlar 4–8-bosqichlarda quriladi. -->
-  <main class="page">
-    <header class="app-header">
-      <img class="logo logo-light" src="/brand/taomkeldi-compact-light.svg" alt="Taomkeldi">
-      <img class="logo logo-dark" src="/brand/taomkeldi-compact-dark.svg" alt="Taomkeldi">
-    </header>
-    <div class="card">
-      <div class="state" id="state" aria-live="polite">
-        <div class="state-icon"><i data-icon="dish"></i></div>
-        <p class="h3" id="title">Tekshirilmoqda…</p>
-        <p class="small text-2" id="text">Ilova tayyorlanmoqda.</p>
-      </div>
-    </div>
-  </main>
-  <script type="module">
-    import { hydrateIcons } from '/js/ui/icons.js';
-    import { applyTelegramTheme } from '/js/ui/theme.js';
-    // Til: server qaytargan foydalanuvchi tili (bot bilan bir xil); undan oldin — Telegram tili.
-    const T = {
-      uz: { outside: 'Ilovani Telegram ichidan oching', outsideHint: '@taomkeldi_bot → Ilovani ochish', hello: 'Salom, {name}!', soon: 'Taomkeldi tez orada ishga tushadi.', offline: 'Server bilan aloqa yo‘q', retry: 'Birozdan keyin qayta urinib ko‘ring.' },
-      ru: { outside: 'Откройте приложение в Telegram', outsideHint: '@taomkeldi_bot → Открыть приложение', hello: 'Здравствуйте, {name}!', soon: 'Taomkeldi скоро заработает.', offline: 'Нет связи с сервером', retry: 'Попробуйте немного позже.' },
-    };
-    hydrateIcons();
-    const tg = applyTelegramTheme();
-    tg?.ready();
-    let lang = tg?.initDataUnsafe?.user?.language_code?.startsWith('ru') ? 'ru' : 'uz'; // faqat dastlabki ko'rinish uchun
-    const L = (k, v = {}) => T[lang][k].replace('{name}', v.name ?? '');
-    const title = document.getElementById('title');
-    const text = document.getElementById('text');
-    const fail = (a, b) => { document.getElementById('state').parentElement.classList.add('state-error'); title.textContent = a; text.textContent = b; };
-    if (!tg) {
-      title.textContent = L('outside');
-      text.textContent = L('outsideHint');
-    } else {
-      try {
-        const res = await fetch('/api/me', { headers: { Authorization: `tma ${tg.initData}`, 'Accept-Language': lang } });
-        const body = await res.json();
-        if (body.ok) {
-          lang = body.user.lang;
-          document.documentElement.lang = lang;
-          title.textContent = L('hello', { name: body.user.first_name });
-          text.textContent = L('soon');
-        } else {
-          fail(body.error.message, '');
-        }
-      } catch {
-        fail(L('offline'), L('retry'));
-      }
-    }
-  </script>
+  <div id="view" aria-live="polite">
+    <main class="page"><div class="card"><div class="skeleton skeleton-media" style="aspect-ratio:16/7"></div></div></main>
+  </div>
+  <nav class="bottom-nav" id="nav" aria-label="Asosiy" hidden>
+    <a class="nav-item" href="#/" data-nav="home"><i data-icon="home"></i><span data-nav-label="nav_home">Bosh sahifa</span></a>
+    <a class="nav-item" href="#/search" data-nav="search"><i data-icon="search"></i><span data-nav-label="nav_search">Qidirish</span></a>
+    <a class="nav-item" href="#/orders" data-nav="orders"><i data-icon="receipt"></i><span data-nav-label="nav_orders">Buyurtmalar</span></a>
+    <a class="nav-item" href="#/profile" data-nav="profile"><i data-icon="user"></i><span data-nav-label="nav_profile">Profil</span></a>
+  </nav>
+  <script type="module" src="/js/app/main.js"></script>
 </body>
 </html>

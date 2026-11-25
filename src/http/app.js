@@ -69,12 +69,49 @@ export function createApp({ config, services, logger = console }) {
     res.json({ ok: true, lang: user.lang });
   });
 
-  // --- Manzillar (faqat o'ziniki) ---
+  // --- Mini App sozlamalari: xarita va hudud ---
+  api.get('/config', (_req, res) => {
+    const p = services.geo.region.properties;
+    res.json({
+      ok: true,
+      map: config.map,
+      region: { name: p.name, name_ru: p.name_ru, bbox: p.bbox, geojson_url: '/geo/jizzax.json', attribution: p.attribution },
+      distance_method: 'straight_line',
+      geocoder: config.geocoder.enabled,
+    });
+  });
+
+  // --- Hudud va manzil qidiruvi ---
+  api.get('/geo/check', (req, res) => {
+    const lat = v.coord(req.query.lat, 'lat', 'lat');
+    const lon = v.coord(req.query.lon, 'lon', 'lon');
+    res.json({ ok: true, inside: services.geo.isInServiceArea(lat, lon) });
+  });
+  api.get('/geo/search', async (req, res) => {
+    res.json({ ok: true, results: await services.geocoder.search(req.query.q, services.users.langOf(req.actor)) });
+  });
+  api.get('/geo/reverse', async (req, res) => {
+    res.json({ ok: true, place: await services.geocoder.reverse(req.query.lat, req.query.lon, services.users.langOf(req.actor)) });
+  });
+
+  // --- Manzillar (faqat o'ziniki, faqat Jizzax viloyati) ---
   api.get('/addresses', (req, res) => res.json({ ok: true, addresses: services.addresses.list(req.actor) }));
   api.post('/addresses', (req, res) => res.status(201).json({ ok: true, address: services.addresses.create(req.actor, req.body || {}) }));
+  api.put('/addresses/:id', (req, res) => res.json({ ok: true, address: services.addresses.update(req.actor, req.params.id, req.body || {}) }));
+  api.post('/addresses/:id/default', (req, res) => res.json({ ok: true, address: services.addresses.setDefault(req.actor, req.params.id) }));
   api.delete('/addresses/:id', (req, res) => {
     services.addresses.remove(req.actor, req.params.id);
     res.json({ ok: true });
+  });
+
+  // --- Restoranlar (mijoz): faqat tanlangan nuqtani qamrab oladigan faol restoranlar ---
+  api.get('/restaurants', (req, res) => {
+    const point = services.addresses.resolvePoint(req.actor, req.query);
+    res.json({ ok: true, point, restaurants: services.restaurants.listForPoint(point) });
+  });
+  api.get('/restaurants/:id', (req, res) => {
+    const point = services.addresses.resolvePoint(req.actor, req.query);
+    res.json({ ok: true, restaurant: services.restaurants.getPublic(v.id(req.params.id), point) });
   });
 
   // --- Mijoz buyurtmalari ---
@@ -91,6 +128,9 @@ export function createApp({ config, services, logger = console }) {
   api.get('/panel/restaurants/:rid/orders', (req, res) => {
     const orders = services.orders.listForRestaurant(req.actor, v.id(req.params.rid, 'rid'), { status: req.query.status });
     res.json({ ok: true, orders });
+  });
+  api.put('/panel/restaurants/:rid/location', (req, res) => {
+    res.json({ ok: true, restaurant: services.restaurants.updateLocation(req.actor, v.id(req.params.rid, 'rid'), req.body || {}) });
   });
   api.put('/panel/restaurants/:rid/payment', (req, res) => {
     res.json({ ok: true, restaurant: services.restaurants.updatePayment(req.actor, v.id(req.params.rid, 'rid'), req.body || {}) });
@@ -136,7 +176,15 @@ export function createApp({ config, services, logger = console }) {
 
   app.use('/api', api);
   app.use('/uploads', express.static(config.uploadsDir, { fallthrough: false, index: false }));
-  app.use(express.static(PUBLIC_DIR, { index: 'index.html' }));
+  // HTML/JS/CSS har safar ETag bilan qayta tekshiriladi (deploydan keyin eski fayl qolmasin);
+  // shrift, vendor va rasmlar bir hafta keshlanadi.
+  app.use(express.static(PUBLIC_DIR, {
+    index: 'index.html',
+    setHeaders(res, filePath) {
+      if (/\.(html|js|mjs|css|json)$/.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
+      else res.setHeader('Cache-Control', 'public, max-age=604800');
+    },
+  }));
 
   // --- Yagona xato javobi: { ok:false, error:{ code, message } } ---
   // eslint-disable-next-line no-unused-vars

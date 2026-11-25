@@ -11,6 +11,9 @@ export const ERRORS = {
   VALIDATION:        { status: 400, uz: 'Ma\'lumotlar noto\'g\'ri to\'ldirilgan.', ru: 'Данные заполнены неверно.' },
   UPLOAD_TYPE:       { status: 415, uz: 'Faqat JPG, PNG yoki WEBP rasm yuklash mumkin.', ru: 'Можно загрузить только изображение JPG, PNG или WEBP.' },
   UPLOAD_TOO_LARGE:  { status: 413, uz: 'Fayl juda katta.', ru: 'Файл слишком большой.' },
+  OUT_OF_AREA:       { status: 422, uz: 'Bu manzil xizmat hududidan tashqarida. Taomkeldi faqat Jizzax viloyatida ishlaydi.', ru: 'Адрес вне зоны обслуживания. Taomkeldi работает только в Джизакской области.' },
+  NOT_DELIVERABLE:   { status: 422, uz: 'Bu restoran tanlangan manzilga yetkazib bermaydi.', ru: 'Этот ресторан не доставляет по выбранному адресу.' },
+  GEOCODER_UNAVAILABLE: { status: 503, uz: 'Manzil qidiruvi hozir ishlamayapti. Xaritada belgilang.', ru: 'Поиск адреса сейчас недоступен. Отметьте точку на карте.' },
   CONFLICT:          { status: 409, uz: 'Holat o\'zgargan. Sahifani yangilang.', ru: 'Состояние изменилось. Обновите страницу.' },
   INTERNAL:          { status: 500, uz: 'Kutilmagan xato. Birozdan keyin qayta urinib ko\'ring.', ru: 'Непредвиденная ошибка. Попробуйте позже.' },
 };

@@ -63,6 +63,18 @@ export function loadConfig(env = process.env) {
     // Faqat test/bootstrap: admin hali yo'q bo'lsa birinchi /start bosgan admin bo'ladi. Production'da o'chiq.
     autoAdmin: autoAdminRequested && !isProduction,
     uploadMaxBytes: intEnv(env, 'UPLOAD_MAX_BYTES', 5 * 1024 * 1024),
+    // Xarita plitkalari (Mini App). OSM standart serveri faqat kichik yuklama uchun; ko'p foydalanuvchida
+    // provayderni MAP_TILE_URL orqali almashtiring va attribution'ni saqlang.
+    map: {
+      tileUrl: env.MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: env.MAP_ATTRIBUTION || '© OpenStreetMap contributors',
+    },
+    // Manzil qidiruvi (server proksi). Nominatim qoidasi: 1 so'rov/soniya, aniq User-Agent.
+    geocoder: {
+      enabled: env.GEOCODER_ENABLED !== '0',
+      url: (env.GEOCODER_URL || 'https://nominatim.openstreetmap.org').replace(/\/$/, ''),
+      userAgent: env.GEOCODER_USER_AGENT || 'Taomkeldi/0.5 (Telegram food delivery app, Jizzakh)',
+    },
     warnings: [],
   };
 

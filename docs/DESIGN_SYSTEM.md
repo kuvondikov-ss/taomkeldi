@@ -43,7 +43,7 @@ Mavzu: Telegram ichida `Telegram.WebApp.colorScheme` (`applyTelegramTheme()`, he
 
 ## Tipografiya
 Montserrat (variable, o'z serverimizdan: lotin, lotin-kengaytma, kirill), zaxira — tizim sans-serif.
-Matn 16 px / 400–500; yordamchi 12–14 px; ajratish 600; sarlavha 20–24 px / 700. Narxlar `tabular-nums`, `price` sinfi; summa `formatSum()` — bo'shliq NBSP, "so‘m"/"сум".
+Matn 1rem (16 px) / 400–500; yordamchi 0.75–0.875rem; ajratish 600; sarlavha 1.25–1.5rem / 700. O'lchamlar `rem` da — foydalanuvchining matn kattaligi sozlamasiga moslashadi (17-bosqich). Narxlar `tabular-nums`, `price` sinfi; summa `formatSum()` — bo'shliq NBSP, "so‘m"/"сум".
 
 ## O'lchamlar
 8 px ritm (`--sp-*`), yon chet 16 px (390 px+ ekranda 20 px), karta oralig'i 12 px, karta radiusi 16 px, bosish maydoni ≥ 44×44, pastki asosiy tugma 52 px, pastki navigatsiya 60 px + safe-area.
@@ -77,4 +77,27 @@ Harakat: `prefers-reduced-motion` da barcha animatsiya va o'tishlar o'chadi.
 - Sheet (ochish, Esc bilan yopish), dialog, tablar, chiplar ishlashi.
 - 320 px da topilib tuzatilganlar: tor kartada belgi chiqib ketishi, telefon qatorining sig'masligi, inline ikonka qatorni buzishi.
 
-Tekshirilmagan: haqiqiy Telegram ichida (HTTPS manzil yo'q), iOS/Android klaviaturasi bilan, 360/390 px (320 va 430 oralig'idagi chegaralar sifatida qoplangan deb hisoblanmaydi — 17-bosqichda).
+Tekshirilmagan: haqiqiy Telegram ichida (HTTPS manzil yo'q), iOS/Android klaviaturasi bilan.
+
+## 17-bosqich: yakuniy ko'rinish tekshiruvi (2026-11-25)
+Usul: lokal server, demo ma'lumotlar, brauzerda har ekran avtomatik ko'rib chiqildi — gorizontal toshib ketish (`scrollWidth > clientWidth`) va ekrandan chiqqan elementlar; ba'zilari skrinshot bilan.
+
+| Ekranlar | 320 px uz | 320 px ru | 130% matn | 390 px yorug' | to'q |
+|---|---|---|---|---|---|
+| Mijoz: bosh sahifa, "Bepul yetkazish", qidiruv, restoran, savat, checkout, buyurtma/kuzatuv (2 ta), tarix, profil, manzillar, sevimlilar, ariza, xarita (manzil tanlash) | ✅ | ✅ | ✅ (asosiylar) | ✅ bosh sahifa | ✅ |
+| Restoran: panel ro'yxati, bosh, buyurtmalar (yangi/tayyorlanmoqda/yakunlangan), menyu, kuryerlar, xodimlar, sozlamalar, hisobot | ✅ | ✅ | ✅ (buyurtmalar, sozlamalar, hisobot, kuryerlar) | — | ✅ |
+| Kuryer ekrani (smena, takliflar, joriy buyurtma, statistika) | ✅ | — | — | — | ✅ (14–15-bosqich) |
+| Platforma (ko'rsatkichlar, arizalar, restoranlar, yangi restoran) | ✅ | — | — | — | ✅ |
+
+Topilib tuzatilganlar:
+- 320 px: bosh sahifadagi filtr qatori ("Tavsiya" + "Aksiya" + "Bepul yetkazish") 24 px ga toshib ketardi → qator o'raladi.
+- Restoran sahifasida "summadan bepul" sharti ikki marta yozilardi → bitta (yetkazish qatorida).
+- "Bepul yetkazish" chipidagi son qizil (xato/bildirishnoma kabi) edi → yashil neytral belgi.
+- Kuryer ekranidagi havolalar yorug' mavzuda `--brand` (3.18:1, matn uchun yetarli emas) → `--primary` (8.33:1).
+- Shrift o'lchamlari `px` dan `rem` ga — matn kattalashtirish ishlaydi; 130% da 320 px ekranda toshish yo'q.
+- Telegram SDK: xavfsiz chetlar `--safe-top/--safe-bottom` (qurilma `env()` va Telegram `--tg-safe-area-inset-*`, `--tg-content-safe-area-inset-*` dan kattasi); klaviatura ochilganda (`body.kb-open`) pastki navigatsiya va savat paneli yashiriladi, CTA oqimga qaytadi; xarita ekranlarida (`address/pick`, `order/:id`) `disableVerticalSwipes`. Native `BackButton` (1-bosqichdan) — Telegram paneli ilova ichida chizilmaydi.
+- Rang kontrasti koddan hisoblanadi: `node scripts/contrast.mjs` — yangi juftliklar qo'shildi (kartadagi yashil/sariq/qizil matn, kulrang blok) — barchasi mos.
+
+Palitra: maketlardagi navy/cream/carrot o'rniga logodagi yashil palitra (3-bosqichda foydalanuvchi tasdiqlagan qaror). Banner — berilgan haqiqiy osh fotosi; funksional ekranlarda 3D, neon va kuchli soya yo'q.
+
+Tekshirilmagan (ochiq): haqiqiy Telegram ichida (HTTPS manzil va deploy kerak), iOS/Android real klaviaturasi va jonli joylashuv, ekran o'quvchi (screen reader) bilan to'liq o'tish. Klaviatura logikasi brauzerda `focusin` hodisasi bilan sinaldi.

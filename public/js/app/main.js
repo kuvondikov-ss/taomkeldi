@@ -36,11 +36,11 @@ const ROUTES = [
   [/^r\/(\d+)$/, renderRestaurant, { needsAddress: true }],
   [/^cart$/, renderCart, { needsAddress: true }],
   [/^checkout$/, renderCheckout, { needsAddress: true }],
-  [/^order\/(\d+)$/, renderOrder, {}],
+  [/^order\/(\d+)$/, renderOrder, { map: true }],
   [/^orders$/, renderOrders, { nav: 'orders' }],
   [/^profile$/, renderProfile, { nav: 'profile' }],
   [/^addresses$/, renderAddresses, {}],
-  [/^address\/pick$/, renderPicker, { fullscreen: true }],
+  [/^address\/pick$/, renderPicker, { fullscreen: true, map: true }],
   [/^address\/new$/, (el, p, _m, ctx) => renderAddressForm(el, null, p, ctx), {}],
   [/^address\/(\d+)\/edit$/, (el, p, m, ctx) => renderAddressForm(el, Number(m[1]), p, ctx), {}],
   [/^admin$/, renderAdmin, {}],
@@ -100,6 +100,8 @@ async function render() {
 
   setNav(opts.nav || null);
   document.body.classList.toggle('fullscreen', !!opts.fullscreen);
+  // Xaritani surish Telegram'ning "yopish uchun pastga suring" imo-ishorasi bilan to'qnashmasin (SDK 7.7+).
+  if (opts.map) tg?.disableVerticalSwipes?.(); else tg?.enableVerticalSwipes?.();
   if (tg?.BackButton) {
     if (opts.nav === 'home') tg.BackButton.hide();
     else tg.BackButton.show();
@@ -150,6 +152,10 @@ async function boot() {
   }
   nav.querySelectorAll('[data-nav-label]').forEach((el) => { el.textContent = t(el.dataset.navLabel); });
   tg?.BackButton?.onClick(() => history.back());
+  // Klaviatura: matn maydoni fokusda bo'lsa pastki panellar yashiriladi (tokens.css: body.kb-open).
+  const typing = (el) => el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'submit', 'file', 'range'].includes(el.type)));
+  document.addEventListener('focusin', (e) => { if (typing(e.target)) document.body.classList.add('kb-open'); });
+  document.addEventListener('focusout', () => setTimeout(() => { if (!typing(document.activeElement)) document.body.classList.remove('kb-open'); }, 50));
   window.addEventListener('hashchange', render); // orqaga/oldinga; go() o'zi render qiladi
   render();
 }

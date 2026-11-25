@@ -22,8 +22,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 14 | Restoran kuryerlari va dispetcher | ✅ bajarildi lokal, 259/259 test (2026-11-25) |
 | 15 | Jonli kuzatuv, tarix, profil | ✅ bajarildi lokal, 273/273 test (2026-11-25) |
 | 16 | "Bepul yetkazib berish" bo'limi | ✅ bajarildi lokal, 284/284 test (2026-11-25) |
-| 17 | Barcha ekranlarning yakuniy dizayni | ⏭ navbatda |
-| 18 | Yakuniy sinov, Railway, topshirish | — |
+| 17 | Barcha ekranlarning yakuniy dizayni | ✅ bajarildi lokal, 284/284 test (2026-11-25) — [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md#17-bosqich-yakuniy-korinish-tekshiruvi-2026-11-25) |
+| 18 | Yakuniy sinov, Railway, topshirish | ⏭ navbatda |
 
 ## Production holati
 Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy/simple-bot.js`). 2-bosqich kodi deploy qilinmagan. Deploydan oldin: Railway volume, Node 22.13+ ekanini tekshirish va `PLATFORM_ADMIN_IDS` (yoki mavjud `ADMIN_CHAT_ID`). Yangi kod deploy qilinsa, oddiy botdagi "matn bilan buyurtma" oqimi yo'qoladi: buyurtma Mini App orqali 8-bosqichda qaytadi.

@@ -42,7 +42,7 @@ export async function renderHome(el, params, _m, ctx) {
           <select class="select" id="sort">${SORTS.map((s) => `<option value="${s}" ${f.sort === s ? 'selected' : ''}>${t(`sort_${s}`)}</option>`).join('')}</select>
         </label>
         <button class="chip" id="promo" aria-pressed="${f.promo}">${t('promo')}</button>
-        <button class="chip chip-free" id="free" aria-pressed="${f.free}">${icon('scooter', { className: 'icon-sm' })}${t('free_section')}<span class="count"></span></button>
+        <button class="chip chip-free" id="free" aria-pressed="${f.free}">${icon('scooter', { className: 'icon-sm' })}${t('free_section')}<span class="count-badge" hidden></span></button>
       </div>
       <h2 class="h2" id="list-title">${t('restaurants_title')}</h2>
       <div id="list" class="stack" aria-busy="true">${skeletonCards(2)}</div>
@@ -101,7 +101,7 @@ export async function renderHome(el, params, _m, ctx) {
       return;
     }
     const fc = data.free_delivery_count || { now: 0, threshold: 0 };
-    if (fc.now + fc.threshold) el.querySelector('#free .count').textContent = ` ${fc.now + fc.threshold}`;
+    if (fc.now + fc.threshold) { const cb = el.querySelector('#free .count-badge'); cb.textContent = String(fc.now + fc.threshold); cb.hidden = false; }
     if (f.free) {
       // Bo'lim: hozir bepul (yetkazish narxi haqiqatan 0) va summaga bog'liq takliflar alohida.
       el.querySelector('#list-title').textContent = t('free_section');

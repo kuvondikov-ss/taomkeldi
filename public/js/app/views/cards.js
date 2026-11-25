@@ -17,14 +17,6 @@ export function deliveryLine(r) {
   ].filter(Boolean).join(' · ');
 }
 
-// Bepul yetkazish matni (server tasnifi: free_delivery.kind). Savatsiz shartli taklif "hozir bepul" deb ko'rsatilmaydi.
-export function freeDeliveryText(r) {
-  const fd = r.free_delivery || {};
-  if (fd.kind === 'always') return r.min_order ? t('free_always_min', { sum: formatSum(r.min_order) }) : t('free_always');
-  if (fd.kind === 'threshold') return t('free_from', { sum: formatSum(fd.threshold) });
-  return '';
-}
-
 export function ratingHtml(r) {
   if (!r.rating) return ''; // reyting o'ylab topilmaydi
   return `<span class="rating">${icon('star', { className: 'icon-inline' })} ${r.rating.value.toFixed(1)} <span class="text-2">(${r.rating.count})</span></span>`;

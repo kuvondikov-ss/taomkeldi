@@ -61,11 +61,11 @@
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
-  --fs-xs: 12px;
-  --fs-sm: 14px;
-  --fs-md: 16px;   /* odatdagi matn */
-  --fs-lg: 20px;   /* sarlavha */
-  --fs-xl: 24px;   /* katta sarlavha */
+  --fs-xs: 0.75rem;  /* 12px; rem — foydalanuvchi matn o‘lchamiga moslashadi */
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;     /* odatdagi matn */
+  --fs-lg: 1.25rem;   /* sarlavha */
+  --fs-xl: 1.5rem;   /* katta sarlavha */
   --lh-tight: 1.25;
   --lh: 1.45;
 
@@ -198,6 +198,17 @@
 @media (min-width: 390px) {
   :root { --page-x: 20px; }
 }
+
+/* Xavfsiz chetlar: qurilma chegarasi va Telegram to'liq ekran rejimidagi panel (SDK CSS o'zgaruvchilari). Bitta joyda. */
+:root {
+  --safe-top: max(env(safe-area-inset-top, 0px), calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px)));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
+}
+
+/* Klaviatura ochiq: pastki navigatsiya va savat paneli yashiriladi, CTA oqimga qaytadi — maydonni yopmasin. */
+body.kb-open .bottom-nav, body.kb-open .cart-bar { display: none !important; }
+body.kb-open .cta-bar { position: static; box-shadow: none; }
+body.kb-open .page { padding-bottom: var(--sp-6) !important; }
 
 /* Harakatni kamaytirish rejimi: animatsiyalar o'chiriladi. */
 @media (prefers-reduced-motion: reduce) {

@@ -4,6 +4,7 @@ import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
 import { freeDelivery } from '../../public/js/shared/geo-core.js';
+import { openNow } from './catalog.js';
 
 export function createCheckoutService(db, { geo, addresses, users, payments }) {
   // Mavjud to'lov usullari: restoran yoqqan va ishlashga tayyor bo'lganlari.
@@ -55,7 +56,7 @@ export function createCheckoutService(db, { geo, addresses, users, payments }) {
     }
     if (lines.some((l) => l.status === 'removed')) problems.push('product_removed');
     if (lines.some((l) => l.status === 'unavailable')) problems.push('product_unavailable');
-    if (!r.is_open) problems.push('restaurant_closed');
+    if (!openNow(r)) problems.push('restaurant_closed');
     if (itemsTotal === 0) problems.push('empty');
     if (itemsTotal < r.min_order) problems.push('below_min_order');
 
@@ -71,7 +72,7 @@ export function createCheckoutService(db, { geo, addresses, users, payments }) {
     if (!methods.length) problems.push('no_payment_method');
 
     return {
-      restaurant: { id: r.id, name: r.name, is_open: r.is_open === 1, min_order: r.min_order, pickup_enabled: r.pickup_enabled === 1, address_text: r.address_text, phone: r.phone },
+      restaurant: { id: r.id, name: r.name, is_open: openNow(r), min_order: r.min_order, pickup_enabled: r.pickup_enabled === 1, address_text: r.address_text, phone: r.phone },
       type,
       address,
       lines,

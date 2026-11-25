@@ -1,12 +1,36 @@
-// Restoran paneli (10-bosqich): restoranlar ro'yxati va egasining birinchi ekrani — tayyorlik ro'yxati.
-// Buyurtmalar, menyu, kuryerlar, xodimlar, sozlamalar — 11-bosqich.
+// Restoran paneli: restoranlar ro'yxati, bosh ekran (bo'limlar + tayyorlik ro'yxati) va bo'limlar.
 import { state } from '../state.js';
 import { get, ApiError } from '../api.js';
 import { t } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
 import { stateBlock } from './cards.js';
+import { renderPanelOrders } from './panel-orders.js';
+import { renderPanelMenu } from './panel-menu.js';
+import { renderPanelCouriers, renderPanelStaff } from './panel-team.js';
+import { renderPanelSettings, renderPanelReport } from './panel-settings.js';
 
 const ITEMS = ['info', 'menu', 'work_hours', 'delivery', 'payment', 'couriers', 'group'];
+const SECTIONS = [['orders', 'receipt'], ['menu', 'dish'], ['couriers', 'scooter'], ['staff', 'users'], ['settings', 'settings'], ['report', 'chart']];
+const RENDER = {
+  orders: renderPanelOrders, menu: renderPanelMenu, couriers: renderPanelCouriers,
+  staff: renderPanelStaff, settings: renderPanelSettings, report: renderPanelReport,
+};
+
+// #/panel/:rid/:section — sarlavha, bo'limlar tablari va bo'lim mazmuni.
+export async function renderPanelSection(el, params, m, { go }) {
+  const rid = Number(m[1]);
+  const section = m[2];
+  const mine = state.me.roles.staff.find((s) => s.restaurantId === rid);
+  const role = mine?.role || (state.me.roles.platformAdmin ? 'admin' : null);
+  el.innerHTML = `
+    <main class="page stack panel-section">
+      <div class="row" style="justify-content:space-between"><a class="small" href="#/panel/${rid}">${icon('back', { className: 'icon-inline' })} <span class="rn"></span></a><span class="xs text-2">${role ? t(role === 'admin' ? 'admin' : `role_${role}_t`) : ''}</span></div>
+      <div class="tabs" role="tablist">${SECTIONS.map(([k]) => `<a class="tab" role="tab" href="#/panel/${rid}/${k}" aria-selected="${k === section}">${t(`s_${k}`)}</a>`).join('')}</div>
+      <div id="section" class="stack"></div>
+    </main>`;
+  el.querySelector('.rn').textContent = mine?.restaurantName || t('panel_title');
+  return RENDER[section](el.querySelector('#section'), params, rid, { go, role });
+}
 
 export function renderPanelList(el, _p, _m, { go }) {
   const staff = state.me.roles.staff;
@@ -48,6 +72,7 @@ export async function renderPanel(el, _p, m) {
       </div>
       ${r.restaurant.status_reason && r.restaurant.status !== 'active' ? '<div class="alert alert-danger"><span class="reason"></span></div>' : ''}
       <section class="stack">
+        <nav class="section-grid">${SECTIONS.map(([k, ic]) => `<a class="section-tile" href="#/panel/${rid}/${k}">${icon(ic)}<span>${t(`s_${k}`)}</span></a>`).join('')}</nav>
         <div class="row" style="justify-content:space-between"><h2 class="h3">${t('readiness_title')}</h2><span class="small text-2">${done}/${r.items.length}</span></div>
         <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${r.items.length}" aria-valuenow="${done}"><span style="width:${(done / r.items.length) * 100}%"></span></div>
         <div class="alert ${r.ready ? 'alert-success' : 'alert-warning'}">${icon(r.ready ? 'check' : 'alert')}<span>${r.ready ? t('ready_all') : t('ready_missing', { n: r.missing.length })}</span></div>
@@ -56,7 +81,6 @@ export async function renderPanel(el, _p, m) {
           return `<li class="list-item ${it.done ? 'is-done' : ''}"><span class="check-dot">${it.done ? icon('check', { className: 'icon-sm' }) : ''}</span><span class="grow">${t(`r_${k}`)}</span></li>`;
         }).join('')}</ul>
       </section>
-      <div class="alert">${icon('info')}<span>${t('panel_sections_soon')}</span></div>
     </main>`;
   el.querySelector('.n').textContent = r.restaurant.name;
   if (el.querySelector('.reason')) el.querySelector('.reason').textContent = t('status_reason', { r: r.restaurant.status_reason });

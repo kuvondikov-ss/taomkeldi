@@ -6,6 +6,7 @@ import { icon } from '../../ui/icons.js';
 import { openSheet, confirmDialog, toast } from '../../ui/components.js';
 import { cuisineName, deliveryLine, ratingHtml, stateBlock } from './cards.js';
 import * as cart from '../cart.js';
+import { hoursText } from '../../shared/hours.js';
 
 const nameOf = (x) => (getLang() === 'ru' && x.name_ru) || x.name_uz;
 const descOf = (x) => (getLang() === 'ru' && x.description_ru) || x.description_uz || '';
@@ -87,8 +88,7 @@ export async function renderRestaurant(el, params, m, { go }) {
   // --- Batafsil ma'lumot ---
   el.querySelector('.more-btn').addEventListener('click', () => {
     const sheet = el.querySelector('#dish-sheet');
-    let hours = '';
-    try { hours = r.work_hours ? JSON.parse(r.work_hours).text || '' : ''; } catch { hours = ''; }
+    const hours = hoursText(r.work_hours);
     sheet.innerHTML = `<div class="sheet-handle"></div>
       <div class="sheet-header"><h2 class="h2" id="dish-title"></h2><button class="btn btn-icon btn-ghost" data-sheet-close aria-label="${t('cancel')}">${icon('close')}</button></div>
       <div class="stack">

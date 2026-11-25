@@ -9,7 +9,7 @@ export const inTelegram = () => !!tg?.initData;
 export const canAuth = () => inTelegram() || !!devUser;
 
 export class ApiError extends Error {
-  constructor(code, message, status) { super(message); this.code = code; this.status = status; }
+  constructor(code, message, status, details) { super(message); this.code = code; this.status = status; this.details = details || null; }
 }
 
 export async function api(method, path, body) {
@@ -24,7 +24,19 @@ export async function api(method, path, body) {
     throw new ApiError('NETWORK', '', 0);
   }
   const data = await res.json().catch(() => null);
-  if (!res.ok || !data?.ok) throw new ApiError(data?.error?.code || 'INTERNAL', data?.error?.message || '', res.status);
+  if (!res.ok || !data?.ok) throw new ApiError(data?.error?.code || 'INTERNAL', data?.error?.message || '', res.status, data?.error?.details);
+  return data;
+}
+
+// Rasm yuklash (xom baytlar). Server faylning o'zidan turini aniqlaydi.
+export async function upload(path, file) {
+  const headers = { 'Content-Type': file.type || 'application/octet-stream' };
+  if (inTelegram()) headers.Authorization = `tma ${tg.initData}`;
+  else if (devUser) headers['X-Dev-User'] = devUser;
+  let res;
+  try { res = await fetch(`/api${path}`, { method: 'POST', headers, body: file }); } catch { throw new ApiError('NETWORK', '', 0); }
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data?.ok) throw new ApiError(data?.error?.code || 'INTERNAL', data?.error?.message || '', res.status, data?.error?.details);
   return data;
 }
 

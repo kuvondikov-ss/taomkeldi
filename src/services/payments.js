@@ -11,6 +11,7 @@ import crypto from 'node:crypto';
 import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
+import { openNow } from './catalog.js';
 
 // Telegram valyuta jadvalida UZS uchun exp = 2 (summa tiyinda yuboriladi).
 const MINOR = { UZS: 100 };
@@ -155,8 +156,8 @@ export function createPaymentService(db, config, { access, orders }) {
     if (!o || o.invoice_nonce !== p.nonce || o.customer_id !== q.from?.id) return { ok: false, error: 'Buyurtma topilmadi.' };
     if (o.status !== 'pending_payment' || o.payment_status !== 'unpaid') return { ok: false, error: 'Buyurtma holati o‘zgargan. Ilovani yangilang.' };
     if (q.currency !== config.payments.currency || q.total_amount !== minor(o.total)) return { ok: false, error: 'Summa mos kelmadi. Ilovani yangilang.' };
-    const r = db.prepare('SELECT is_open, status FROM restaurants WHERE id = ?').get(o.restaurant_id);
-    if (!r || r.status !== 'active' || !r.is_open) return { ok: false, error: 'Restoran hozir buyurtma qabul qilmayapti.' };
+    const r = db.prepare('SELECT is_open, status, work_hours FROM restaurants WHERE id = ?').get(o.restaurant_id);
+    if (!r || r.status !== 'active' || !openNow(r)) return { ok: false, error: 'Restoran hozir buyurtma qabul qilmayapti.' };
     return { ok: true };
   }
 

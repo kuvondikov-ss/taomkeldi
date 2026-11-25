@@ -65,5 +65,13 @@ if (!db.prepare('SELECT 1 FROM restaurants WHERE applicant_id = 302').get()) {
   const r = s.platform.apply(s.users.get(302), { name: '[DEMO] Yangi Kafe', phone: '+998901112244', description: 'Demo ariza', lat: 40.13, lon: 67.83, address_text: 'Jizzax, demo', cuisine_ids: [1] });
   db.prepare('UPDATE restaurants SET is_demo = 1 WHERE id = ?').run(r.id);
 }
-console.log('Tayyor. Brauzerda: http://localhost:3917/?dev=301');
+// 11-bosqich: Markaz uchun demo ega (101) va ulangan kuryer (103).
+if (markaz && !db.prepare('SELECT 1 FROM staff WHERE restaurant_id = ? AND user_id = 101').get(markaz)) {
+  s.users.upsertFromTelegram({ id: 101, first_name: 'Demo ega' });
+  s.users.upsertFromTelegram({ id: 103, first_name: 'Demo kuryer' });
+  s.restaurants.addStaff(markaz, 101, 'owner', ADMIN);
+  const cid = s.restaurants.addCourier(markaz, { userId: 103, name: 'Demo kuryer', phone: '+998901110000', transport: 'moto' });
+  db.prepare('UPDATE couriers SET is_online = 1 WHERE id = ?').run(cid);
+}
+console.log('Tayyor. Brauzerda: http://localhost:3917/?dev=301 (ega: ?dev=101, admin: ?dev=900)');
 db.close();

@@ -188,6 +188,33 @@ export function createApp({ config, services, logger = console }) {
     const orders = services.orders.listForRestaurant(req.actor, v.id(req.params.rid, 'rid'), { status: req.query.status });
     res.json({ ok: true, orders });
   });
+  // --- Restoran paneli bo'limlari (11-bosqich) ---
+  const rid = (req) => v.id(req.params.rid, 'rid');
+  const M = services.manage;
+  api.get('/panel/restaurants/:rid/board', (req, res) => res.json({ ok: true, ...M.orders(req.actor, rid(req), req.query.group || 'new') }));
+  api.post('/panel/orders/:id/courier', (req, res) => {
+    M.assignCourier(req.actor, req.params.id, req.body?.courier_id ?? null);
+    res.json({ ok: true, order: services.orders.getForActor(req.actor, v.id(req.params.id)) });
+  });
+  api.get('/panel/restaurants/:rid/menu', (req, res) => res.json({ ok: true, ...M.menu(req.actor, rid(req)) }));
+  api.post('/panel/restaurants/:rid/categories', (req, res) => res.status(201).json({ ok: true, id: M.saveCategory(req.actor, rid(req), req.body || {}) }));
+  api.put('/panel/restaurants/:rid/categories/:cid', (req, res) => res.json({ ok: true, id: M.saveCategory(req.actor, rid(req), req.body || {}, req.params.cid) }));
+  api.delete('/panel/restaurants/:rid/categories/:cid', (req, res) => { M.deleteCategory(req.actor, rid(req), req.params.cid); res.json({ ok: true }); });
+  api.put('/panel/restaurants/:rid/categories-order', (req, res) => { M.reorderCategories(req.actor, rid(req), req.body?.ids); res.json({ ok: true }); });
+  api.post('/panel/restaurants/:rid/products', (req, res) => res.status(201).json({ ok: true, id: M.saveProduct(req.actor, rid(req), req.body || {}) }));
+  api.put('/panel/restaurants/:rid/products/:pid', (req, res) => res.json({ ok: true, id: M.saveProduct(req.actor, rid(req), req.body || {}, req.params.pid) }));
+  api.put('/panel/restaurants/:rid/products/:pid/availability', (req, res) => { M.setAvailability(req.actor, rid(req), req.params.pid, !!req.body?.available); res.json({ ok: true }); });
+  api.delete('/panel/restaurants/:rid/products/:pid', (req, res) => { M.deleteProduct(req.actor, rid(req), req.params.pid); res.json({ ok: true }); });
+  api.get('/panel/restaurants/:rid/couriers', (req, res) => res.json({ ok: true, couriers: M.couriers(req.actor, rid(req)) }));
+  api.post('/panel/restaurants/:rid/couriers', (req, res) => res.status(201).json({ ok: true, id: M.saveCourier(req.actor, rid(req), req.body || {}) }));
+  api.put('/panel/restaurants/:rid/couriers/:cid', (req, res) => res.json({ ok: true, id: M.saveCourier(req.actor, rid(req), req.body || {}, req.params.cid) }));
+  api.delete('/panel/restaurants/:rid/couriers/:cid', (req, res) => { M.removeCourier(req.actor, rid(req), req.params.cid); res.json({ ok: true }); });
+  api.get('/panel/restaurants/:rid/staff', (req, res) => res.json({ ok: true, staff: M.staffList(req.actor, rid(req)) }));
+  api.delete('/panel/restaurants/:rid/staff/:sid', (req, res) => { M.revokeStaff(req.actor, rid(req), req.params.sid); res.json({ ok: true }); });
+  api.put('/panel/restaurants/:rid/operations', (req, res) => { M.updateOperations(req.actor, rid(req), req.body || {}); res.json({ ok: true, restaurant: services.restaurants.getForPanel(req.actor, rid(req)) }); });
+  api.put('/panel/restaurants/:rid/profile', (req, res) => { M.updateProfile(req.actor, rid(req), req.body || {}); res.json({ ok: true, restaurant: services.restaurants.getForPanel(req.actor, rid(req)) }); });
+  api.get('/panel/restaurants/:rid/report', (req, res) => res.json({ ok: true, report: M.report(req.actor, rid(req)) }));
+
   api.put('/panel/restaurants/:rid/cuisines', (req, res) => {
     res.json({ ok: true, cuisines: services.catalog.setRestaurantCuisines(req.actor, v.id(req.params.rid, 'rid'), req.body?.cuisine_ids) });
   });

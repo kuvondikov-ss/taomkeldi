@@ -3,6 +3,10 @@
 import { now } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
+import { withinHours } from '../../public/js/shared/hours.js';
+
+// Hozir buyurtma qabul qiladimi: "ochiq/pauza" tugmasi VA ish vaqti.
+export const openNow = (r, ms) => r.is_open === 1 && withinHours(r.work_hours, ms);
 
 export const SORTS = ['recommended', 'rating', 'fast', 'cheap_delivery'];
 
@@ -31,7 +35,8 @@ export function createCatalogService(db, geo, access) {
       description: r.description,
       cover_path: r.cover_path,
       logo_path: r.logo_path,
-      is_open: r.is_open === 1,
+      is_open: openNow(r),
+      work_hours: r.work_hours,
       min_order: r.min_order,
       free_delivery_from: r.free_delivery_from,
       cuisines: cuisinesOf.all(r.id).map((c) => ({ ...c })),
@@ -147,12 +152,12 @@ export function createCatalogService(db, geo, access) {
     }
     const delivery = geo.deliveryFor(r, point);
     return {
-      restaurant: { id: r.id, name: r.name, is_open: r.is_open === 1, min_order: r.min_order, free_delivery_from: r.free_delivery_from },
+      restaurant: { id: r.id, name: r.name, is_open: openNow(r), min_order: r.min_order, free_delivery_from: r.free_delivery_from },
       delivery,
       lines,
       items_total: total,
       below_min_order: total < r.min_order,
-      can_order: r.is_open === 1 && delivery.deliverable && total > 0 && total >= r.min_order && lines.every((l) => l.status === 'ok'),
+      can_order: openNow(r) && delivery.deliverable && total > 0 && total >= r.min_order && lines.every((l) => l.status === 'ok'),
     };
   }
 

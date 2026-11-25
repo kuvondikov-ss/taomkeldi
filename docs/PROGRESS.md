@@ -16,8 +16,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 8 | Savat, checkout, buyurtma holatlari | ✅ bajarildi lokal, 150/150 test (2026-11-25); restoranga xabar — 12/13-bosqichda |
 | 9 | Naqd, karta o'tkazmasi, onlayn to'lov | ✅ bajarildi lokal, 166/166 test (2026-11-25); onlayn to'lov haqiqiy provayder bilan sinalmagan |
 | 10 | Platforma paneli va restoran ulash | ✅ bajarildi lokal, 176/176 test (2026-11-25) |
-| 11 | Restoran panelining bo'limlari | ⏭ navbatda |
-| 12 | Botni restoran guruhiga ulash | — |
+| 11 | Restoran panelining bo'limlari | ✅ bajarildi lokal, 190/190 test (2026-11-25) |
+| 12 | Botni restoran guruhiga ulash | ⏭ navbatda |
 | 13 | Bot xabarlari va tugmalar | — |
 | 14 | Restoran kuryerlari va dispetcher | — |
 | 15 | Jonli kuzatuv, tarix, profil | — |
@@ -108,7 +108,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Bloklangan restoran yangi buyurtma olmaydi | 10 | mavjud | test |
 | Demo ma'lumotni o'chirish (faqat `is_demo`, "DEMO" deb yozib tasdiqlash) | 10 | mavjud | test: haqiqiy restoran va buyurtma qoladi |
 | Egasining birinchi paneli — tayyorlik ro'yxati (7 band) | 10 | mavjud | `views/panel.js`, `/readiness` |
-| Restoran paneli | 11 | qisman | Panel ma'lumoti, buyurtmalar ro'yxati, to'lov rekvizitlari, rasm yuklash API |
+| Panel — buyurtmalar: 5 guruh, keyingi amal (15/30/45 daq, rad sabab bilan, tayyor, yo'lga, yetkazildi/topshirildi), to'lov tasdig'i, kuryer biriktirish, tafsilot (telefon, manzil, tarix), ovozli signal (yoqiladi/o'chiriladi) | 11 | mavjud | `views/panel-orders.js`, `/board`, `/panel/orders/:id/courier`; brauzerda |
+| Panel — menyu: kategoriyalar (qo'shish, nom, tartib, o'chirish), taom formasi (uz/ru, porsiya, narx, eski narx, rasm, ommabop), stop-list | 11 | mavjud | `views/panel-menu.js`; xato narx/fayl — maydon nomi bilan |
+| Panel — kuryerlar: qo'shish, taklif havolasi, holat, transport, bugungi yetkazish va naqd; faol buyurtmali kuryer uzilmaydi | 11 | mavjud | `views/panel-team.js`; test |
+| Panel — xodimlar: menejer taklifi, rol, kirishni bekor qilish; o'zini va oxirgi egani olib tashlab bo'lmaydi | 11 | mavjud | test |
+| Panel — sozlamalar: ochiq/pauza, ish vaqti (Toshkent vaqti, dam olish kunlari, yarim tundan o'tish), narx/radius/minimal/bepul, olib ketish, to'lov, guruh holati | 11 | mavjud | `views/panel-settings.js`, `shared/hours.js`; ish vaqtidan tashqarida buyurtma olinmaydi (test) |
+| Panel — hisobot: bugun/7 kun, kunlar bo'yicha, o'rtacha, ommabop, naqd va oldindan to'langan; "tushum" (sof foyda emas) | 11 | mavjud | test |
+| Ega va menejer farqi frontend va serverda | 11 | mavjud | `services/manage.js` boshidagi jadval |
 | Restoran guruhi | 12 | yo'q | `group_chat_id`, `order_messages` jadvallari bor |
 | Xabar shablonlari, outbox | 13 | yo'q | — |
 | Kuryerlar, dispetcher | 14 | qisman | Kuryer o'z buyurtmalari API; dispetcher yo'q |
@@ -185,6 +191,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Mini App: `#/apply`, `#/admin`, `#/panel`, `#/panel/:id`; xaritada nuqta tanlash ariza uchun ham ishlaydi; `promptDialog` (sabab yozish).
 - Sinov: 176/176; brauzerda: admin paneli (ko'rsatkichlar, ariza tasdiqlash, restoranlar), egasining tayyorlik ro'yxati, ariza formasi (nuqta majburiy).
 - Cheklov: xabarlar hozircha bir martalik yuboriladi (qayta urinish — 13-bosqich).
+
+## 11-bosqich natijasi
+- Server: `services/manage.js` (buyurtmalar paneli, kuryer biriktirish, menyu, kuryerlar, xodimlar, sozlamalar, hisobot), `public/js/shared/hours.js` (ish vaqti — server va Mini App bir xil); "ochiq" = tugma VA ish vaqti (katalog, checkout, to'lov).
+- Mini App: `#/panel/:id/{orders,menu,couriers,staff,settings,report}`, rasm yuklash (`api.upload`), `ApiError.details` (qaysi maydon xato).
+- Vakolatlar: ega+menejer — buyurtmalar, menyu, kuryerlar, ish holati/vaqti, hisobot; faqat ega — ma'lumot, yetkazish narxi/hududi, minimal/bepul, olib ketish, to'lov, xodimlar.
+- Sinov: 190/190 (13 ta yangi panel testi + tarjima kalitlari testi); brauzerda ega sifatida: buyurtmani qabul qilish → kuryer biriktirish → tayyor → yo'lga, menyu, sozlamalarni saqlash, hisobot.
+- Tuzatildi: Mini App tarjimasida takroriy kalit (`profile_title`) — endi test ushlaydi.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

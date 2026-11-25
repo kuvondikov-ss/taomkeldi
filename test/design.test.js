@@ -25,6 +25,19 @@ test('original logo va variantlar mavjud, original o\'zgarmagan shakllarda', () 
   assert.ok(fs.statSync(dir + 'banner-food.webp').size > 1000, 'banner fotosi');
 });
 
+test('Mini App tarjimalari: uz/ru kalitlari bir xil va takrorlanmaydi', async () => {
+  const src = fs.readFileSync('public/js/app/i18n.js', 'utf8');
+  for (const name of ['uz', 'ru']) {
+    const start = src.indexOf(`const ${name} = {`);
+    const body = src.slice(start, src.indexOf('\n};', start));
+    const keys = [...body.matchAll(/(?:^|[\s,{])([a-z_][a-z0-9_]*):\s*'/g)].map((m) => m[1]);
+    const dups = keys.filter((k, i) => keys.indexOf(k) !== i);
+    assert.deepEqual(dups, [], `${name}: takroriy kalitlar`);
+  }
+  const { DICTS } = await import('../public/js/app/i18n.js');
+  assert.deepEqual(Object.keys(DICTS.uz).sort(), Object.keys(DICTS.ru).sort());
+});
+
 test('Mini App sahifalarida emoji ishlatilmagan, ranglar faqat tokenlardan', () => {
   const emoji = /\p{Extended_Pictographic}/u;
   for (const f of ['public/index.html', 'public/ui-kit.html', 'public/css/components.css', 'public/js/ui/components.js']) {

@@ -1,6 +1,9 @@
 import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
+import { withinHours } from '../../public/js/shared/hours.js';
+
+const openNow = (r) => r.is_open === 1 && withinHours(r.work_hours);
 
 export function createRestaurantService(db, access, geo) {
   const getStmt = db.prepare('SELECT * FROM restaurants WHERE id = ?');
@@ -10,7 +13,7 @@ export function createRestaurantService(db, access, geo) {
     'free_delivery_from', 'pickup_enabled', 'logo_path', 'cover_path', 'delivery_radius_m'];
   const toPublic = (r, delivery) => ({
     ...Object.fromEntries(PUBLIC_FIELDS.map((k) => [k, r[k]])),
-    is_open: r.is_open === 1,
+    is_open: openNow(r),
     delivery,
   });
 
@@ -36,7 +39,7 @@ export function createRestaurantService(db, access, geo) {
   function assertCanDeliver(restaurantId, point) {
     const r = getRaw(restaurantId);
     if (!r || r.status !== 'active') throw new AppError('NOT_FOUND');
-    if (!r.is_open) throw new AppError('CONFLICT', { details: { reason: 'restaurant_closed' } });
+    if (!openNow(r)) throw new AppError('CONFLICT', { details: { reason: 'restaurant_closed' } });
     const d = geo.deliveryFor(r, point);
     if (!d.deliverable) throw new AppError('NOT_DELIVERABLE', { details: { reason: d.reason } });
     return { restaurant: r, delivery: d };

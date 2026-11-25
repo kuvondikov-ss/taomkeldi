@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 10-bosqich (platforma paneli, restoranlarni ulash) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 11-bosqich (restoran paneli bo'limlari) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -85,6 +85,14 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | POST | `/api/admin/restaurants/:id/approve\|reject\|block\|unblock` | qarorlar (rad va bloklash — sabab bilan) |
 | POST | `/api/admin/demo/delete` `{confirm:"DEMO"}` | faqat demo restoranlarni o'chirish |
 | GET | `/api/panel/restaurants/:rid/readiness` | egasining tayyorlik ro'yxati |
+| GET | `/api/panel/restaurants/:rid/board?group=new\|preparing\|ready\|on_way\|done` | panel buyurtmalari |
+| POST | `/api/panel/orders/:id/courier` | o'z kuryerini biriktirish/almashtirish |
+| GET/POST/PUT/DELETE | `/api/panel/restaurants/:rid/menu`, `/categories[/:cid]`, `/categories-order`, `/products[/:pid]`, `/products/:pid/availability` | menyu |
+| GET/POST/PUT/DELETE | `/api/panel/restaurants/:rid/couriers[/:cid]` | kuryerlar |
+| GET/DELETE | `/api/panel/restaurants/:rid/staff[/:sid]` | xodimlar (olib tashlash — faqat ega) |
+| PUT | `/api/panel/restaurants/:rid/operations` | ochiq/pauza, ish vaqti, tayyorlash vaqti, dispetcher (ega, menejer) |
+| PUT | `/api/panel/restaurants/:rid/profile` | ma'lumot, rasm, yetkazish narxi/hududi, minimal, bepul, olib ketish (faqat ega) |
+| GET | `/api/panel/restaurants/:rid/report` | hisobot (tushum — xarajatsiz) |
 
 ## Bot buyruqlari
 Shaxsiy chat: `/start`, `/menu`, `/orders`, `/admin` (`/panel`), `/courier`, `/help`, `/id`. Guruh: `/bogla`, `/help`.

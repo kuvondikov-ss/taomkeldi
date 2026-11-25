@@ -49,6 +49,7 @@ export function renderProfile(el, _p, _m, { go }) {
       <div class="list">
         <div class="list-item" style="cursor:default">${icon('user')}<span class="grow h3" id="name"></span></div>
         <button class="list-item" id="addresses">${icon('pin')}<span class="grow">${t('addresses_title')}</span>${icon('chevron')}</button>
+        <button class="list-item" data-go="apply">${icon('store')}<span class="grow">${t('connect_restaurant')}</span>${icon('chevron')}</button>
       </div>
       <div class="field">
         <span class="label">${t('language')}</span>

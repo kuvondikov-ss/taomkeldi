@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 9-bosqich (naqd, karta o'tkazmasi, onlayn to'lov) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 10-bosqich (platforma paneli, restoranlarni ulash) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -80,6 +80,11 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | GET/POST | `/api/panel/restaurants/:rid/invites` | taklif havolalari: ega (`kind=owner`) — admin, menejer — ega, kuryer — ega/menejer |
 | DELETE | `/api/panel/restaurants/:rid/invites/:id` | taklifni bekor qilish |
 | GET/POST | `/api/admin/restaurants` | platforma admini |
+| POST | `/api/applications`; GET `/api/applications/mine` | restoran arizasi (nom, telefon, tavsif, nuqta, oshxona turlari) |
+| GET | `/api/admin/overview`, `/api/admin/restaurants/list?status=` | platforma ko'rsatkichlari va restoranlar |
+| POST | `/api/admin/restaurants/:id/approve\|reject\|block\|unblock` | qarorlar (rad va bloklash — sabab bilan) |
+| POST | `/api/admin/demo/delete` `{confirm:"DEMO"}` | faqat demo restoranlarni o'chirish |
+| GET | `/api/panel/restaurants/:rid/readiness` | egasining tayyorlik ro'yxati |
 
 ## Bot buyruqlari
 Shaxsiy chat: `/start`, `/menu`, `/orders`, `/admin` (`/panel`), `/courier`, `/help`, `/id`. Guruh: `/bogla`, `/help`.

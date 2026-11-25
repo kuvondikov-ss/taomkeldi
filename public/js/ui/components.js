@@ -83,6 +83,36 @@ export function confirmDialog({ title, text = '', confirm = 'Tasdiqlash', cancel
   });
 }
 
+// --- Matn so'raydigan dialog (masalan, rad etish sababi). Bekor qilinsa null. ---
+export function promptDialog({ title, label = '', confirm = 'OK', cancel = 'Bekor qilish', minLength = 1, danger = false, placeholder = '' }) {
+  return new Promise((resolve) => {
+    const d = document.createElement('dialog');
+    d.className = 'dialog';
+    d.innerHTML = `
+      <h2 class="h2">${esc(title)}</h2>
+      ${label ? `<p class="small text-2">${esc(label)}</p>` : ''}
+      <textarea class="textarea" maxlength="300" placeholder="${esc(placeholder)}"></textarea>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" value="cancel">${esc(cancel)}</button>
+        <button class="btn ${danger ? 'btn-danger' : 'btn-primary'}" value="ok" disabled>${esc(confirm)}</button>
+      </div>`;
+    document.body.append(d);
+    const ta = d.querySelector('textarea');
+    const ok = d.querySelector('[value="ok"]');
+    ta.addEventListener('input', () => { ok.disabled = ta.value.trim().length < minLength; });
+    let done = false;
+    const finish = (v) => { if (done) return; done = true; if (d.open) d.close(); d.remove(); resolve(v); };
+    d.addEventListener('click', (e) => {
+      const v = e.target.closest('button')?.value;
+      if (v === 'ok') finish(ta.value.trim());
+      else if (v === 'cancel') finish(null);
+    });
+    d.addEventListener('cancel', () => finish(null));
+    d.showModal();
+    ta.focus();
+  });
+}
+
 // --- Tugma yuklanish holati ---
 export function setLoading(button, loading) {
   button.classList.toggle('is-loading', loading);

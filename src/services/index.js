@@ -11,6 +11,8 @@ import { createGeocoderService } from './geocoder.js';
 import { createCatalogService } from './catalog.js';
 import { createCheckoutService } from './checkout.js';
 import { createPaymentService } from './payments.js';
+import { createNotifyService } from './notify.js';
+import { createPlatformService } from './platform.js';
 
 export function createServices(db, config, { fetchImpl } = {}) {
   const geo = createGeoService();
@@ -25,5 +27,9 @@ export function createServices(db, config, { fetchImpl } = {}) {
   const catalog = createCatalogService(db, geo, access);
   const payments = createPaymentService(db, config, { access, orders });
   const checkout = createCheckoutService(db, { geo, addresses, users, payments });
-  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments };
+  const notify = createNotifyService(users);
+  const platform = createPlatformService(db, { access, restaurants, geo, catalog, notify, users });
+  // Bot ishga tushganda: xabar yuborish va onlayn to'lov uchun Telegram API.
+  const setBotApi = (api) => { payments.setBotApi(api); notify.setBotApi(api); };
+  return { geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, setBotApi };
 }

@@ -149,6 +149,8 @@ export function createBot({ config, services, logger = console, botInfo }) {
   async function startApplication(ctx) {
     const pending = restaurants.pendingApplicationOf(ctx.user);
     if (pending) return ctx.reply(ctx.t('apply_exists', { name: pending.name }), { ...html, reply_markup: mainKeyboard(ctx) });
+    // To'liq ariza (xaritadagi nuqta, oshxona turlari) — Mini App'da. Ilova ulanmagan bo'lsa — bot orqali qisqa ariza.
+    if (config.webapp.ok) return replyWithApp(ctx, ctx.t('apply_in_app'), 'apply');
     convos.set(ctx.user.id, { step: 'name', at: Date.now() });
     return ctx.reply(ctx.t('apply_name'), { reply_markup: new Keyboard().text(ctx.t('btn_cancel')).resized() });
   }

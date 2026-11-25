@@ -58,5 +58,12 @@ if (markaz) {
 }
 // 9-bosqich: karta o'tkazmasi (DEMO karta).
 if (markaz) db.prepare("UPDATE restaurants SET pay_card_transfer = 1, card_number = '8600000000000000', card_holder = 'DEMO KARTA' WHERE id = ?").run(markaz);
+// 10-bosqich: demo belgisi va bitta kutilayotgan ariza (302-foydalanuvchidan).
+db.prepare("UPDATE restaurants SET is_demo = 1 WHERE name LIKE '[DEMO]%'").run();
+s.users.upsertFromTelegram({ id: 302, first_name: 'Ariza beruvchi' });
+if (!db.prepare('SELECT 1 FROM restaurants WHERE applicant_id = 302').get()) {
+  const r = s.platform.apply(s.users.get(302), { name: '[DEMO] Yangi Kafe', phone: '+998901112244', description: 'Demo ariza', lat: 40.13, lon: 67.83, address_text: 'Jizzax, demo', cuisine_ids: [1] });
+  db.prepare('UPDATE restaurants SET is_demo = 1 WHERE id = ?').run(r.id);
+}
 console.log('Tayyor. Brauzerda: http://localhost:3917/?dev=301');
 db.close();

@@ -11,6 +11,9 @@ import { renderRestaurant } from './views/restaurant.js';
 import { renderCart } from './views/cart.js';
 import { renderCheckout } from './views/checkout.js';
 import { renderOrder } from './views/order.js';
+import { renderAdmin } from './views/admin.js';
+import { renderPanelList, renderPanel } from './views/panel.js';
+import { renderApply } from './views/apply.js';
 import { renderPicker } from './views/picker.js';
 import { renderAddressForm } from './views/address-form.js';
 import { renderAddresses } from './views/addresses.js';
@@ -39,7 +42,11 @@ const ROUTES = [
   [/^address\/pick$/, renderPicker, { fullscreen: true }],
   [/^address\/new$/, (el, p, _m, ctx) => renderAddressForm(el, null, p, ctx), {}],
   [/^address\/(\d+)\/edit$/, (el, p, m, ctx) => renderAddressForm(el, Number(m[1]), p, ctx), {}],
-  [/^(panel|courier|admin)$/, (el, p, m) => renderSoon(el, m[1], 'section_soon'), {}],
+  [/^admin$/, renderAdmin, {}],
+  [/^panel$/, renderPanelList, {}],
+  [/^panel\/(\d+)$/, renderPanel, {}],
+  [/^apply$/, renderApply, {}],
+  [/^courier$/, (el, p, m) => renderSoon(el, 'courier', 'section_soon'), {}],
 ];
 
 function parseHash() {

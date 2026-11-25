@@ -315,6 +315,26 @@ const migrations = [
       CREATE INDEX idx_payments_order ON payments(order_id);
     `,
   },
+  {
+    id: 6,
+    name: 'platform',
+    sql: `
+      -- Faqat demo/sinov restoranlari. "Demo ma'lumotni o'chirish" faqat shularga tegadi.
+      ALTER TABLE restaurants ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0;
+      -- Restoran holati o'zgarishlari (kim, qachon, nima, sabab).
+      CREATE TABLE restaurant_events (
+        id            INTEGER PRIMARY KEY,
+        restaurant_id INTEGER NOT NULL REFERENCES restaurants(id),
+        actor_id      INTEGER REFERENCES users(id),
+        type          TEXT NOT NULL,
+        from_status   TEXT,
+        to_status     TEXT,
+        reason        TEXT,
+        created_at    INTEGER NOT NULL
+      );
+      CREATE INDEX idx_restaurant_events ON restaurant_events(restaurant_id, created_at);
+    `,
+  },
 ];
 
 export function migrate(db) {

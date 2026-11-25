@@ -23,7 +23,7 @@ if (!config.botToken) {
   console.warn('BOT_ENABLED=0: bot ishga tushirilmadi (faqat HTTP).');
 } else {
   bot = createBot({ config, services });
-  services.payments.setBotApi(bot.bot.api); // onlayn to'lov havolasi uchun
+  services.setBotApi(bot.bot.api); // xabarlar va onlayn to'lov havolasi uchun
   await bot.start();
 }
 if (config.payments.providerToken && !bot) console.warn('PAYMENT_PROVIDER_TOKEN bor, lekin bot ishlamayapti: onlayn to\'lov ko\'rsatilmaydi.');

@@ -73,6 +73,7 @@ export default {
   invite_invalid: 'Taklif havolasi yaroqsiz, ishlatilgan yoki muddati o‘tgan. Restorandan yangi havola so‘rang.',
   invite_blocked: 'Bu restoran hozir faol emas. Havola ishlamaydi.',
 
+  apply_in_app: 'Restoran arizasini ilovada to‘ldiring: nom, telefon, tavsif, xaritadagi joylashuv va oshxona turlari.',
   apply_name: 'Restoraningiz nomini yozing:',
   apply_phone: 'Bog‘lanish uchun telefon raqamini yuboring:',
   apply_phone_invalid: 'Raqam noto‘g‘ri. Masalan: +998 90 123 45 67',
@@ -81,6 +82,10 @@ export default {
   apply_admin: '<b>Yangi restoran arizasi #{id}</b>\n{name}\nTelefon: {phone}\nAriza beruvchi: {user}',
   payment_ok: '✅ To‘lov qabul qilindi. Buyurtma #{id} restoranga yuborildi.',
   payment_late: 'To‘lov keldi, lekin buyurtma #{id} allaqachon bekor qilingan. Pulni qaytarish so‘raldi — administrator siz bilan bog‘lanadi.',
+  app_approved: '🎉 <b>{name}</b> restorani tasdiqlandi. Siz restoran egasisiz.\nKeyingi qadam: /admin → tayyorlik ro‘yxatini to‘ldiring (menyu, ish vaqti, yetkazish hududi, to‘lov, kuryer, guruh).',
+  app_rejected: '<b>{name}</b> arizasi rad etildi.\nSabab: {reason}\nKamchilikni tuzatib, qayta ariza yuborishingiz mumkin.',
+  restaurant_blocked: '<b>{name}</b> restorani vaqtincha bloklandi — yangi buyurtmalar qabul qilinmaydi.\nSabab: {reason}',
+  restaurant_unblocked: '<b>{name}</b> restorani qayta faollashtirildi.',
   cancelled: 'Bekor qilindi.',
   menu_hint: 'Menyudan tanlang.',
 };

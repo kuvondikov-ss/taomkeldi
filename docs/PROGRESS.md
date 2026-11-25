@@ -15,8 +15,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 7 | Restoran menyusi va taom oynasi | ✅ bajarildi lokal, 131/131 test (2026-11-25) |
 | 8 | Savat, checkout, buyurtma holatlari | ✅ bajarildi lokal, 150/150 test (2026-11-25); restoranga xabar — 12/13-bosqichda |
 | 9 | Naqd, karta o'tkazmasi, onlayn to'lov | ✅ bajarildi lokal, 166/166 test (2026-11-25); onlayn to'lov haqiqiy provayder bilan sinalmagan |
-| 10 | Platforma paneli va restoran ulash | ⏭ navbatda |
-| 11 | Restoran panelining bo'limlari | — |
+| 10 | Platforma paneli va restoran ulash | ✅ bajarildi lokal, 176/176 test (2026-11-25) |
+| 11 | Restoran panelining bo'limlari | ⏭ navbatda |
 | 12 | Botni restoran guruhiga ulash | — |
 | 13 | Bot xabarlari va tugmalar | — |
 | 14 | Restoran kuryerlari va dispetcher | — |
@@ -101,7 +101,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Qaytarish: so'raldi (`refund_requested`) va qaytarildi (`refunded`) alohida | 9 | mavjud | "qaytarildi"ni faqat ega/admin belgilaydi |
 | Savat, checkout, holat o'tishlari | 8 | yo'q | Asos: `createRecord` |
 | To'lovlar | 9 | yo'q | `payment_status` ustuni bor |
-| Platforma paneli, restoran arizasi | 10 | qisman | `/api/admin/restaurants` (ro'yxat, yaratish) |
+| A yo'l: ariza (nom, telefon, tavsif, Jizzaxdagi nuqta, oshxona turlari) | 10 | mavjud | `views/apply.js`, `POST /api/applications`; bot "Restoran ulash" Mini App formasiga yo'naltiradi (ilova bo'lmasa — botda qisqa ariza) |
+| Admin qarori: tasdiq (ariza beruvchi — ega), rad (sabab), bloklash/faollashtirish (sabab); egaga xabar | 10 | mavjud | `services/platform.js`, `restaurant_events`; testlar |
+| B yo'l: admin yaratadi → egasiga bir martalik havola (qayta chiqarish eskisini bekor qiladi) | 10 | mavjud | `views/admin.js` "Egasiga havola"; test |
+| Platforma paneli: ko'rsatkichlar, arizalar, restoranlar, panelga kirish | 10 | mavjud | `views/admin.js`; brauzerda 390 px |
+| Bloklangan restoran yangi buyurtma olmaydi | 10 | mavjud | test |
+| Demo ma'lumotni o'chirish (faqat `is_demo`, "DEMO" deb yozib tasdiqlash) | 10 | mavjud | test: haqiqiy restoran va buyurtma qoladi |
+| Egasining birinchi paneli — tayyorlik ro'yxati (7 band) | 10 | mavjud | `views/panel.js`, `/readiness` |
 | Restoran paneli | 11 | qisman | Panel ma'lumoti, buyurtmalar ro'yxati, to'lov rekvizitlari, rasm yuklash API |
 | Restoran guruhi | 12 | yo'q | `group_chat_id`, `order_messages` jadvallari bor |
 | Xabar shablonlari, outbox | 13 | yo'q | — |
@@ -172,6 +178,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Mini App: checkout'da usul izohlari; buyurtma sahifasida karta bloki (nusxalash, muddat, "To'ladim"), tekshirilmoqda/tasdiqlandi, onlayn "To'lash" (`openInvoice`), muddat o'tgani/rad etilgani haqida yordam.
 - Sinov: 166/166 (16 ta yangi: takror "To'ladim", soxta chaqiruv, begona mijoz, tasdiqlanmagan o'tkazmani qabul qilish, kech to'lov, takror to'lov hodisasi, summa mos emas, muddat).
 - Onlayn to'lov uchun kerak: @BotFather → Payments → provayder (masalan Click yoki Payme) → `PAYMENT_PROVIDER_TOKEN`; restoran sozlamasida onlayn yoqilgan bo'lishi.
+
+## 10-bosqich natijasi
+- Migratsiya 6: `restaurants.is_demo`, `restaurant_events`.
+- Server: `services/platform.js`, `services/notify.js` (bot orqali xabar, xato bo'lsa amal buzilmaydi); `services.setBotApi`.
+- Mini App: `#/apply`, `#/admin`, `#/panel`, `#/panel/:id`; xaritada nuqta tanlash ariza uchun ham ishlaydi; `promptDialog` (sabab yozish).
+- Sinov: 176/176; brauzerda: admin paneli (ko'rsatkichlar, ariza tasdiqlash, restoranlar), egasining tayyorlik ro'yxati, ariza formasi (nuqta majburiy).
+- Cheklov: xabarlar hozircha bir martalik yuboriladi (qayta urinish — 13-bosqich).
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

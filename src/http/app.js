@@ -226,7 +226,25 @@ export function createApp({ config, services, logger = console }) {
     res.json({ ok: true });
   });
 
+  // --- Restoranni ulash: ariza (A yo'l) ---
+  api.post('/applications', async (req, res) => {
+    const r = services.platform.apply(req.actor, req.body || {});
+    services.platform.notifyAdminsAboutApplication(r).catch(() => {});
+    res.status(201).json({ ok: true, restaurant: { id: r.id, name: r.name, status: r.status } });
+  });
+  api.get('/applications/mine', (req, res) => res.json({ ok: true, applications: services.platform.myApplications(req.actor) }));
+  api.get('/panel/restaurants/:rid/readiness', (req, res) => {
+    res.json({ ok: true, ...services.platform.readiness(req.actor, v.id(req.params.rid, 'rid')) });
+  });
+
   // --- Platforma administratori ---
+  api.get('/admin/overview', (req, res) => res.json({ ok: true, overview: services.platform.overview(req.actor) }));
+  api.get('/admin/restaurants/list', (req, res) => res.json({ ok: true, restaurants: services.platform.list(req.actor, { status: req.query.status || undefined }) }));
+  api.post('/admin/restaurants/:id/approve', async (req, res) => res.json({ ok: true, restaurant: await services.platform.approve(req.actor, req.params.id) }));
+  api.post('/admin/restaurants/:id/reject', async (req, res) => res.json({ ok: true, restaurant: await services.platform.reject(req.actor, req.params.id, req.body?.reason) }));
+  api.post('/admin/restaurants/:id/block', async (req, res) => res.json({ ok: true, restaurant: await services.platform.block(req.actor, req.params.id, req.body?.reason) }));
+  api.post('/admin/restaurants/:id/unblock', async (req, res) => res.json({ ok: true, restaurant: await services.platform.unblock(req.actor, req.params.id) }));
+  api.post('/admin/demo/delete', (req, res) => res.json({ ok: true, deleted: services.platform.deleteDemo(req.actor, req.body?.confirm) }));
   api.get('/admin/restaurants', (req, res) => res.json({ ok: true, restaurants: services.restaurants.listAll(req.actor) }));
   api.post('/admin/restaurants', (req, res) => {
     res.status(201).json({ ok: true, restaurant: services.restaurants.create(req.actor, req.body || {}) });

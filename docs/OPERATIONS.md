@@ -5,13 +5,19 @@
 - Qurish: Railpack (`railway.json`), ishga tushirish: `npm start`, healthcheck: `GET /health` (baza o'qilmasa 503), qayta ishga tushirish: xatoda, 10 marta.
 - Bot long polling bilan ishlaydi → **bir vaqtda faqat bitta nusxa** (replicas = 1). Ikkinchi nusxa paydo bo'lsa Telegram 409 qaytaradi, jarayon to'xtaydi va Railway qayta ishga tushiradi. SIGTERM'da bot to'xtatiladi va HTTP yopiladi.
 
-### 2026-11-25 dagi holat (faqat o'qib tekshirildi)
+### Joriy holat — production (2026-11-25 deploy)
 | Narsa | Holat |
 |---|---|
-| Servis | `Taomkeldi`, 1 replika, region iad, oxirgi deploy SUCCESS (eski oddiy bot) |
-| Volume | **yo'q** — hozirgi holatda har deployda ma'lumot o'chadi |
-| Domen | **yo'q** — Mini App uchun HTTPS manzil yo'q |
-| O'zgaruvchilar (faqat nomlar) | `ADMIN_CHAT_ID`, `taomkeldi_bot` (token; kod `BOT_TOKEN` yoki shu nomni o'qiydi) |
+| Kod | GitHub `kuvondikov-ss/taomkeldi`, **commit `bd39cd3` ga qadalgan** (main'ga push avtomatik deploy QILMAYDI — yangi versiya faqat buyruq bilan) |
+| Servis | `Taomkeldi`, 1 replika, iad; deploy SUCCESS; log: `@taomkeldi_bot ishga tushdi` |
+| Volume | `taomkeldi-data` → `/data` (baza `/data/taomkeldi.db`, rasmlar `/data/uploads`) |
+| Domen | `https://taomkeldi-production.up.railway.app` (= `WEBAPP_URL`, bot menyu tugmasi shu manzilga) |
+| Healthcheck | `/health` → `db: ok`, `migration: 10`, `bot: running`, `version: bd39cd3` |
+| O'zgaruvchilar (faqat nomlar) | `BOT_TOKEN`, `ADMIN_CHAT_ID`, `DATA_DIR`, `WEBAPP_URL`; eski `taomkeldi_bot` — **yaroqsiz qiymat** (Telegram 404), kod `BOT_TOKEN` ni birinchi o'qiydi; o'chirib tashlash mumkin |
+
+Deploy paytida topilgan muammo: `taomkeldi_bot` o'zgaruvchisidagi token buzilgan edi (`getMe` → 404), birinchi deploy CRASHED. Lokal `.env` dagi to'g'ri token `BOT_TOKEN` sifatida (Railway CLI orqali, chatga chiqarilmasdan) qo'yildi — ikkinchi deploy SUCCESS.
+
+Yangi versiyani chiqarish: commit'ni GitHub'ga push → sinov → servis manbasini yangi commit SHA ga qadash (Railway dashboard → Settings → Source, yoki MCP `connect-service-source` `commitSha` bilan) → deploy → `/health` dagi `version`.
 
 ### "deploy qil" buyrug'idan keyin bajariladigan reja
 1. `Taomkeldi` servisiga volume qo'shish, mount: `/data`.

@@ -21,8 +21,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 13 | Bot xabarlari va tugmalar | ✅ bajarildi lokal, 241/241 test (2026-11-25) |
 | 14 | Restoran kuryerlari va dispetcher | ✅ bajarildi lokal, 259/259 test (2026-11-25) |
 | 15 | Jonli kuzatuv, tarix, profil | ✅ bajarildi lokal, 273/273 test (2026-11-25) |
-| 16 | "Bepul yetkazib berish" bo'limi | ⏭ navbatda |
-| 17 | Barcha ekranlarning yakuniy dizayni | — |
+| 16 | "Bepul yetkazib berish" bo'limi | ✅ bajarildi lokal, 284/284 test (2026-11-25) |
+| 17 | Barcha ekranlarning yakuniy dizayni | ⏭ navbatda |
 | 18 | Yakuniy sinov, Railway, topshirish | — |
 
 ## Production holati
@@ -129,7 +129,7 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Xabar shablonlari, outbox | 13 | mavjud | yuqoridagi 13-bosqich qatorlari |
 | Kuryerlar, dispetcher | 14 | mavjud | quyidagi 14-bosqich natijasi |
 | Kuzatuv, profil, sevimlilar | 15 | mavjud | quyidagi 15-bosqich natijasi |
-| Bepul yetkazish | 16 | yo'q | `free_delivery_from` ustuni bor |
+| Bepul yetkazish | 16 | mavjud | quyidagi 16-bosqich natijasi |
 
 ## 2-bosqich natijasi
 - Yangi: `src/index.js`, `src/config.js`, `src/db/{index,migrations}.js`, `src/lib/{errors,validate}.js`, `src/services/{index,users,access,restaurants,orders,addresses,uploads}.js`, `src/http/{app,initData}.js`, `src/bot/index.js`, `public/index.html`, `test/{helpers,foundation.test}.js`, `README.md`.
@@ -245,6 +245,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Qayta buyurtma: `POST /api/orders/:id/reorder` — joriy narx, mavjudlik, restoran holati va yetkazish qayta tekshiriladi; o'zgarishlar tasdiq oynasida.
 - Tarix: sana, taomlar soni, jami, holat, baho; faol buyurtmalar "kuzatish". Profil: ism va telefon (tahrirlanadi), manzillar, sevimlilar, buyurtmalar, til, yordam, loyiha haqida ("DasturXona'ning yangi loyihasi"), ish rollari "Ish bo'limlari"da.
 - Sinov: 273/273 (14 ta yangi: chegaralar, yangi/eski/juda eski joylashuv, kuryer almashishi, GPS uzilishi, yetkazilgandan keyin, begona buyurtma, offline kuryer, baholash, qayta buyurtma, tarix, til). Brauzerda: xarita va kuryer (jonli va "oxirgi"), baholash, qayta buyurtma → savat, profil kontakti, rus tili.
+
+## 16-bosqich natijasi
+- Bitta qoida: `public/js/shared/geo-core.js` `freeDeliveryInfo` → `free_delivery = { kind, threshold, applied, left, now_free }`: `always` (shu manzilga narx haqiqatan 0), `threshold` ("[summa] so'mdan bepul"; savat bo'lsa applied/left), `none`, `unavailable` (manzil yaroqsiz/radiusdan tashqari — hech qachon 0 so'm emas), `pickup` (olib ketish — aksiya emas). Savatsiz shartli taklif hech qachon `now_free` emas.
+- Server javoblari: ro'yxat va restoran kartasi (`free_delivery`), `/api/restaurants?free=1` (bo'lim filtri) va `free_delivery_count`, `/cart/check`, `/checkout/quote` (yetkazib bo'lmasa `delivery_fee` va `total` — `null`), buyurtma snapshot, guruh va mijoz xabari ("Yetkazish: 0 so'm — bepul"), hisobot (`free_deliveries`).
+- Chegara taomlar summasiga (chegirmadan keyin, yetkazishsiz) taqqoslanadi; `free_delivery_from = 0` — "hamma uchun bepul" emas; minimal buyurtma, ochiqlik va mavjudlik baribir tekshiriladi; "Arzon yetkazish" saralashi alohida.
+- Mini App: bosh sahifada "Bepul yetkazish" chipi (soni bilan) → "Hozir bepul" va "Summadan bepul" guruhlari; kartada "Yetkazish bepul" belgisi yoki "[summa] so'mdan bepul"; savat/checkout — qoldiq va "0 so'm — bepul"; restoran sozlamasida "Mijoz qanday ko'radi" ko'rinishi (xarajat restoran hisobidan, platforma subsidiyasi yo'q).
+- Sinov: 284/284 (11 ta yangi: N−1/N/N+1, mahsulot olib tashlash, manzil/radius, yopiq, minimal, olib ketish, doimiy 0, buyurtma va xabarlarda jami tengligi, hisobot, bo'lim filtri). Brauzerda: bo'lim, chip, sozlama ko'rinishi.
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

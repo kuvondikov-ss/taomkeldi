@@ -206,3 +206,6 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Mijoz kuryer joylashuvini faqat "yo'lda" bosqichida ko'radi; xodim — kuryer biriktirilgan har faol bosqichda | Kuryer shaxsiy harakati keraksiz oshkor bo'lmasligi |
 | 2026-11-25 | Joylashuv yozish sharti: kuryer ishda YOKI faol (accepted/ready/on_way) buyurtmasi bor | Smenani yopgan, lekin yetkazayotgan kuryer kuzatuvdan chiqib qolmasligi |
 | 2026-11-25 | Baho — buyurtmaga bitta yozuv (`order_ratings`), qayta baholash farq bilan `rating_sum` ni tuzatadi | Reyting sonini sun'iy oshirib bo'lmasligi |
+| 2026-11-25 | Bepul yetkazish tasnifi bitta funksiyada (`freeDeliveryInfo`): always / threshold / none / unavailable / pickup; yetkazib bo'lmaydigan manzilda narx `null` | "0 so'm"ni xato yoki manzil yo'qligi bilan adashtirmaslik |
+| 2026-11-25 | "Hozir bepul" — faqat narx haqiqatan 0 yoki savat chegaraga yetganda; savatsiz chegara — "summadan bepul" | Shartli taklifni shartsiz deb ko'rsatmaslik |
+| 2026-11-25 | Bepul yetkazish xarajati — restoranniki (o'z kuryerlari); platforma subsidiyasi yoki aksiya budjeti yaratilmadi | Promptdagi model |

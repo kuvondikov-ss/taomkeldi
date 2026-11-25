@@ -4,6 +4,7 @@ import { now } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
 import { withinHours } from '../../public/js/shared/hours.js';
+import { freeDeliveryInfo } from '../../public/js/shared/geo-core.js';
 
 // Hozir buyurtma qabul qiladimi: "ochiq/pauza" tugmasi VA ish vaqti.
 export const openNow = (r, ms) => r.is_open === 1 && withinHours(r.work_hours, ms);
@@ -39,6 +40,8 @@ export function createCatalogService(db, geo, access) {
       work_hours: r.work_hours,
       min_order: r.min_order,
       free_delivery_from: r.free_delivery_from,
+      // Shu manzil uchun bepul yetkazish (savatsiz): 'always' — hozir bepul, 'threshold' — summadan bepul.
+      free_delivery: freeDeliveryInfo(r, delivery),
       cuisines: cuisinesOf.all(r.id).map((c) => ({ ...c })),
       rating: rating(r),
       has_promo: !!promoStmt.get(r.id),
@@ -73,7 +76,7 @@ export function createCatalogService(db, geo, access) {
   };
 
   // Bosh sahifa ro'yxati. cuisines — shu nuqtadagi restoranlarda MAVJUD oshxona turlari (filtrdan oldin).
-  function home(actor, point, { cuisine, promo, sort = 'recommended' } = {}) {
+  function home(actor, point, { cuisine, promo, free, sort = 'recommended' } = {}) {
     v.oneOf(sort, 'sort', SORTS);
     const all = deliverableCards(actor, point);
     const facet = new Map();
@@ -85,8 +88,11 @@ export function createCatalogService(db, geo, access) {
       list = list.filter((r) => r.cuisines.some((c) => c.id === cid));
     }
     if (promo === true || promo === '1' || promo === 'true') list = list.filter((r) => r.has_promo);
+    // "Bepul yetkazib berish" bo'limi: oshxona turi emas, yetkazish sharti bo'yicha filtr.
+    if (free === true || free === '1' || free === 'true') list = list.filter((r) => ['always', 'threshold'].includes(r.free_delivery.kind));
     list.sort(SORTERS[sort]);
-    return { restaurants: list, cuisines, total_in_area: all.length };
+    const freeCount = { now: all.filter((r) => r.free_delivery.kind === 'always').length, threshold: all.filter((r) => r.free_delivery.kind === 'threshold').length };
+    return { restaurants: list, cuisines, total_in_area: all.length, free_delivery_count: freeCount };
   }
 
   // Qidiruv: restoran nomi va taom nomi (uz/ru). Faqat shu nuqtaga yetkazadigan restoranlar.
@@ -154,6 +160,7 @@ export function createCatalogService(db, geo, access) {
     return {
       restaurant: { id: r.id, name: r.name, is_open: openNow(r), min_order: r.min_order, free_delivery_from: r.free_delivery_from },
       delivery,
+      free_delivery: freeDeliveryInfo(r, delivery, total),
       lines,
       items_total: total,
       below_min_order: total < r.min_order,

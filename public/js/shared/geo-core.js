@@ -44,12 +44,31 @@ export function deliveryFee({ delivery_base = 0, delivery_base_m = 0, delivery_p
 }
 
 // Bepul yetkazish sharti: faqat free_delivery_from > 0 bo'lsa va TAOMLAR summasi (yetkazishsiz) chegaraga yetsa.
-// free_delivery_from = 0 yoki null — "hamma uchun bepul" degani emas. To'liq bo'lim — 16-bosqich.
+// free_delivery_from = 0 yoki null — "hamma uchun bepul" degani emas.
 export function freeDelivery({ free_delivery_from }, itemsTotal) {
   const threshold = Number.isInteger(free_delivery_from) && free_delivery_from > 0 ? free_delivery_from : null;
   if (!threshold) return { threshold: null, applied: false, left: null };
   const applied = itemsTotal >= threshold;
   return { threshold, applied, left: applied ? 0 : threshold - itemsTotal };
+}
+
+// "Bepul yetkazib berish" bo'limi va barcha ekranlar uchun BITTA tasnif (server hisoblaydi, Mini App faqat ko'rsatadi).
+// delivery — deliveryFor() natijasi (shu manzil uchun); itemsTotal — savatdagi taomlar summasi (chegirmadan keyin,
+// yetkazishsiz) yoki null (savat yo'q: ro'yxat, restoran sahifasi).
+// kind:
+//   'unavailable' — manzil yo'q/radiusdan tashqari/restoran nuqtasi yo'q: hech qanday "0 so'm" ko'rsatilmaydi;
+//   'always'      — shu manzilga yetkazish narxining o'zi haqiqatan 0 (doimiy bepul);
+//   'threshold'   — "[summa] so'mdan bepul" (applied — savat chegaraga yetdi; left — qoldiq);
+//   'none'        — bepul yetkazish yo'q.
+// now_free — hozir haqiqatan 0 so'm: 'always' yoki savat chegaraga yetgan 'threshold'. Savat bo'lmasa shartli taklif hech qachon now_free emas.
+export function freeDeliveryInfo(restaurant, delivery, itemsTotal = null) {
+  const base = { kind: 'none', threshold: null, applied: false, left: null, now_free: false };
+  if (!delivery || !delivery.deliverable || delivery.delivery_fee == null) return { ...base, kind: 'unavailable' };
+  if (delivery.delivery_fee === 0) return { ...base, kind: 'always', applied: true, now_free: true };
+  const f = freeDelivery(restaurant, itemsTotal ?? 0);
+  if (!f.threshold) return base;
+  if (itemsTotal == null) return { ...base, kind: 'threshold', threshold: f.threshold };
+  return { kind: 'threshold', threshold: f.threshold, applied: f.applied, left: f.left, now_free: f.applied };
 }
 
 // Taxminiy yetkazish vaqti oralig'i (daqiqa): tayyorlash + yo'l (to'g'ri chiziq, ~15 km/soat) + topshirish.

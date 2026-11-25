@@ -4,7 +4,7 @@ import { get, put, del, ApiError } from '../api.js';
 import { t, getLang, formatSum } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
 import { openSheet, confirmDialog, toast } from '../../ui/components.js';
-import { cuisineName, deliveryLine, ratingHtml, stateBlock } from './cards.js';
+import { cuisineName, deliveryLine, ratingHtml, stateBlock, freeDeliveryText } from './cards.js';
 import * as cart from '../cart.js';
 import { hoursText } from '../../shared/hours.js';
 
@@ -58,7 +58,7 @@ export async function renderRestaurant(el, params, m, { go }) {
         <p class="small text-2 cuisines"></p>
         <p class="small">${ratingHtml(r)}${r.rating ? ' · ' : ''}${deliveryLine(r)}</p>
         ${r.min_order ? `<p class="small text-2">${t('min_order', { sum: formatSum(r.min_order) })}</p>` : ''}
-        ${r.free_delivery_from ? `<p class="small" style="color:var(--success)">${t('free_from', { sum: formatSum(r.free_delivery_from) })}</p>` : ''}
+        ${freeDeliveryText(r) ? `<p class="small free-text">${freeDeliveryText(r)}</p>` : ''}
         <button class="btn btn-ghost small more-btn" type="button">${icon('info', { className: 'icon-sm' })}${t('more_info')}</button>
       </div>
       ${r.is_open ? '' : `<div class="alert alert-danger">${icon('info')}<span>${t('cannot_order_closed')}</span></div>`}

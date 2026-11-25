@@ -56,6 +56,7 @@ export async function renderPanelSettings(el, _p, rid) {
         <div class="field"><label class="label">${t('f_min_order')}</label><input class="input" name="min_order" inputmode="numeric" ${dis}></div>
         <div class="field"><label class="label">${t('f_free_from')}</label><input class="input" name="free_delivery_from" inputmode="numeric" ${dis}></div>
       </div>
+      <div class="free-preview" id="free-preview" aria-live="polite"></div>
       <label class="row check-row"><input type="checkbox" name="pickup_enabled" ${r.pickup_enabled ? 'checked' : ''} ${dis}> ${t('f_pickup')}</label>
       ${owner ? `<button class="btn btn-primary" type="submit">${t('save')}</button>` : ''}
     </div></form>
@@ -82,6 +83,25 @@ export async function renderPanelSettings(el, _p, rid) {
   set('name', r.name); set('phone', r.phone); set('address_text', r.address_text); set('description', r.description);
   set('delivery_base', r.delivery_base); set('base_km', r.delivery_base_m / 1000); set('delivery_per_km', r.delivery_per_km);
   set('radius_km', r.delivery_radius_m / 1000); set('min_order', r.min_order); set('free_delivery_from', r.free_delivery_from);
+  // Bepul yetkazish: mijoz nimani ko'rishini oldindan ko'rsatish (server bilan bir xil qoida — geo-core.freeDeliveryInfo).
+  const drawFreePreview = () => {
+    const base = num(P.elements.delivery_base.value) || 0;
+    const perKm = num(P.elements.delivery_per_km.value) || 0;
+    const from = num(P.elements.free_delivery_from.value) || 0;
+    const min = num(P.elements.min_order.value) || 0;
+    const lines = [];
+    if (base === 0 && perKm === 0) lines.push(min ? t('fp_always_min', { min: formatSum(min) }) : t('fp_always'));
+    else if (from > 0) {
+      lines.push(t('fp_threshold', { sum: formatSum(from) }));
+      lines.push(t('fp_threshold_cart', { sum: formatSum(from) }));
+      if (min && from <= min) lines.push(t('fp_below_min'));
+    } else lines.push(t('fp_none'));
+    lines.push(t('fp_cost_note'));
+    el.querySelector('#free-preview').innerHTML = `<p class="label">${t('fp_title')}</p>${lines.map((x, i) => `<p class="small ${i === lines.length - 1 ? 'text-2' : ''}"></p>`).join('')}`;
+    el.querySelectorAll('#free-preview p.small').forEach((p, i) => { p.textContent = lines[i]; });
+  };
+  ['delivery_base', 'delivery_per_km', 'free_delivery_from', 'min_order'].forEach((n) => P.elements[n]?.addEventListener('input', drawFreePreview));
+  drawFreePreview();
   const PM = el.querySelector('#payments');
   PM.elements.card_number.value = r.card_number || '';
   PM.elements.card_holder.value = r.card_holder || '';
@@ -207,6 +227,7 @@ export async function renderPanelReport(el, _p, rid) {
     </div>
     <div class="row sum-row small"><span>${t('rep_cash')}</span><span>${formatSum(x.cash)}</span></div>
     <div class="row sum-row small"><span>${t('rep_prepaid')}</span><span>${formatSum(x.prepaid)}</span></div>
+    <div class="row sum-row small"><span>${t('rep_free_deliveries')}</span><span>${x.free_deliveries ?? 0}</span></div>
     <div class="row sum-row small text-2"><span>${t('rep_cancelled')}</span><span>${x.cancelled}</span></div>
   </div></div>`;
   const max = Math.max(1, ...r.days.map((d) => d.revenue));

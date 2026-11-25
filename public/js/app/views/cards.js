@@ -9,10 +9,20 @@ export const cuisineName = (c) => (getLang() === 'ru' ? c.name_ru : c.name_uz);
 export function deliveryLine(r) {
   const d = r.delivery;
   if (!d?.deliverable) return t('not_deliverable');
+  const fd = r.free_delivery || {};
   return [
     `${icon('clock', { className: 'icon-inline' })} ${t('eta', d.eta_min)}`,
-    t('delivery_fee', { sum: formatSum(d.delivery_fee) }),
-  ].join(' · ');
+    fd.kind === 'always' ? `<span class="free-text">${t('free_always')}</span>` : t('delivery_fee', { sum: formatSum(d.delivery_fee) }),
+    fd.kind === 'threshold' ? `<span class="free-text">${t('free_from_short', { sum: formatSum(fd.threshold) })}</span>` : '',
+  ].filter(Boolean).join(' · ');
+}
+
+// Bepul yetkazish matni (server tasnifi: free_delivery.kind). Savatsiz shartli taklif "hozir bepul" deb ko'rsatilmaydi.
+export function freeDeliveryText(r) {
+  const fd = r.free_delivery || {};
+  if (fd.kind === 'always') return r.min_order ? t('free_always_min', { sum: formatSum(r.min_order) }) : t('free_always');
+  if (fd.kind === 'threshold') return t('free_from', { sum: formatSum(fd.threshold) });
+  return '';
 }
 
 export function ratingHtml(r) {
@@ -27,6 +37,7 @@ export function restaurantCard(r, { go, onFavoriteChange } = {}) {
     <div class="card-cover">
       <img class="card-media wide" alt="" loading="lazy" src="${r.cover_path || '/brand/placeholder.svg'}">
       ${r.has_promo ? `<span class="badge badge-warning cover-badge">${t('promo')}</span>` : ''}
+      ${r.free_delivery?.kind === 'always' ? `<span class="badge badge-success cover-badge cover-badge-2">${t('free_badge')}</span>` : ''}
       <button class="btn btn-icon fav-btn" type="button" aria-pressed="${r.is_favorite}" aria-label="${t(r.is_favorite ? 'fav_remove' : 'fav_add')}">${icon('heart')}</button>
     </div>
     <button class="card-body card-open" type="button">

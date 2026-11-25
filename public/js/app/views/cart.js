@@ -93,12 +93,14 @@ export function renderCart(el, _p, _m, { go }) {
           : t(`problem_${p}`);
         warnings.append(w);
       }
-      const fee = q.delivery?.deliverable ? (q.free_delivery.applied ? t('delivery_free') : formatSum(q.delivery_fee)) : '—';
+      // Yetkazib bo'lmasa narx noma'lum ("—"), hech qachon "0 so'm" emas. Bepul — faqat server now_free desa.
+      const fd = q.free_delivery;
+      const fee = q.delivery_fee == null ? '—' : fd.now_free ? `<span class="free-text">${t('fee_zero_free')}</span>` : formatSum(q.delivery_fee);
       el.querySelector('#totals').innerHTML = `
         <div class="row sum-row"><span>${t('items_title')}</span><span>${formatSum(q.items_total)}</span></div>
         <div class="row sum-row"><span>${t('delivery_fee', { sum: '' }).trim()}</span><span>${fee}</span></div>
-        ${q.free_delivery.threshold ? `<p class="xs" style="color:var(--success)">${q.free_delivery.applied ? t('free_applied') : t('free_left', { sum: formatSum(q.free_delivery.left) })}</p>` : ''}
-        <div class="row sum-row total-row"><span>${t('total')}</span><span class="price">${formatSum(q.total)}</span></div>`;
+        ${fd.kind === 'threshold' ? `<p class="xs free-text">${fd.applied ? t('free_applied') : t('free_left', { sum: formatSum(fd.left) })}</p>` : ''}
+        <div class="row sum-row total-row"><span>${t('total')}</span><span class="price">${q.total == null ? '—' : formatSum(q.total)}</span></div>`;
       // Rasmiylashtirishga o'tish: taomlar va restoran holati joyida bo'lsa (olib ketishda radius muhim emas).
       const blocking = q.problems.filter((p) => !(p === 'not_deliverable' && q.restaurant.pickup_enabled));
       el.querySelector('#to-checkout').disabled = blocking.length > 0;

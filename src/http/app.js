@@ -108,8 +108,8 @@ export function createApp({ config, services, logger = console }) {
   // ?address_id= yoki ?lat=&lon=; filtrlar: cuisine, promo=1, sort=recommended|rating|fast|cheap_delivery
   api.get('/restaurants', (req, res) => {
     const point = services.addresses.resolvePoint(req.actor, req.query);
-    const { cuisine, promo, sort } = req.query;
-    res.json({ ok: true, point, ...services.catalog.home(req.actor, point, { cuisine, promo, sort: sort || undefined }) });
+    const { cuisine, promo, free, sort } = req.query;
+    res.json({ ok: true, point, ...services.catalog.home(req.actor, point, { cuisine, promo, free, sort: sort || undefined }) });
   });
   api.get('/restaurants/:id', (req, res) => {
     const point = services.addresses.resolvePoint(req.actor, req.query);

@@ -3,7 +3,7 @@
 import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
-import { freeDelivery } from '../../public/js/shared/geo-core.js';
+import { freeDeliveryInfo } from '../../public/js/shared/geo-core.js';
 import { openNow } from './catalog.js';
 
 export function createCheckoutService(db, { geo, addresses, users, payments }) {
@@ -60,13 +60,16 @@ export function createCheckoutService(db, { geo, addresses, users, payments }) {
     if (itemsTotal === 0) problems.push('empty');
     if (itemsTotal < r.min_order) problems.push('below_min_order');
 
+    // Yetkazish narxi va bepul yetkazish — bitta server hisobi (geo-core.freeDeliveryInfo). Yetkazib bo'lmasa narx NOMA'LUM (null),
+    // hech qachon "0 so'm" emas. Olib ketishda 0 so'm — aksiya emas (kind: 'pickup').
     let deliveryFee = 0;
     let delivery = null;
-    const free = type === 'delivery' ? freeDelivery(r, itemsTotal) : { threshold: null, applied: false, left: null };
+    let free = { kind: 'pickup', threshold: null, applied: false, left: null, now_free: false };
     if (type === 'delivery') {
       delivery = geo.deliveryFor(r, address);
-      if (!delivery.deliverable) problems.push('not_deliverable');
-      else deliveryFee = free.applied ? 0 : delivery.delivery_fee;
+      free = freeDeliveryInfo(r, delivery, itemsTotal);
+      if (!delivery.deliverable) { problems.push('not_deliverable'); deliveryFee = null; }
+      else deliveryFee = free.now_free ? 0 : delivery.delivery_fee;
     }
     const methods = paymentMethods(r);
     if (!methods.length) problems.push('no_payment_method');
@@ -78,7 +81,7 @@ export function createCheckoutService(db, { geo, addresses, users, payments }) {
       lines,
       items_total: itemsTotal,
       delivery_fee: deliveryFee,
-      total: itemsTotal + deliveryFee,
+      total: deliveryFee == null ? null : itemsTotal + deliveryFee,
       delivery,
       free_delivery: free,
       payment_methods: methods,

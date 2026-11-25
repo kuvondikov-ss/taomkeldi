@@ -1,5 +1,6 @@
 // Bosh sahifa: header → yetkazish manzili → qidiruv → banner → oshxona turlari → restoranlar.
-// Filtrlar URL'da (#/?cuisine=&sort=&promo=1) — orqaga qaytganda saqlanadi.
+// Filtrlar URL'da (#/?cuisine=&sort=&promo=1&free=1) — orqaga qaytganda saqlanadi.
+// "Bepul yetkazish" — oshxona turi emas, yetkazish sharti bo'yicha bo'lim: "Hozir bepul" va "Summadan bepul" alohida.
 import { currentAddress } from '../state.js';
 import { get, ApiError } from '../api.js';
 import { t } from '../i18n.js';
@@ -11,7 +12,7 @@ const SORTS = ['recommended', 'rating', 'fast', 'cheap_delivery'];
 export async function renderHome(el, params, _m, ctx) {
   const { go } = ctx;
   const addr = currentAddress();
-  const f = { cuisine: params.get('cuisine') || '', sort: SORTS.includes(params.get('sort')) ? params.get('sort') : 'recommended', promo: params.get('promo') === '1' };
+  const f = { cuisine: params.get('cuisine') || '', sort: SORTS.includes(params.get('sort')) ? params.get('sort') : 'recommended', promo: params.get('promo') === '1', free: params.get('free') === '1' };
 
   el.innerHTML = `
     <main class="page stack home">
@@ -41,6 +42,7 @@ export async function renderHome(el, params, _m, ctx) {
           <select class="select" id="sort">${SORTS.map((s) => `<option value="${s}" ${f.sort === s ? 'selected' : ''}>${t(`sort_${s}`)}</option>`).join('')}</select>
         </label>
         <button class="chip" id="promo" aria-pressed="${f.promo}">${t('promo')}</button>
+        <button class="chip chip-free" id="free" aria-pressed="${f.free}">${icon('scooter', { className: 'icon-sm' })}${t('free_section')}<span class="count"></span></button>
       </div>
       <h2 class="h2" id="list-title">${t('restaurants_title')}</h2>
       <div id="list" class="stack" aria-busy="true">${skeletonCards(2)}</div>
@@ -58,15 +60,18 @@ export async function renderHome(el, params, _m, ctx) {
     if (n.cuisine) q.set('cuisine', n.cuisine);
     if (n.sort !== 'recommended') q.set('sort', n.sort);
     if (n.promo) q.set('promo', '1');
+    if (n.free) q.set('free', '1');
     go(q.toString() ? `?${q}` : '', { replace: true });
   };
   el.querySelector('#sort').addEventListener('change', (e) => setFilter({ sort: e.target.value }));
   el.querySelector('#promo').addEventListener('click', () => setFilter({ promo: !f.promo }));
+  el.querySelector('#free').addEventListener('click', () => setFilter({ free: !f.free }));
 
   const list = el.querySelector('#list');
   const q = new URLSearchParams({ address_id: addr.id, sort: f.sort });
   if (f.cuisine) q.set('cuisine', f.cuisine);
   if (f.promo) q.set('promo', '1');
+  if (f.free) q.set('free', '1');
   try {
     const data = await get(`/restaurants?${q}`);
     // Oshxona turlari — shu manzildagi restoranlarda mavjudlari.
@@ -93,6 +98,23 @@ export async function renderHome(el, params, _m, ctx) {
     }
     if (!data.restaurants.length) {
       list.append(stateBlock({ iconName: 'filter', title: t('filtered_empty'), action: { label: t('reset_filters'), onClick: () => go('', { replace: true }) } }));
+      return;
+    }
+    const fc = data.free_delivery_count || { now: 0, threshold: 0 };
+    if (fc.now + fc.threshold) el.querySelector('#free .count').textContent = ` ${fc.now + fc.threshold}`;
+    if (f.free) {
+      // Bo'lim: hozir bepul (yetkazish narxi haqiqatan 0) va summaga bog'liq takliflar alohida.
+      el.querySelector('#list-title').textContent = t('free_section');
+      const groups = [['always', 'free_now_title', 'free_now_hint'], ['threshold', 'free_threshold_title', 'free_threshold_hint']];
+      for (const [kind, title, hint] of groups) {
+        const rs = data.restaurants.filter((r) => r.free_delivery?.kind === kind);
+        if (!rs.length) continue;
+        const h = document.createElement('div');
+        h.className = 'section-head';
+        h.innerHTML = `<h3 class="h3">${t(title)}</h3><p class="xs text-2">${t(hint)}</p>`;
+        list.append(h);
+        for (const r of rs) list.append(restaurantCard(r, { go }));
+      }
       return;
     }
     for (const r of data.restaurants) list.append(restaurantCard(r, { go }));

@@ -112,7 +112,7 @@ export default {
   g_apartment: 'xon.',
   g_items: 'Taomlar',
   g_delivery: 'Yetkazish',
-  g_free: 'bepul',
+  g_free: '0 so‘m — bepul',
   g_total: 'Jami',
   g_payment: 'To‘lov',
   g_customer: 'Mijoz',

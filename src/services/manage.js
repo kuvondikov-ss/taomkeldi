@@ -315,11 +315,12 @@ export function createManageService(db, { access, geo }) {
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
         COALESCE(SUM(CASE WHEN status = 'delivered' THEN total END), 0) AS revenue,
         COALESCE(SUM(CASE WHEN status = 'delivered' AND payment_method = 'cash' THEN total END), 0) AS cash,
-        COALESCE(SUM(CASE WHEN status = 'delivered' AND payment_method <> 'cash' THEN total END), 0) AS prepaid
+        COALESCE(SUM(CASE WHEN status = 'delivered' AND payment_method <> 'cash' THEN total END), 0) AS prepaid,
+        SUM(CASE WHEN status = 'delivered' AND type = 'delivery' AND delivery_fee = 0 THEN 1 ELSE 0 END) AS free_deliveries
       FROM orders WHERE restaurant_id = ? AND created_at >= ? AND created_at < ?`).get(rid, fromMs, toMs);
     const shape = (a) => ({
       orders: a.orders, delivered: a.delivered || 0, cancelled: a.cancelled || 0,
-      revenue: a.revenue, cash: a.cash, prepaid: a.prepaid,
+      revenue: a.revenue, cash: a.cash, prepaid: a.prepaid, free_deliveries: a.free_deliveries || 0,
       average: a.delivered ? Math.round(a.revenue / a.delivered) : 0,
     });
     const days = [];

@@ -110,12 +110,13 @@ export function renderCheckout(el, _p, _m, { go }) {
 
   function drawSummary(q) {
     const n = q.lines.reduce((s, l) => s + (l.status === 'ok' ? l.qty : 0), 0);
-    const fee = q.type === 'pickup' ? null : (q.free_delivery.applied ? t('delivery_free') : formatSum(q.delivery_fee));
+    const fd = q.free_delivery;
+    const fee = q.type === 'pickup' ? null : q.delivery_fee == null ? '—' : (fd.now_free ? `<span class="free-text">${t('fee_zero_free')}</span>` : formatSum(q.delivery_fee));
     $('#summary').innerHTML = `
       <div class="row sum-row"><span>${t('items_title')} · ${t('cart_items', { n })}</span><span>${formatSum(q.items_total)}</span></div>
       ${fee ? `<div class="row sum-row"><span>${t('delivery_fee', { sum: '' }).trim()}</span><span>${fee}</span></div>` : ''}
-      ${q.free_delivery.threshold && !q.free_delivery.applied ? `<p class="xs" style="color:var(--success)">${t('free_left', { sum: formatSum(q.free_delivery.left) })}</p>` : ''}
-      <div class="row sum-row total-row"><span>${t('total')}</span><span class="price">${formatSum(q.total)}</span></div>`;
+      ${fd.kind === 'threshold' && !fd.applied ? `<p class="xs free-text">${t('free_left', { sum: formatSum(fd.left) })}</p>` : ''}
+      <div class="row sum-row total-row"><span>${t('total')}</span><span class="price">${q.total == null ? '—' : formatSum(q.total)}</span></div>`;
     const problems = $('#problems');
     problems.innerHTML = '';
     for (const p of q.problems) {

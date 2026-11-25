@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 15-bosqich (jonli kuzatuv, tarix va profil) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 16-bosqich ("Bepul yetkazib berish" bo'limi) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -69,7 +69,7 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | GET | `/api/config` | xarita, hudud (`/geo/jizzax.json`) |
 | GET | `/api/geo/check`, `/api/geo/search?q=`, `/api/geo/reverse` | hudud tekshiruvi, manzil qidiruvi (faqat Jizzax viloyati) |
 | PUT | `/api/addresses/:id`; POST `/api/addresses/:id/default` | o'z manzilini tahrirlash / asosiy qilish |
-| GET | `/api/restaurants?address_id=` (yoki `lat,lon`) `&cuisine=&promo=1&sort=recommended\|rating\|fast\|cheap_delivery` | manzilga yetkazadigan faol restoranlar + mavjud oshxona turlari |
+| GET | `/api/restaurants?address_id=` (yoki `lat,lon`) `&cuisine=&promo=1&free=1&sort=recommended\|rating\|fast\|cheap_delivery` | manzilga yetkazadigan faol restoranlar + mavjud oshxona turlari; har kartada `free_delivery` (`always`/`threshold`/`none`), `free_delivery_count` |
 | GET | `/api/restaurants/:id?address_id=` | restoran sahifasi va menyu |
 | GET | `/api/search?q=&address_id=` | restoran va taom qidiruvi |
 | POST | `/api/cart/check` | savatni tekshirish: joriy narx, stop-list, restoran holati, minimal summa |

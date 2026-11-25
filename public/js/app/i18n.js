@@ -179,6 +179,16 @@ const uz = {
   k_gps_note: 'Joylashuv ilova ochiq bo‘lganda yuboriladi (yo‘lda ~15 soniyada, aks holda ~60 soniyada). Ilova yopiq yoki fonda bo‘lsa kafolat yo‘q — Telegram’da jonli joylashuvni ulashing.',
   k_gps_denied: 'Joylashuvga ruxsat berilmagan. Telefon sozlamalarida ruxsat bering yoki Telegram’da jonli joylashuvni ulashing.',
   k_gps_unsupported: 'Bu qurilmada joylashuv yo‘q. Telegram’da jonli joylashuvni ulashing.',
+  // Bepul yetkazib berish (16-bosqich)
+  free_section: 'Bepul yetkazish', free_badge: 'Bepul yetkazish', free_always: 'Yetkazish bepul', free_always_min: 'Yetkazish bepul · minimal buyurtma {sum}',
+  free_from_short: '{sum}dan bepul', fee_zero_free: '0 so‘m — bepul',
+  free_now_title: 'Hozir bepul', free_now_hint: 'Bu manzilga yetkazish narxi 0 so‘m (minimal buyurtma bo‘lsa, kartada ko‘rsatilgan).',
+  free_threshold_title: 'Summadan bepul', free_threshold_hint: 'Taomlar summasi ko‘rsatilgan chegaraga yetsa, yetkazish bepul bo‘ladi.',
+  rep_free_deliveries: 'Bepul yetkazilgan buyurtmalar',
+  fp_title: 'Mijoz qanday ko‘radi', fp_always: '«Yetkazish bepul» — barcha manzillarga yetkazish narxi 0 so‘m.', fp_always_min: '«Yetkazish bepul · minimal buyurtma {min}».',
+  fp_threshold: 'Ro‘yxat va restoran sahifasida: «{sum}dan bepul».', fp_threshold_cart: 'Savatda: «Bepul yetkazish uchun yana … so‘m», {sum}ga yetganda «Yetkazish: 0 so‘m — bepul».',
+  fp_below_min: 'Chegara minimal buyurtmadan katta emas — amalda har bir yetkazish bepul bo‘ladi.', fp_none: 'Bepul yetkazish yo‘q — mijoz yetkazish narxini to‘laydi.',
+  fp_cost_note: 'Bepul yetkazish xarajatini restoran o‘z kuryerlari bilan qoplaydi; platforma subsidiya bermaydi.',
 };
 
 const ru = {
@@ -361,6 +371,16 @@ const ru = {
   k_gps_note: 'Геопозиция отправляется, пока приложение открыто (в пути ~каждые 15 с, иначе ~60 с). Если приложение закрыто или в фоне — гарантии нет, включите трансляцию геопозиции в Telegram.',
   k_gps_denied: 'Нет доступа к геопозиции. Разрешите в настройках телефона или включите трансляцию геопозиции в Telegram.',
   k_gps_unsupported: 'На этом устройстве нет геопозиции. Включите трансляцию геопозиции в Telegram.',
+  // Бесплатная доставка (этап 16)
+  free_section: 'Бесплатная доставка', free_badge: 'Бесплатная доставка', free_always: 'Доставка бесплатно', free_always_min: 'Доставка бесплатно · мин. заказ {sum}',
+  free_from_short: 'бесплатно от {sum}', fee_zero_free: '0 сум — бесплатно',
+  free_now_title: 'Бесплатно сейчас', free_now_hint: 'Доставка по этому адресу стоит 0 сум (минимальный заказ, если есть, указан в карточке).',
+  free_threshold_title: 'Бесплатно от суммы', free_threshold_hint: 'Когда сумма блюд достигнет порога, доставка станет бесплатной.',
+  rep_free_deliveries: 'Заказов с бесплатной доставкой',
+  fp_title: 'Как увидит клиент', fp_always: '«Доставка бесплатно» — по всем адресам доставка 0 сум.', fp_always_min: '«Доставка бесплатно · мин. заказ {min}».',
+  fp_threshold: 'В списке и на странице ресторана: «бесплатно от {sum}».', fp_threshold_cart: 'В корзине: «До бесплатной доставки ещё … сум», при {sum} — «Доставка: 0 сум — бесплатно».',
+  fp_below_min: 'Порог не больше минимального заказа — фактически каждая доставка будет бесплатной.', fp_none: 'Бесплатной доставки нет — клиент оплачивает доставку.',
+  fp_cost_note: 'Расходы на бесплатную доставку ресторан покрывает своими курьерами; платформа не субсидирует.',
 };
 
 export const DICTS = { uz, ru };

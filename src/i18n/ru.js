@@ -110,7 +110,7 @@ export default {
   g_apartment: 'кв.',
   g_items: 'Блюда',
   g_delivery: 'Доставка',
-  g_free: 'бесплатно',
+  g_free: '0 сум — бесплатно',
   g_total: 'Итого',
   g_payment: 'Оплата',
   g_customer: 'Клиент',

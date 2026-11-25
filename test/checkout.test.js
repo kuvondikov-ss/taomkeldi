@@ -39,7 +39,7 @@ describe('Quote: yagona hisob', () => {
     assert.equal(q.total, 78000);
     assert.deepEqual(q.payment_methods, ['cash']);
     assert.equal(q.can_order, true);
-    assert.deepEqual(q.free_delivery, { threshold: 100000, applied: false, left: 30000 });
+    assert.deepEqual(q.free_delivery, { kind: 'threshold', threshold: 100000, applied: false, left: 30000, now_free: false });
   });
 
   test('bepul yetkazish: taomlar summasi chegaraga yetganda; yetkazish summasi chegarani to\'ldirmaydi', async () => {

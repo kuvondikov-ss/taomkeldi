@@ -1,0 +1,198 @@
+/* Taomkeldi dizayn tokenlari.
+   Ranglar faqat shu yerda. Sahifa va komponentlar faqat semantik tokenlardan (--bg, --text, --primary ...) foydalanadi.
+   Palitra original logodan: #679C76, #21583A, #92B88F, #B5CFAE, yozuv #232323. */
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/montserrat-cyrillic-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/montserrat-cyrillic-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/montserrat-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('/fonts/montserrat-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* --- Brend palitrasi (xom qiymatlar; to'g'ridan-to'g'ri ishlatilmaydi) --- */
+  --green-900: #143823;
+  --green-700: #21583A;  /* logo: to'q yashil */
+  --green-600: #3F7A55;
+  --green-500: #679C76;  /* logo: asosiy yashil */
+  --green-400: #92B88F;  /* logo: och yashil */
+  --green-200: #B5CFAE;  /* logo: shior tasmasi */
+  --green-100: #DCE9D7;
+  --green-50:  #EFF5EC;
+  --ink:       #232323;  /* logo: yozuv */
+  --ink-2:     #56635A;
+  --paper:     #FAF8F4;
+  --cream:     #F3F1EA;
+  --white:     #FFFFFF;
+  --red-600:   #B3261E;
+  --red-50:    #FCEDEC;
+  --amber-700: #8A5A00;
+  --amber-50:  #FFF4DD;
+
+  /* --- Tipografiya --- */
+  --font: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-md: 16px;   /* odatdagi matn */
+  --fs-lg: 20px;   /* sarlavha */
+  --fs-xl: 24px;   /* katta sarlavha */
+  --lh-tight: 1.25;
+  --lh: 1.45;
+
+  /* --- O'lchamlar: 8 px ritm --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --page-x: 16px;          /* yon chet; 390 px+ ekranda 20 px */
+  --gap-card: 12px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-card: 16px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --tap: 44px;             /* minimal bosish maydoni */
+  --cta-h: 52px;           /* asosiy pastki tugma */
+  --nav-h: 60px;
+
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+
+  /* --- Semantik tokenlar: yorug' mavzu --- */
+  color-scheme: light;
+  --bg: var(--paper);
+  --surface: var(--white);
+  --surface-2: var(--cream);
+  --border: #E3E0D7;
+  --text: var(--ink);
+  --text-2: var(--ink-2);
+  --brand: var(--green-500);
+  --primary: var(--green-700);
+  --primary-pressed: var(--green-900);
+  --on-primary: var(--white);
+  --secondary: var(--green-100);
+  --secondary-pressed: var(--green-200);
+  --on-secondary: var(--green-700);
+  --focus: var(--green-600);
+  --danger: var(--red-600);
+  --danger-bg: var(--red-50);
+  --success: var(--green-700);
+  --success-bg: var(--green-50);
+  --warning: var(--amber-700);
+  --warning-bg: var(--amber-50);
+  --overlay: rgba(20, 25, 22, .45);
+  --skeleton: #ECE9E1;
+  --skeleton-hi: #F6F4EF;
+  --shadow-sm: 0 1px 2px rgba(20, 30, 24, .06);
+  --shadow-md: 0 6px 24px rgba(20, 30, 24, .12);
+  --logo-light: block;
+  --logo-dark: none;
+}
+
+/* --- To'q mavzu: tizim sozlamasi yoki Telegram (html[data-theme="dark"]) --- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #111814;
+    --surface: #18221C;
+    --surface-2: #213028;
+    --border: #2E3E34;
+    --text: #EEF2EC;
+    --text-2: #A9B8AD;
+    --brand: var(--green-400);
+    --primary: var(--green-400);
+    --primary-pressed: var(--green-200);
+    --on-primary: #0F1F15;
+    --secondary: #26382D;
+    --secondary-pressed: #30473A;
+    --on-secondary: var(--green-200);
+    --focus: var(--green-200);
+    --danger: #F2B8B5;
+    --danger-bg: #3A1F1D;
+    --success: var(--green-200);
+    --success-bg: #1F3226;
+    --warning: #F5C76B;
+    --warning-bg: #3A2E14;
+    --overlay: rgba(0, 0, 0, .6);
+    --skeleton: #1F2A23;
+    --skeleton-hi: #29372E;
+    --shadow-sm: none;
+    --shadow-md: 0 6px 24px rgba(0, 0, 0, .5);
+    --logo-light: none;
+    --logo-dark: block;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111814;
+  --surface: #18221C;
+  --surface-2: #213028;
+  --border: #2E3E34;
+  --text: #EEF2EC;
+  --text-2: #A9B8AD;
+  --brand: var(--green-400);
+  --primary: var(--green-400);
+  --primary-pressed: var(--green-200);
+  --on-primary: #0F1F15;
+  --secondary: #26382D;
+  --secondary-pressed: #30473A;
+  --on-secondary: var(--green-200);
+  --focus: var(--green-200);
+  --danger: #F2B8B5;
+  --danger-bg: #3A1F1D;
+  --success: var(--green-200);
+  --success-bg: #1F3226;
+  --warning: #F5C76B;
+  --warning-bg: #3A2E14;
+  --overlay: rgba(0, 0, 0, .6);
+  --skeleton: #1F2A23;
+  --skeleton-hi: #29372E;
+  --shadow-sm: none;
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, .5);
+  --logo-light: none;
+  --logo-dark: block;
+}
+
+@media (min-width: 390px) {
+  :root { --page-x: 20px; }
+}
+
+/* Harakatni kamaytirish rejimi: animatsiyalar o'chiriladi. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur: 0ms; }
+  *, *::before, *::after { animation-duration: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
+}

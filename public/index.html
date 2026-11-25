@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Taomkeldi</title>
+  <link rel="icon" type="image/svg+xml" href="/brand/taomkeldi-favicon.svg">
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <!-- Mini App asosi: server bilan initData orqali ulanishni tekshiradi.
+       Haqiqiy ekranlar 4–8-bosqichlarda quriladi. -->
+  <main class="page">
+    <header class="app-header">
+      <img class="logo logo-light" src="/brand/taomkeldi-compact-light.svg" alt="Taomkeldi">
+      <img class="logo logo-dark" src="/brand/taomkeldi-compact-dark.svg" alt="Taomkeldi">
+    </header>
+    <div class="card">
+      <div class="state" id="state" aria-live="polite">
+        <div class="state-icon"><i data-icon="dish"></i></div>
+        <p class="h3" id="title">Tekshirilmoqda…</p>
+        <p class="small text-2" id="text">Ilova tayyorlanmoqda.</p>
+      </div>
+    </div>
+  </main>
+  <script type="module">
+    import { hydrateIcons } from '/js/ui/icons.js';
+    import { applyTelegramTheme } from '/js/ui/theme.js';
+    hydrateIcons();
+    const tg = applyTelegramTheme();
+    tg?.ready();
+    const title = document.getElementById('title');
+    const text = document.getElementById('text');
+    if (!tg) {
+      title.textContent = 'Ilovani Telegram ichidan oching';
+      text.textContent = '@taomkeldi_bot → Ilovani ochish';
+    } else {
+      try {
+        const res = await fetch('/api/me', { headers: { Authorization: `tma ${tg.initData}` } });
+        const body = await res.json();
+        if (body.ok) {
+          title.textContent = `Salom, ${body.user.first_name}!`;
+          text.textContent = 'Taomkeldi tez orada ishga tushadi.';
+        } else {
+          document.getElementById('state').parentElement.classList.add('state-error');
+          title.textContent = body.error.message;
+          text.textContent = '';
+        }
+      } catch {
+        document.getElementById('state').parentElement.classList.add('state-error');
+        title.textContent = 'Server bilan aloqa yo‘q';
+        text.textContent = 'Birozdan keyin qayta urinib ko‘ring.';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Taomkeldi — dizayn tizimi</title>
+  <link rel="icon" type="image/svg+xml" href="/brand/taomkeldi-favicon.svg">
+  <link rel="stylesheet" href="/css/tokens.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <style>
+    /* Faqat shu namuna sahifasi uchun */
+    .kit-section { padding-top: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-3); }
+    .kit-section > h2 { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: .06em; color: var(--text-2); margin: 0; }
+    .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: var(--sp-2); }
+    .swatch { border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); font-size: 11px; }
+    .swatch div { height: 44px; }
+    .swatch span { display: block; padding: 4px 6px; background: var(--surface); }
+    .wrap { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+  </style>
+</head>
+<body>
+  <main class="page" id="top">
+    <header class="app-header">
+      <img class="logo logo-light" src="/brand/taomkeldi-compact-light.svg" alt="Taomkeldi">
+      <img class="logo logo-dark" src="/brand/taomkeldi-compact-dark.svg" alt="Taomkeldi">
+      <div class="row" role="group" aria-label="Mavzu">
+        <button class="btn btn-icon btn-ghost" data-theme-set="light" aria-label="Yorug' mavzu"><i data-icon="sun"></i></button>
+        <button class="btn btn-icon btn-ghost" data-theme-set="dark" aria-label="To'q mavzu"><i data-icon="moon"></i></button>
+      </div>
+    </header>
+    <p class="text-2 small">Dizayn tizimi namunasi: barcha sahifalar shu komponentlardan yig'iladi. Bu sahifa ishlab chiqish uchun.</p>
+
+    <section class="kit-section">
+      <h2>Tipografiya</h2>
+      <p class="h1">Mazali taomlar, bir necha bosishda</p>
+      <p class="h2">Restoranlar — 24 px / 20 px sarlavha</p>
+      <p class="h3">Kartadagi nom — 16 px, 600</p>
+      <p>Odatdagi matn 16 px. O‘zbekcha: g‘ o‘ sh ch. Русский текст: Доставка еды по Джизаку.</p>
+      <p class="small text-2">Yordamchi matn 14 px · <span class="xs">12 px</span></p>
+      <p class="row"><span class="price">35 000 so‘m</span><span class="price-old">42 000 so‘m</span></p>
+    </section>
+
+    <section class="kit-section">
+      <h2>Ranglar</h2>
+      <div class="swatches" id="swatches"></div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Tugmalar</h2>
+      <div class="wrap">
+        <button class="btn btn-primary">Asosiy</button>
+        <button class="btn btn-secondary">Ikkinchi darajali</button>
+        <button class="btn btn-ghost">Oddiy</button>
+        <button class="btn btn-danger">Rad etish</button>
+      </div>
+      <div class="wrap">
+        <button class="btn btn-primary" disabled>O‘chirilgan</button>
+        <button class="btn btn-primary" id="loading-demo">Yuklash holati</button>
+        <button class="btn btn-icon btn-secondary" aria-label="Sevimli"><i data-icon="heart"></i></button>
+        <button class="btn btn-icon btn-ghost" aria-label="Orqaga"><i data-icon="back"></i></button>
+        <span class="qty" role="group" aria-label="Miqdor">
+          <button class="btn" aria-label="Kamaytirish" data-qty="-1"><i data-icon="minus" data-icon-class="icon-sm"></i></button>
+          <span class="qty-value" aria-live="polite">1</span>
+          <button class="btn" aria-label="Ko‘paytirish" data-qty="1"><i data-icon="plus" data-icon-class="icon-sm"></i></button>
+        </span>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block">Savatga qo‘shish · 35 000 so‘m</button>
+    </section>
+
+    <section class="kit-section">
+      <h2>Maydonlar</h2>
+      <label class="search"><span class="visually-hidden">Qidirish</span><i data-icon="search"></i><input class="input" type="search" placeholder="Taom yoki restoran qidirish"></label>
+      <div class="field">
+        <label class="label" for="f-name">Ism</label>
+        <input class="input" id="f-name" placeholder="Ismingiz" autocomplete="given-name">
+      </div>
+      <div class="field">
+        <label class="label" for="f-phone">Telefon</label>
+        <input class="input" id="f-phone" type="tel" inputmode="tel" value="+998 90" aria-invalid="true" aria-describedby="f-phone-err">
+        <span class="error-text" id="f-phone-err">Raqam to‘liq emas. Masalan: +998 90 123 45 67</span>
+      </div>
+      <div class="field">
+        <label class="label" for="f-dis">O‘chirilgan</label>
+        <input class="input" id="f-dis" value="Jizzax viloyati" disabled>
+        <span class="hint">Xizmat hududi o‘zgarmaydi</span>
+      </div>
+      <div class="field">
+        <label class="label" for="f-note">Izoh</label>
+        <textarea class="textarea" id="f-note" placeholder="Masalan: domofon ishlamaydi"></textarea>
+      </div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Chiplar</h2>
+      <div class="chip-row" id="chips">
+        <button class="chip" aria-pressed="true">Hammasi</button>
+        <button class="chip" aria-pressed="false">Milliy taomlar</button>
+        <button class="chip" aria-pressed="false">Fast food</button>
+        <button class="chip" aria-pressed="false">Pitsa</button>
+        <button class="chip" aria-pressed="false">Shirinliklar</button>
+        <button class="chip" aria-pressed="false" disabled>Sushi</button>
+      </div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Tablar</h2>
+      <div class="tabs" role="tablist" id="tabs">
+        <button class="tab" role="tab" aria-selected="true">Ommabop</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1">Osh</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1">Somsa</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1">Salatlar</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1">Ichimliklar</button>
+        <button class="tab" role="tab" aria-selected="false" tabindex="-1">Shirinliklar</button>
+      </div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Kartalar</h2>
+      <a class="card card-link" href="#top">
+        <img class="card-media wide" src="/brand/placeholder.svg" alt="">
+        <div class="card-body">
+          <div class="row" style="justify-content:space-between">
+            <span class="h3 title-2l">Restoran nomi juda uzun bo‘lishi mumkin va ikki qatorga sig‘ishi kerak</span>
+            <span class="badge badge-success">Ochiq</span>
+          </div>
+          <span class="small text-2">Milliy taomlar · <i data-icon="clock" data-icon-class="icon-inline"></i> 30–40 daq · Yetkazish 8 000 so‘m</span>
+        </div>
+      </a>
+      <div class="grid-2">
+        <article class="card">
+          <div class="placeholder"><i data-icon="dish"></i></div>
+          <div class="card-body">
+            <span class="h3 title-2l">Choyxona oshi, maxsus ziravorlar bilan</span>
+            <span class="xs text-2">350 g</span>
+            <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+              <span><span class="price">35 000</span> <span class="price-old">42 000</span></span>
+              <button class="btn btn-icon btn-secondary" aria-label="Savatga qo‘shish"><i data-icon="plus"></i></button>
+            </div>
+          </div>
+        </article>
+        <article class="card">
+          <div class="placeholder"><i data-icon="dish"></i></div>
+          <div class="card-body">
+            <span class="h3 title-2l">Somsa</span>
+            <span class="xs text-2">1 dona</span>
+            <div class="row" style="justify-content:space-between;flex-wrap:wrap"><span class="price">8 000</span><span class="badge badge-danger">Tugagan</span></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Ro‘yxat va ogohlantirish</h2>
+      <div class="list">
+        <button class="list-item"><i data-icon="pin"></i><span class="grow"><span class="h3">Uy</span><br><span class="small text-2">Jizzax, Sh. Rashidov ko‘chasi 12</span></span><i data-icon="chevron"></i></button>
+        <button class="list-item"><i data-icon="phone"></i><span class="grow nowrap">+998 90 123 45 67</span><i data-icon="edit" data-icon-label="O‘zgartirish"></i></button>
+      </div>
+      <div class="alert alert-warning"><i data-icon="alert"></i><span>Bepul yetkazish uchun yana 15&nbsp;000&nbsp;so‘m qoldi.</span></div>
+      <div class="alert alert-danger"><i data-icon="info"></i><span>Restoran hozir yopiq. Buyurtma qabul qilinmaydi.</span></div>
+      <div class="alert alert-success"><i data-icon="check"></i><span>Yetkazish: 0 so‘m — bepul</span></div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Holatlar</h2>
+      <div class="card">
+        <div class="state"><div class="state-icon"><i data-icon="bag"></i></div><p class="h3">Savat bo‘sh</p><p class="small text-2">Restorandan taom tanlang</p><button class="btn btn-primary">Restoranlarga o‘tish</button></div>
+      </div>
+      <div class="card state-error">
+        <div class="state"><div class="state-icon"><i data-icon="wifiOff"></i></div><p class="h3">Internet yo‘q</p><p class="small text-2">Aloqani tekshirib, qayta urinib ko‘ring</p><button class="btn btn-secondary"><i data-icon="refresh" data-icon-class="icon-sm"></i>Qayta urinish</button></div>
+      </div>
+      <div class="card state-success">
+        <div class="state"><div class="state-icon"><i data-icon="check"></i></div><p class="h3">Buyurtma yuborildi</p><p class="small text-2">Restoran ko‘rib chiqmoqda</p></div>
+      </div>
+      <div class="card" aria-busy="true" aria-label="Yuklanmoqda">
+        <div class="skeleton skeleton-media"></div>
+        <div class="card-body"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div>
+      </div>
+    </section>
+
+    <section class="kit-section">
+      <h2>Oynalar va xabarlar</h2>
+      <div class="wrap">
+        <button class="btn btn-secondary" id="open-sheet">Taom oynasi (sheet)</button>
+        <button class="btn btn-secondary" id="open-dialog">Tasdiqlash dialogi</button>
+        <button class="btn btn-secondary" id="toast-ok">Toast: muvaffaqiyat</button>
+        <button class="btn btn-secondary" id="toast-err">Toast: xato</button>
+      </div>
+    </section>
+  </main>
+
+  <section class="sheet" id="sheet" hidden aria-labelledby="sheet-title">
+    <div class="sheet-handle"></div>
+    <img class="card-media" src="/brand/placeholder.svg" alt="" style="border-radius:var(--radius-card)">
+    <div class="sheet-header" style="margin-top:var(--sp-3)">
+      <h2 class="h2" id="sheet-title">Choyxona oshi</h2>
+      <button class="btn btn-icon btn-ghost" data-sheet-close aria-label="Yopish"><i data-icon="close"></i></button>
+    </div>
+    <p class="text-2 small">350 g. Tavsif restoran tomonidan kiritiladi.</p>
+    <div class="row" style="justify-content:space-between;margin:var(--sp-4) 0">
+      <span class="price" style="font-size:var(--fs-lg)">35 000 so‘m</span>
+      <span class="qty"><button class="btn" aria-label="Kamaytirish"><i data-icon="minus" data-icon-class="icon-sm"></i></button><span class="qty-value">1</span><button class="btn" aria-label="Ko‘paytirish"><i data-icon="plus" data-icon-class="icon-sm"></i></button></span>
+    </div>
+    <button class="btn btn-primary btn-lg btn-block" data-sheet-close>Savatga qo‘shish · 35 000 so‘m</button>
+  </section>
+
+  <nav class="bottom-nav" aria-label="Asosiy">
+    <a class="nav-item" href="#top" aria-current="page"><i data-icon="home"></i>Bosh sahifa</a>
+    <a class="nav-item" href="#top"><i data-icon="search"></i>Qidirish</a>
+    <a class="nav-item" href="#top"><i data-icon="receipt"></i>Buyurtmalar<span class="nav-badge">2</span></a>
+    <a class="nav-item" href="#top"><i data-icon="user"></i>Profil</a>
+  </nav>
+
+  <script type="module">
+    import { hydrateIcons } from '/js/ui/icons.js';
+    import { toast, openSheet, confirmDialog, setLoading, initTabs, initChips } from '/js/ui/components.js';
+    import { setTheme } from '/js/ui/theme.js';
+
+    const tokens = ['--bg', '--surface', '--surface-2', '--border', '--text', '--text-2', '--brand', '--primary', '--on-primary', '--secondary', '--on-secondary', '--danger', '--success', '--warning'];
+    const drawSwatches = () => {
+      const cs = getComputedStyle(document.documentElement);
+      document.getElementById('swatches').innerHTML = tokens
+        .map((t) => `<div class="swatch"><div style="background:var(${t})"></div><span>${t}<br>${cs.getPropertyValue(t).trim()}</span></div>`)
+        .join('');
+    };
+    hydrateIcons();
+    drawSwatches();
+    document.querySelectorAll('[data-theme-set]').forEach((b) => b.addEventListener('click', () => { setTheme(b.dataset.themeSet); drawSwatches(); }));
+    initTabs(document.getElementById('tabs'));
+    initChips(document.getElementById('chips'), { single: true });
+    document.getElementById('loading-demo').addEventListener('click', (e) => {
+      setLoading(e.currentTarget, true);
+      setTimeout(() => setLoading(e.currentTarget, false), 1500);
+    });
+    document.querySelectorAll('.qty').forEach((q) => q.addEventListener('click', (e) => {
+      const b = e.target.closest('button'); if (!b) return;
+      const v = q.querySelector('.qty-value');
+      v.textContent = Math.max(1, Number(v.textContent) + (b.getAttribute('aria-label') === 'Kamaytirish' ? -1 : 1));
+    }));
+    document.getElementById('open-sheet').addEventListener('click', () => openSheet(document.getElementById('sheet')));
+    document.getElementById('open-dialog').addEventListener('click', async () => {
+      const ok = await confirmDialog({ title: 'Savatni tozalaysizmi?', text: 'Boshqa restoran taomini qo‘shish uchun joriy savat tozalanadi.', confirm: 'Tozalash', danger: true });
+      toast(ok ? 'Savat tozalandi' : 'Bekor qilindi', { type: ok ? 'success' : 'info' });
+    });
+    document.getElementById('toast-ok').addEventListener('click', () => toast('Savatga qo‘shildi', { type: 'success' }));
+    document.getElementById('toast-err').addEventListener('click', () => toast('Tarmoq xatosi. Qayta urinib ko‘ring.', { type: 'error' }));
+  </script>
+</body>
+</html>

@@ -197,3 +197,8 @@ Hozirgi oddiy botda: `new, accepted, on_way, delivered, cancelled` (`ready` va `
 | 2026-11-25 | Mijozga faqat muhim bosqichlar (yuborildi, to'lov, qabul, olib ketishga tayyor, yo'lda, yetkazildi, bekor/qaytarish); yetkazishda "tayyor" va mijozning o'z bekor qilishi — xabarsiz | Shovqin bo'lmasligi; "qabul qilindi" faqat haqiqatda qabul qilingach |
 | 2026-11-25 | Kuryerga bitta jonli xabar (tahrir), yo'nalish — Google Maps havolasi; naqd summa = naqd va to'lanmagan bo'lsa jami | Kuryer uchun kerakli minimal ma'lumot |
 | 2026-11-25 | Restoran guruhi xabarlari o'zbekcha; mijoz va kuryer — o'z tilida | Guruhda bir nechta til aralashmasligi |
+| 2026-11-25 | Dispetcher taklifni restoran qabul qilgandan keyin (`accepted`/`ready`) yuboradi; qo'lda biriktirish istalgan vaqtda (`new`–`ready`) | Kuryer tayyorlanmagan buyurtma uchun behuda kutmasligi |
+| 2026-11-25 | "Birinchi bosgan oladi" — `UPDATE orders SET courier_id = ? WHERE courier_id IS NULL` (changes = 1); `courier_offers` faqat kimga ketgani va xabarni yopish uchun | Poyga holatida ham ikki kuryer bitta buyurtmani olmaydi |
+| 2026-11-25 | Kuryer olib ketishdan oldin voz kecha oladi (o'sha buyurtma unga qayta taklif qilinmaydi); olib ketgach — faqat "Muammo" (restoran hal qiladi) | Promptdagi qoida; buyurtma yo'lda "egasiz" qolmasligi |
+| 2026-11-25 | Smena har restoran uchun alohida (`couriers.is_online`); joylashuv faqat ishdagi kuryer yozuvlariga yoziladi | Kuryer bir nechta restoranda ishlashi mumkin; ishdan tashqarida kuzatilmaydi |
+| 2026-11-25 | Kuryer haqi (to'lovi) tizimda hisoblanmaydi; "bepul yetkazish" faqat mijozning `delivery_fee` si | Promptdagi ogohlantirish; hisob-kitob restoran va kuryer o'rtasida |

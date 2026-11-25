@@ -46,6 +46,14 @@ export function createTemplates(db, config) {
   const deliveryLabel = (o, lang) => (o.delivery_fee ? sum(o.delivery_fee, lang) : L(lang, 'g_free'));
   const paymentLabel = (o, lang) => `${L(lang, `pm_${o.payment_method}`)} · ${L(lang, `ps_${o.payment_status}`)}`;
 
+  // Kuryer qidiruvi holati (yetkazish, kuryer hali yo'q, restoran qabul qilgan).
+  function dispatchLine(o, lang) {
+    if (o.type !== 'delivery' || o.courier_id || !['accepted', 'ready'].includes(o.status)) return null;
+    if (o.dispatch_status === 'offering') return L(lang, 'g_dispatch_offering');
+    if (o.dispatch_status === 'no_courier') return L(lang, 'g_dispatch_none');
+    return null;
+  }
+
   // ---------- Restoran: asosiy buyurtma xabari (guruh yoki zaxira shaxsiy xabar) ----------
   function staffOrder(o, r, lang = 'uz') {
     const head = o.status === 'new' ? L(lang, 'g_head_new', { id: o.id }) : L(lang, 'g_head', { id: o.id, status: L(lang, `status_${o.status}`) });
@@ -68,6 +76,7 @@ export function createTemplates(db, config) {
       `${L(lang, 'g_comment')}: ${esc(o.comment || '—')}`,
       o.prep_minutes && o.status === 'accepted' ? L(lang, 'g_prep', { n: o.prep_minutes }) : null,
       courier ? `🛵 ${esc(courier)}` : null,
+      dispatchLine(o, lang),
       o.status === 'cancelled' && o.cancel_reason ? `${L(lang, 'g_reason')}: ${esc(reasonText(o, lang))}` : null,
     ].filter((x) => x !== null).join('\n');
     return { text: clip(text), reply_markup: staffKeyboard(o, 'main', lang) };
@@ -180,11 +189,30 @@ export function createTemplates(db, config) {
     const toRestaurant = r.lat != null ? { text: L(lang, 'k_btn_to_restaurant'), url: mapsDir(r.lat, r.lon) } : null;
     const toCustomer = o.address_lat != null ? { text: L(lang, 'k_btn_to_customer'), url: mapsDir(o.address_lat, o.address_lon) } : null;
     const cb = (key, act) => ({ text: L(lang, key), callback_data: `c:${o.id}:${act}` });
+    // Bitta asosiy keyingi amal + yo'nalish; olib ketishdan oldin — voz kechish, keyin — muammo (restoran orqali).
     if (['new', 'accepted'].includes(o.status) && toRestaurant) rows.push([toRestaurant]);
     if (o.status === 'ready') rows.push(...[toRestaurant && [toRestaurant], [cb('k_btn_picked', 'pk')]].filter(Boolean));
-    if (o.status === 'on_way') rows.push(...[toCustomer && [toCustomer], [cb('k_btn_delivered', 'dl')]].filter(Boolean));
+    if (['new', 'accepted', 'ready'].includes(o.status)) rows.push([cb('k_btn_release', 'rl')]);
+    if (o.status === 'on_way') rows.push(...[toCustomer && [toCustomer], [cb('k_btn_delivered', 'dl')], [cb('k_btn_problem', 'pb')]].filter(Boolean));
     return { text: clip(text), reply_markup: { inline_keyboard: rows } };
   }
 
-  return { staffOrder, staffKeyboard, customerMilestone, customerOrder, courierOrder, collectAmount, panelUrl };
+  // ---------- Kuryerga taklif (dispetcher): birinchi "Qabul qilaman" bosgan oladi ----------
+  function courierOffer(o, r, lang = 'uz') {
+    const collect = collectAmount(o);
+    const text = [
+      L(lang, 'k_offer_head', { id: o.id, restaurant: r.name }),
+      '',
+      `${L(lang, 'k_pickup')}: ${esc(r.name)}${r.address_text ? `, ${esc(r.address_text)}` : ''}`,
+      `${L(lang, 'k_dropoff')}: ${addressLine(o, lang)}`,
+      `${L(lang, 'k_collect')}: <b>${collect ? sum(collect, lang) : L(lang, 'k_collect_none')}</b>`,
+      o.status === 'ready' ? L(lang, 'k_offer_ready') : L(lang, 'k_offer_cooking'),
+    ].join('\n');
+    return {
+      text: clip(text),
+      reply_markup: { inline_keyboard: [[{ text: L(lang, 'k_btn_accept'), callback_data: `d:${o.id}:ok` }], [{ text: L(lang, 'k_btn_skip'), callback_data: `d:${o.id}:no` }]] },
+    };
+  }
+
+  return { staffOrder, staffKeyboard, customerMilestone, customerOrder, courierOrder, courierOffer, collectAmount, panelUrl };
 }

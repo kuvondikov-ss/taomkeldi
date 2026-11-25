@@ -39,7 +39,7 @@ export function createManageService(db, { access, geo }) {
     const rows = db.prepare(`
       SELECT o.id, o.status, o.type, o.payment_method, o.payment_status, o.items_total, o.delivery_fee, o.total,
              o.customer_name, o.customer_phone, o.address_text, o.comment, o.prep_minutes, o.courier_id, o.cancel_reason,
-             o.created_at, o.updated_at, c.name AS courier_name
+             o.created_at, o.updated_at, o.dispatch_status, c.name AS courier_name
       FROM orders o LEFT JOIN couriers c ON c.id = o.courier_id
       WHERE o.restaurant_id = ? AND o.status IN (${statuses.map(() => '?').join(',')})
       ORDER BY ${group === 'done' ? 'o.updated_at DESC' : 'o.created_at ASC'} LIMIT ${limit}
@@ -49,7 +49,13 @@ export function createManageService(db, { access, geo }) {
     for (const [g, st] of Object.entries(ORDER_GROUPS)) {
       counts[g] = g === 'done' ? null : db.prepare(`SELECT COUNT(*) AS n FROM orders WHERE restaurant_id = ? AND status IN (${st.map(() => '?').join(',')})`).get(rid, ...st).n;
     }
-    return { orders: rows.map((o) => ({ ...o, items: items.all(o.id).map((i) => ({ ...i })) })), counts };
+    // Dispetcher holati: ishdagi kuryerlar va kuryersiz qolgan yetkazish buyurtmalari (panel ogohlantirishi).
+    const dispatch = {
+      couriers_online: db.prepare("SELECT COUNT(*) AS n FROM couriers WHERE restaurant_id = ? AND status = 'active' AND user_id IS NOT NULL AND is_online = 1").get(rid).n,
+      couriers_linked: db.prepare("SELECT COUNT(*) AS n FROM couriers WHERE restaurant_id = ? AND status = 'active' AND user_id IS NOT NULL").get(rid).n,
+      unassigned: db.prepare("SELECT COUNT(*) AS n FROM orders WHERE restaurant_id = ? AND type = 'delivery' AND courier_id IS NULL AND status IN ('new','accepted','ready')").get(rid).n,
+    };
+    return { orders: rows.map((o) => ({ ...o, items: items.all(o.id).map((i) => ({ ...i })) })), counts, dispatch };
   }
 
   // O'z kuryerini biriktirish/almashtirish (yetkazish, yo'lga chiqmagan buyurtma).
@@ -68,7 +74,8 @@ export function createManageService(db, { access, geo }) {
         if (!c) throw new AppError('VALIDATION', { details: { field: 'courier_id', reason: 'not_this_restaurant_or_not_linked' } });
       }
       const t = now();
-      const res = db.prepare('UPDATE orders SET courier_id = ?, updated_at = ? WHERE id = ? AND status = ?').run(cid, t, o.id, o.status);
+      // Qo'lda biriktirish dispetcher takliflarini yopadi; olib tashlash (null) — dispetcher qayta taklif qiladi.
+      const res = db.prepare('UPDATE orders SET courier_id = ?, dispatch_status = ?, updated_at = ? WHERE id = ? AND status = ?').run(cid, cid ? 'assigned' : null, t, o.id, o.status);
       if (res.changes !== 1) throw new AppError('INVALID_TRANSITION');
       db.prepare(`INSERT INTO order_events (order_id, actor_id, actor_role, type, data, created_at) VALUES (?, ?, 'staff', 'courier_assigned', ?, ?)`)
         .run(o.id, actor.id, JSON.stringify({ from: o.courier_id, to: cid }), t);

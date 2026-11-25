@@ -19,6 +19,7 @@ import { createGroupService } from './group.js';
 import { createOutbox } from './outbox.js';
 import { createTemplates } from './templates.js';
 import { createOrderNotifier } from './order-notify.js';
+import { createDispatchService } from './dispatch.js';
 
 export function createServices(db, config, { fetchImpl, logger = console } = {}) {
   // Buyurtma o'zgarishi hodisasi: ('order', orderId, kind). Tinglovchilar (masalan, restoran guruhi xabari)
@@ -45,6 +46,7 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
   const manage = createManageService(db, { access, geo });
   const group = createGroupService(db, { access, notify, config, templates, logger });
   const orderNotify = createOrderNotifier(db, { users, templates, notify, logger });
+  const dispatch = createDispatchService(db, { access, users, templates, notify, orders, emitOrder, logger });
   // Buyurtmani o'zgartiradigan amallar muvaffaqiyatli tugagach — 'order' hodisasi.
   const emitAfter = (obj, name, idOf) => {
     const fn = obj[name];
@@ -65,23 +67,32 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
   // Har o'zgarishda: restoran guruhidagi asosiy xabar, kuryerning jonli xabari, mijozga muhim bosqich xabari.
   // Vaqtinchalik Telegram xatosida jonli xabarlar outbox orqali qayta yangilanadi.
   const retryLater = (target, orderId) => (r) => { if (r?.retry) outbox.enqueueSync(target, orderId, { delayMs: r.retryAfter ?? 10_000 }); };
+  const pending = new Set();
+  const track = (p) => { pending.add(p); p.finally(() => pending.delete(p)); return p; };
   events.on('order', (orderId) => {
-    group.syncOrder(orderId).then(retryLater('group', orderId));
-    orderNotify.handle(orderId).then(retryLater('courier', orderId));
+    track(group.syncOrder(orderId).then(retryLater('group', orderId)));
+    track(orderNotify.handle(orderId).then(retryLater('courier', orderId)));
+    // Dispetcher: qabul qilingan yetkazish buyurtmasiga kuryer taklifi; biriktirilganda takliflar yopiladi.
+    track(dispatch.onOrderChanged(orderId).catch((e) => logger.error('Dispetcher xatosi:', e)));
   });
   outbox.onSync('group', ({ orderId }) => group.syncOrder(orderId));
   outbox.onSync('courier', ({ orderId }) => orderNotify.courier(orderId));
 
   // Testlar va to'xtatish uchun: navbatdagi hodisalar va yuborishlar tugashini kutish.
   async function idle() {
-    await new Promise((res) => setImmediate(res));
+    const tick = () => new Promise((res) => setImmediate(res));
+    for (let i = 0; i < 50; i += 1) {
+      await tick();
+      if (!pending.size) { await tick(); if (!pending.size) break; }
+      await Promise.allSettled([...pending]);
+    }
     await Promise.all([group.idle(), orderNotify.idle()]);
   }
 
   // Bot ishga tushganda: xabar yuborish va onlayn to'lov uchun Telegram API.
-  const setBotApi = (api) => { payments.setBotApi(api); outbox.setBotApi(api); group.setBotApi(api); orderNotify.setBotApi(api); };
+  const setBotApi = (api) => { payments.setBotApi(api); outbox.setBotApi(api); group.setBotApi(api); orderNotify.setBotApi(api); dispatch.setBotApi(api); };
   return {
     geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, manage, group,
-    outbox, templates, orderNotify, setBotApi, events, idle,
+    outbox, templates, orderNotify, dispatch, setBotApi, events, idle,
   };
 }

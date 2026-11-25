@@ -17,7 +17,8 @@ import { renderApply } from './views/apply.js';
 import { renderPicker } from './views/picker.js';
 import { renderAddressForm } from './views/address-form.js';
 import { renderAddresses } from './views/addresses.js';
-import { renderProfile, renderOrders, renderSoon } from './views/simple.js';
+import { renderProfile, renderOrders } from './views/simple.js';
+import { renderCourier } from './views/courier.js';
 
 const tg = applyTelegramTheme();
 tg?.ready();
@@ -47,7 +48,7 @@ const ROUTES = [
   [/^panel\/(\d+)$/, renderPanel, {}],
   [/^panel\/(\d+)\/(orders|menu|couriers|staff|settings|report)$/, renderPanelSection, {}],
   [/^apply$/, renderApply, {}],
-  [/^courier$/, (el, p, m) => renderSoon(el, 'courier', 'section_soon'), {}],
+  [/^courier$/, renderCourier, {}],
 ];
 
 function parseHash() {

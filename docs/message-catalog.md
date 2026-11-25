@@ -111,7 +111,7 @@ Olish joyi: {restaurant_name}, {restaurant_address}
 Yetkazish joyi: {customer_address}
 Mijoz: {ism} · {telefon}
 
-Mijozdan olinadi: {collect_amount | 0 so‘m (to‘langan)}
+Mijozdan olinadi: {collect_amount | 0 so‘m — oldindan to‘langan}
 To‘lov: {usul} · {holat}
 ```
 
@@ -119,17 +119,35 @@ To‘lov: {usul} · {holat}
 |---|---|---|---|
 | `k_head`, `k_pickup`, `k_dropoff`, `k_collect`, `k_collect_none`, `k_wait_ready` | biriktirildi (`new`/`accepted`) | `k_btn_to_restaurant` 📍 Restoranga yo'nalish (URL) | faqat yetkazish; `pending_payment` emas |
 | — | `ready` | 📍 Restoranga yo'nalish; `k_btn_picked` 📦 Olib ketdim (`c:<id>:pk`) | — |
-| — | `on_way` | `k_btn_to_customer` 📍 Mijozga yo'nalish; `k_btn_delivered` ✅ Yetkazdim (`c:<id>:dl`) | — |
+| `k_btn_release` | `new` / `accepted` / `ready` | Voz kechish (`c:<id>:rl`) → `k_released_ok`; restoranga `k_staff_released` | faqat olib ketishdan oldin |
+| — | `on_way` | `k_btn_to_customer` 📍 Mijozga yo'nalish; `k_btn_delivered` ✅ Yetkazdim (`c:<id>:dl`); `k_btn_problem` Muammo (`c:<id>:pb`) | voz kechish yo'q — `k_picked_alert` |
+| `k_staff_problem`, `k_problem_ok` | kuryer "Muammo" bosdi | ega, menejerlar (shaxsiy) va guruh: kuryer ismi va telefoni | 10 daqiqada bir marta (dedupe) |
 | `k_head_done` | `delivered` / `cancelled` | tugmalarsiz | — |
 | `k_unassigned` | kuryer almashtirildi / olib tashlandi | eski xabardan tugmalar olinadi | — |
 | `k_not_yours` | boshqa kuryer bosdi | alert | vakolat — `orders.transition` |
 
+## Kuryer smenasi va dispetcher (14-bosqich)
+Dispetcher: `services/dispatch.js`. Taklif — restoran qabul qilgan (`accepted`/`ready`) yetkazish buyurtmasi, faqat shu restoranning faol, ulangan, **ishdagi** kuryerlariga (`auto_dispatch` yoqilgan bo'lsa). "Qabul qilaman" — birinchi bosgan oladi: `orders.courier_id IS NULL` shartli UPDATE.
+
+| Kalit | Hodisa | Auditoriya | Matn | Tugmalar | Shart | Yangilanish |
+|---|---|---|---|---|---|---|
+| `courier_title`, `courier_line`, `courier_online`, `courier_offline`, `courier_app_hint` | `/courier`, "Kuryer paneli", taklif havolasi qabul qilinganda | kuryer | Restoranlar va smena holati | `k_shift_on_btn` / `k_shift_off_btn` (`cs:<courier>:1`, `cs:<courier>:0`), Mini App | — | yangi |
+| `k_shift_on`, `k_shift_off` | smena o'zgardi | kuryer | Ishdasiz (jonli joylashuv eslatmasi) / Ish tugatildi | — | — | yangi |
+| `k_offer_head`, `k_offer_ready`, `k_offer_cooking` | dispetcher taklifi | ishdagi kuryerlar | 🆕 Yangi buyurtma #N, olish/yetkazish joyi, mijozdan olinadi | `k_btn_accept` (`d:<id>:ok`), `k_btn_skip` (`d:<id>:no`) | — | tahrir (yopilganda) |
+| `k_offer_accepted`, `k_accept_ok` | taklifni oldi | g'olib kuryer | Biriktirildi; keyin jonli buyurtma xabari | — | — | tahrir |
+| `k_offer_taken`, `k_taken_alert` | boshqasi oldi / qo'lda biriktirildi | qolgan kuryerlar | Buyurtmani boshqa kuryer oldi | tugmalar olib tashlanadi | — | tahrir |
+| `k_offer_declined` | o'tkazib yubordi | kuryer | O'tkazib yuborildi | — | — | tahrir |
+| `k_offer_offline` | kuryer ishni tugatdi | kuryer | Taklif yopildi | — | — | tahrir |
+| `k_offer_cancelled` | buyurtma bekor | taklif olgan kuryerlar | Bekor qilindi | — | — | tahrir |
+| `k_offer_closed_alert`, `k_offline_alert` | yopilgan taklif / ishda emas | kuryer (alert) | — | — | — | — |
+| `g_dispatch_offering`, `g_dispatch_none` | kuryer qidirilmoqda / topilmadi | restoran guruhi (asosiy xabar qatori) va panel | 🔎 qidirilmoqda / ⚠️ onlayn kuryer yo'q — qo'lda biriktiring | — | yetkazish, kuryersiz, `accepted`/`ready` | tahrir |
+| `k_location_ok` | kuryer joylashuv yubordi | kuryer | Qabul qilindi (jonli joylashuvda jim) | — | ishdagi kuryer | yangi |
+
 ## Rejalashtirilgan (keyingi bosqichlar)
 | Xabar | Bosqich |
 |---|---|
-| Kuryer taklifi, "boshqasi oldi", "voz kechish", onlayn kuryer yo'q (dispetcher) | 14 |
-| Lokatsiya eskirdi / jonli joylashuv kerak | 14–15 |
+| Lokatsiya eskirdi / jonli joylashuv kerak (mijozga kuzatuv) | 15 |
 | Baholash | 15 |
 | "Bepul yetkazib berish" bo'limi xabarlari | 16 |
 
-Sinov: faqat mock (`test/group.test.js`, `test/messages.test.js`) yoki alohida test bot/guruh.
+Sinov: faqat mock (`test/group.test.js`, `test/messages.test.js`, `test/courier.test.js`) yoki alohida test bot/guruh.

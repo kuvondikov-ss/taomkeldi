@@ -159,7 +159,7 @@ describe('Kuryer xabari: bitta jonli xabar', () => {
     assert.match(m.text, /Olish joyi: Restoran Bir, Sharof Rashidov 1/);
     assert.match(m.text, /Yetkazish joyi: Mustaqillik 5/);
     assert.match(m.text, /Mijozdan olinadi: <b>75\s000/);
-    assert.deepEqual(btns(m).map((b) => b.text), ['📍 Restoranga yo‘nalish']);
+    assert.deepEqual(btns(m).map((b) => b.text), ['📍 Restoranga yo‘nalish', 'Voz kechish']);
     assert.match(btns(m)[0].url, /destination=40\.12,67\.84/);
 
     await e.act(() => e.S.orders.transition(e.u(101), e.ids.o1, 'accepted', { prepMinutes: 15 }));
@@ -176,7 +176,7 @@ describe('Kuryer xabari: bitta jonli xabar', () => {
     await e.press(103, `c:${e.ids.o1}:pk`);
     assert.equal(e.order(e.ids.o1).status, 'on_way');
     const way = e.editsTo(103).at(-1);
-    assert.deepEqual(btns(way).map((b) => b.text), ['📍 Mijozga yo‘nalish', '✅ Yetkazdim']);
+    assert.deepEqual(btns(way).map((b) => b.text), ['📍 Mijozga yo‘nalish', '✅ Yetkazdim', '⚠️ Muammo (restoranga xabar)']);
     await e.press(103, `c:${e.ids.o1}:pk`); // takror bosish — dublikat holat yo'q
     assert.match(e.of('answerCallbackQuery').at(-1).text, /Holat o‘zgargan/);
     await e.press(103, `c:${e.ids.o1}:dl`);
@@ -188,7 +188,7 @@ describe('Kuryer xabari: bitta jonli xabar', () => {
     e.db.prepare("UPDATE orders SET payment_method = 'online', payment_status = 'paid' WHERE id = ?").run(e.ids.o1);
     const o = e.order(e.ids.o1);
     const msg = e.S.templates.courierOrder(o, { name: 'R' }, 'uz');
-    assert.match(msg.text, /Mijozdan olinadi: <b>0 so‘m \(to‘langan\)/);
+    assert.match(msg.text, /Mijozdan olinadi: <b>0 so‘m — oldindan to‘langan/);
   });
 
   test('kuryer almashtirildi: eskisiga "boshqa kuryerga berildi" (tugmasiz), yangisiga xabar', async () => {
@@ -355,7 +355,7 @@ describe('Callback va katalog', () => {
 
   test('docs/message-catalog.md barcha mijoz/kuryer/guruh shablon kalitlarini qamraydi', () => {
     const doc = fs.readFileSync(new URL('../docs/message-catalog.md', import.meta.url), 'utf8');
-    const keys = Object.keys(LOCALES.uz).filter((k) => /^(c_|k_|g_head|group_|bogla_|payment_|app_|restaurant_|invite_|start$|help$)/.test(k));
+    const keys = Object.keys(LOCALES.uz).filter((k) => /^(c_|k_|g_head|g_dispatch|group_|bogla_|payment_|app_|restaurant_|invite_|courier_|start$|help$)/.test(k));
     const missing = keys.filter((k) => !doc.includes(`\`${k}\``));
     assert.deepEqual(missing, []);
   });

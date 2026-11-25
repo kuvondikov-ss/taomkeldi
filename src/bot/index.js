@@ -5,6 +5,7 @@ import { t, keyOfLabel, formatSum, LANGS } from '../i18n/index.js';
 import { INVITE_PREFIX } from '../services/invites.js';
 import { AppError } from '../lib/errors.js';
 import { registerGroupHandlers } from './group.js';
+import { registerCourierHandlers } from './courier.js';
 
 const CONVO_TTL_MS = 15 * 60 * 1000;
 
@@ -66,6 +67,11 @@ export function createBot({ config, services, logger = console, botInfo }) {
   // --- /start ---
   async function handleInvite(ctx, payload) {
     const r = invites.accept(ctx.user, payload);
+    if (r.status === 'ok' && r.kind === 'courier') {
+      // Kuryerga yo'riqnoma va darhol "Ishga chiqdim" tugmasi.
+      await ctx.reply(ctx.t('invite_courier', { restaurant: r.restaurant }), html);
+      return courierBot.showCourier(ctx);
+    }
     if (r.status === 'ok') return ctx.reply(ctx.t(`invite_${r.kind}`, { restaurant: r.restaurant }), html);
     if (r.status === 'already') return ctx.reply(ctx.t('invite_already', { restaurant: r.restaurant }), html);
     if (r.status === 'inactive') return ctx.reply(ctx.t('invite_blocked'), html);
@@ -139,14 +145,8 @@ export function createBot({ config, services, logger = console, botInfo }) {
     if (roles.staff.length) await showPanel(ctx);
   }
 
-  async function showCourier(ctx) {
-    const roles = access.rolesOf(ctx.user);
-    if (!roles.courier.length) return ctx.reply(ctx.t('no_access'));
-    const lines = roles.courier.map((c) => ctx.t('courier_line', {
-      name: c.restaurantName, online: ctx.t(c.isOnline ? 'courier_online' : 'courier_offline'),
-    }));
-    return replyWithApp(ctx, `${ctx.t('courier_title')}\n\n${lines.join('\n')}`, 'courier');
-  }
+  // Kuryer paneli: smena tugmalari + Mini App (src/bot/courier.js).
+  const showCourier = (ctx) => courierBot.showCourier(ctx);
 
   const showId = (ctx) => ctx.reply(ctx.t('id', { user: ctx.from.id, chat: ctx.chat.id }), html);
 
@@ -209,24 +209,8 @@ export function createBot({ config, services, logger = console, botInfo }) {
     users.setBotBlocked(ctx.myChatMember.from.id, st === 'kicked');
   });
 
-  // --- Kuryer tugmalari: c:<id>:pk (olib ketdim), c:<id>:dl (yetkazdim). Vakolat — services.orders (biriktirilgan kuryer). ---
-  bot.callbackQuery(/^c:(\d+):(pk|dl)$/, async (ctx) => {
-    const id = Number(ctx.match[1]);
-    const to = ctx.match[2] === 'pk' ? 'on_way' : 'delivered';
-    try {
-      orders.transition(ctx.user, id, to);
-      return await ctx.answerCallbackQuery({ text: ctx.t('g_ok') });
-    } catch (e) {
-      if (e instanceof AppError && ['INVALID_TRANSITION', 'CONFLICT'].includes(e.code)) {
-        await ctx.answerCallbackQuery({ text: ctx.t('g_stale'), show_alert: true });
-        await services.orderNotify.courier(id);
-        return undefined;
-      }
-      if (e instanceof AppError && ['FORBIDDEN', 'NOT_FOUND'].includes(e.code)) return ctx.answerCallbackQuery({ text: ctx.t('k_not_yours'), show_alert: true });
-      logger.error(`Kuryer tugmasi xatosi (#${id}):`, e.message);
-      return ctx.answerCallbackQuery({ text: ctx.t('g_error'), show_alert: true });
-    }
-  });
+  // --- Kuryer: smena, dispetcher takliflari, buyurtma tugmalari, joylashuv ---
+  const courierBot = registerCourierHandlers(bot, { services, logger, replyWithApp });
 
   // --- Shaxsiy chat buyruqlari ---
   const privateOnly = (fn) => (ctx) => (isPrivate(ctx) ? fn(ctx) : undefined);

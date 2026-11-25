@@ -374,6 +374,30 @@ const migrations = [
       ALTER TABLE users ADD COLUMN bot_blocked_at INTEGER;
     `,
   },
+  {
+    id: 9,
+    name: 'courier_dispatch',
+    sql: `
+      -- Dispetcher: buyurtma taklifi shu restoranning onlayn kuryerlariga. "Birinchi bosgan oladi" — orders.courier_id
+      -- ustidagi shartli UPDATE bilan; bu jadval faqat kimga taklif ketgani va xabarini yopish uchun.
+      CREATE TABLE courier_offers (
+        id          INTEGER PRIMARY KEY,
+        order_id    INTEGER NOT NULL REFERENCES orders(id),
+        courier_id  INTEGER NOT NULL REFERENCES couriers(id),
+        chat_id     INTEGER,
+        message_id  INTEGER,
+        status      TEXT NOT NULL DEFAULT 'open',  -- open | accepted | lost | declined | cancelled
+        created_at  INTEGER NOT NULL,
+        updated_at  INTEGER NOT NULL,
+        UNIQUE (order_id, courier_id)
+      );
+      CREATE INDEX idx_courier_offers_order ON courier_offers(order_id, status);
+      CREATE INDEX idx_courier_offers_courier ON courier_offers(courier_id, status);
+      -- null | offering (taklif yuborilgan) | no_courier (onlayn kuryer yo'q yoki hech kim olmadi) | assigned
+      ALTER TABLE orders ADD COLUMN dispatch_status TEXT;
+      ALTER TABLE couriers ADD COLUMN online_changed_at INTEGER;
+    `,
+  },
 ];
 
 export function migrate(db) {

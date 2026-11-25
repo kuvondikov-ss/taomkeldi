@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 13-bosqich (bot xabarlari, tugmalar va ishonchli yuborish) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 14-bosqich (restoran kuryerlari va dispetcher) bajarildi. Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).
@@ -54,6 +54,10 @@ Xato javobi: `{ "ok": false, "error": { "code": "FORBIDDEN", "message": "..." } 
 | DELETE | `/api/addresses/:id` | o'z manzili |
 | GET | `/api/orders`, `/api/orders/:id` | mijoz (o'ziniki), xodim (o'z restorani), kuryer (o'ziga biriktirilgan), admin |
 | GET | `/api/courier/orders` | kuryer |
+| GET | `/api/courier/dashboard` | kuryer ekrani: smenalar, joriy buyurtmalar, takliflar, bugungi statistika, tarix |
+| POST | `/api/courier/shift` `{courier_id, online}` | Ishga chiqdim / Ishni tugatdim |
+| POST | `/api/courier/offers/:id/accept\|decline` | taklif: birinchi qabul qilgan oladi (409 `taken`) |
+| POST | `/api/courier/orders/:id/pickup\|deliver\|release\|problem` | olib ketdim, yetkazdim, voz kechish (faqat olib ketishdan oldin), muammo |
 | GET | `/api/panel/restaurants/:rid` | ega, menejer (karta maskalangan), admin |
 | GET | `/api/panel/restaurants/:rid/orders` | ega, menejer, admin |
 | PUT | `/api/panel/restaurants/:rid/payment` | faqat ega |

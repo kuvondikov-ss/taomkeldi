@@ -139,6 +139,25 @@ const uz = {
   help_text: 'Savollar bo‘yicha botga yozing: @taomkeldi_bot',
   status_pending_payment: 'To‘lov kutilmoqda', status_new: 'Yangi', status_accepted: 'Tayyorlanmoqda', status_ready: 'Tayyor',
   status_on_way: 'Yo‘lda', status_delivered: 'Yetkazildi', status_cancelled: 'Bekor qilindi',
+  // Kuryer ekrani va dispetcher (14-bosqich)
+  k_not_courier: 'Siz hech bir restoranga kuryer sifatida ulanmagansiz. Restorandan taklif havolasini so‘rang.',
+  k_on_shift: 'Ishdasiz — takliflar keladi', k_off_shift: 'Ishda emassiz', k_shift_on_toast: 'Ishga chiqdingiz', k_shift_off_toast: 'Ish tugatildi',
+  k_current: 'Joriy buyurtma', k_offers: 'Yangi takliflar', k_task_wait: 'Restoranga boring — buyurtma tayyorlanmoqda', k_task_pickup: 'Buyurtmani restorandan oling',
+  k_task_deliver: 'Mijozga yetkazing', k_wait_btn: 'Tayyor bo‘lishini kuting', k_pickup_label: 'Olish joyi', k_dropoff_label: 'Yetkazish joyi', k_route: 'Yo‘nalish',
+  k_collect_label: 'Mijozdan olinadi', k_collect_none: '0 so‘m — oldindan to‘langan', k_entrance: 'pod.', k_floor: 'qavat', k_apartment: 'xon.',
+  k_btn_picked: 'Olib ketdim', k_btn_delivered: 'Yetkazdim', k_btn_release: 'Voz kechish', k_btn_problem: 'Muammo — restoranga xabar', k_btn_accept: 'Qabul qilaman', k_btn_skip: 'O‘tkazib yuborish',
+  k_release_q: 'Buyurtmadan voz kechasizmi?', k_release_text: 'Buyurtma boshqa kuryerga taklif qilinadi, restoranga xabar boradi.',
+  k_problem_q: 'Restoranga muammo haqida xabar berilsinmi?', k_problem_text: 'Olib ketilgan buyurtmadan voz kechib bo‘lmaydi. Restoran xodimlariga xabar boradi va ular siz bilan bog‘lanadi.',
+  k_picked_toast: 'Olib ketildi — endi mijozga', k_delivered_toast: 'Yetkazildi. Rahmat!', k_released_ok: 'Voz kechdingiz', k_problem_ok: 'Restoranga xabar berildi',
+  k_accept_ok: 'Buyurtma sizniki!', k_taken_alert: 'Buyurtmani boshqa kuryer oldi', k_offline_alert: 'Avval ishga chiqing', k_offer_closed_alert: 'Bu taklif endi amal qilmaydi',
+  k_picked_alert: 'Olib ketilgan buyurtmadan voz kechib bo‘lmaydi — “Muammo” orqali restoranga xabar bering',
+  k_empty_online: 'Hozircha buyurtma yo‘q', k_empty_online_text: 'Yangi taklif kelganda bot xabar beradi va shu yerda ko‘rinadi.',
+  k_empty_offline: 'Siz ishda emassiz', k_empty_offline_text: 'Ishga chiqing — takliflar shu yerda va botda keladi.',
+  k_stats: 'Statistika va tarix', k_today_short: 'bugun: {n}', k_today_delivered: 'Bugun yetkazildi', k_today_cash: 'Bugun naqd yig‘ildi', k_no_history: 'Hali yakunlangan buyurtma yo‘q',
+  dispatch_offering: 'Kuryer qidirilmoqda', dispatch_no_courier: 'Kuryer topilmadi — qo‘lda biriktiring',
+  dispatch_no_online: 'Onlayn kuryer yo‘q: {n} ta yetkazish buyurtmasi kuryersiz. Kuryerni qo‘lda biriktiring yoki kuryerlar ishga chiqsin.',
+  dispatch_no_couriers: 'Ulangan kuryer yo‘q: {n} ta yetkazish buyurtmasi kuryersiz. Kuryer qo‘shing va taklif havolasini yuboring.',
+  dispatch_to_couriers: 'Kuryerlar',
 };
 
 const ru = {
@@ -281,6 +300,25 @@ const ru = {
   help_text: 'По вопросам пишите боту: @taomkeldi_bot',
   status_pending_payment: 'Ожидает оплаты', status_new: 'Новый', status_accepted: 'Готовится', status_ready: 'Готов',
   status_on_way: 'В пути', status_delivered: 'Доставлен', status_cancelled: 'Отменён',
+  // Экран курьера и диспетчер (этап 14)
+  k_not_courier: 'Вы не подключены курьером ни к одному ресторану. Попросите у ресторана ссылку-приглашение.',
+  k_on_shift: 'На смене — предложения приходят', k_off_shift: 'Не на смене', k_shift_on_toast: 'Вы вышли на смену', k_shift_off_toast: 'Смена завершена',
+  k_current: 'Текущий заказ', k_offers: 'Новые предложения', k_task_wait: 'Езжайте в ресторан — заказ готовится', k_task_pickup: 'Заберите заказ в ресторане',
+  k_task_deliver: 'Доставьте клиенту', k_wait_btn: 'Дождитесь готовности', k_pickup_label: 'Забрать', k_dropoff_label: 'Доставить', k_route: 'Маршрут',
+  k_collect_label: 'Получить с клиента', k_collect_none: '0 сум — оплачено заранее', k_entrance: 'под.', k_floor: 'этаж', k_apartment: 'кв.',
+  k_btn_picked: 'Забрал', k_btn_delivered: 'Доставил', k_btn_release: 'Отказаться', k_btn_problem: 'Проблема — сообщить ресторану', k_btn_accept: 'Беру', k_btn_skip: 'Пропустить',
+  k_release_q: 'Отказаться от заказа?', k_release_text: 'Заказ предложат другому курьеру, ресторан получит уведомление.',
+  k_problem_q: 'Сообщить ресторану о проблеме?', k_problem_text: 'От забранного заказа отказаться нельзя. Сотрудники ресторана получат сообщение и свяжутся с вами.',
+  k_picked_toast: 'Забрали — теперь к клиенту', k_delivered_toast: 'Доставлено. Спасибо!', k_released_ok: 'Вы отказались', k_problem_ok: 'Ресторан уведомлён',
+  k_accept_ok: 'Заказ ваш!', k_taken_alert: 'Заказ взял другой курьер', k_offline_alert: 'Сначала выйдите на смену', k_offer_closed_alert: 'Это предложение больше не действует',
+  k_picked_alert: 'Нельзя отказаться от забранного заказа — сообщите ресторану через «Проблема»',
+  k_empty_online: 'Пока заказов нет', k_empty_online_text: 'Когда придёт предложение, бот сообщит, и оно появится здесь.',
+  k_empty_offline: 'Вы не на смене', k_empty_offline_text: 'Выйдите на смену — предложения будут приходить сюда и в бот.',
+  k_stats: 'Статистика и история', k_today_short: 'сегодня: {n}', k_today_delivered: 'Доставлено сегодня', k_today_cash: 'Наличных сегодня', k_no_history: 'Завершённых заказов пока нет',
+  dispatch_offering: 'Ищем курьера', dispatch_no_courier: 'Курьер не найден — назначьте вручную',
+  dispatch_no_online: 'Нет курьеров на смене: {n} заказ(ов) на доставку без курьера. Назначьте курьера вручную или попросите курьеров выйти на смену.',
+  dispatch_no_couriers: 'Нет подключённых курьеров: {n} заказ(ов) на доставку без курьера. Добавьте курьера и отправьте ему ссылку-приглашение.',
+  dispatch_to_couriers: 'Курьеры',
 };
 
 export const DICTS = { uz, ru };

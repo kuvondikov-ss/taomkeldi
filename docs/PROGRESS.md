@@ -19,8 +19,8 @@ Oxirgi yangilanish: 2026-11-25. Doimiy qarorlar — [PROJECT_CONTEXT.md](PROJECT
 | 11 | Restoran panelining bo'limlari | ✅ bajarildi lokal, 190/190 test (2026-11-25) |
 | 12 | Botni restoran guruhiga ulash | ✅ bajarildi lokal, 219/219 test (2026-11-25) |
 | 13 | Bot xabarlari va tugmalar | ✅ bajarildi lokal, 241/241 test (2026-11-25) |
-| 14 | Restoran kuryerlari va dispetcher | ⏭ navbatda |
-| 15 | Jonli kuzatuv, tarix, profil | — |
+| 14 | Restoran kuryerlari va dispetcher | ✅ bajarildi lokal, 259/259 test (2026-11-25) |
+| 15 | Jonli kuzatuv, tarix, profil | ⏭ navbatda |
 | 16 | "Bepul yetkazib berish" bo'limi | — |
 | 17 | Barcha ekranlarning yakuniy dizayni | — |
 | 18 | Yakuniy sinov, Railway, topshirish | — |
@@ -127,7 +127,7 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 | Ega va menejer farqi frontend va serverda | 11 | mavjud | `services/manage.js` boshidagi jadval |
 | Restoran guruhi | 12 | mavjud | yuqoridagi 12-bosqich qatorlari |
 | Xabar shablonlari, outbox | 13 | mavjud | yuqoridagi 13-bosqich qatorlari |
-| Kuryerlar, dispetcher | 14 | qisman | Kuryer o'z buyurtmalari API; dispetcher yo'q |
+| Kuryerlar, dispetcher | 14 | mavjud | quyidagi 14-bosqich natijasi |
 | Kuzatuv, profil, sevimlilar | 15 | qisman | `/api/orders` tarixi; `favorites` jadvali |
 | Bepul yetkazish | 16 | yo'q | `free_delivery_from` ustuni bor |
 
@@ -225,6 +225,16 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Sinov: 241/241 (22 ta yangi: mijoz bosqichlari va dublikat yo'qligi, rus tili, bekor/qaytarish, karta oqimi, to'lov muddati, kuryer oqimi va almashtirish, escape va qisqartirish, outbox: dedupe, 5xx, 429, bloklash, guruh qayta yangilanishi). Brauzerda — admin ko'rsatkichlari.
 - Topilgan va tuzatilgan: navbat ishlov beruvchisi ish bo'lmaganda "band" bayrog'ini tozalamas edi (test ushladi).
 - Telegram'da jonli sinov hali yo'q (deploy foydalanuvchi buyrug'i bilan). Kuryer taklifi/dispetcher, jonli joylashuv, baholash — 14–15-bosqichlar.
+
+## 14-bosqich natijasi
+- Server: `services/dispatch.js` — smena ("Ishga chiqdim"/"Ishni tugatdim", serverda), avtomatik dispetcher (restoran qabul qilgan yetkazish buyurtmasi → faqat shu restoranning faol, ulangan, ishdagi kuryerlari), "birinchi bosgan oladi" (`orders.courier_id IS NULL` shartli UPDATE), o'tkazib yuborish, olib ketishdan oldin voz kechish (shu kuryerga qayta taklif qilinmaydi), olib ketilgandan keyin "Muammo" (restoran xodimlari va guruhga kuryer telefoni bilan), joylashuv saqlash. Migratsiya 9: `courier_offers`, `orders.dispatch_status`, `couriers.online_changed_at`.
+- Qo'lda biriktirish va boshqa kuryerga o'tkazish (panel) ochiq takliflarni yopadi; olib tashlash — dispetcher qayta taklif qiladi.
+- Ogohlantirish: kuryer topilmasa (onlayn yo'q yoki hamma o'tkazib yubordi) guruhdagi asosiy xabarda "⚠️ Kuryer topilmadi", panelda buyurtma kartasida va (onlayn kuryer umuman yo'q bo'lsa) ro'yxat tepasida banner.
+- Bot: `src/bot/courier.js` — `/courier` va taklif havolasi orqali ulanganda smena tugmalari, `d:<id>:ok|no` takliflar, `c:<id>:pk|dl|rl|pb`, oddiy/jonli joylashuv.
+- Mini App: `#/courier` — smena → joriy buyurtma (hozirgi vazifa, olish/yetkazish, yo'nalish va qo'ng'iroq, mijozdan olinadigan summa, bitta asosiy amal) → takliflar → statistika va tarix (yig'ilgan bo'lim). API: `/api/courier/dashboard`, `/shift`, `/offers/:id/accept|decline`, `/orders/:id/pickup|deliver|release|problem`.
+- Oldindan to'langan buyurtma: "Mijozdan olinadi: 0 so'm — oldindan to'langan"; naqdda aniq jami. Bepul yetkazish faqat mijozning `delivery_fee` si; kuryer haqi tizimda hisoblanmaydi (avtomatik nol qilinmaydi).
+- Sinov: 259/259 (18 ta yangi: ikki kuryer bir vaqtda, oflayn kuryer, boshqa restoran kuryeri, qayta biriktirish, voz kechish oldin/keyin, bekor qilish, biriktirilmagan odam "Yetkazdim", hech kim olmadi, kuryer ishga chiqqanda taklif, dashboard API, taklif havolasi → smena, joylashuv). Brauzerda: kuryer ekrani (qorong'i mavzu), taklifni qabul qilish, voz kechish (tasdiq bilan), panel ogohlantirishi.
+- Telegram'da jonli sinov hali yo'q (deploy foydalanuvchi buyrug'i bilan).
 
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.

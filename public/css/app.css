@@ -224,3 +224,11 @@ a.list-item { color: inherit; text-decoration: none; }
 .group-steps { margin: 0; padding-left: 1.2em; display: grid; gap: var(--sp-1); }
 .group-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
 .group-unlink { color: var(--danger); }
+/* Kuryer ekrani (14-bosqich) */
+.courier-task { display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-3); border-radius: var(--radius-md); background: var(--brand-bg, var(--surface-2)); }
+.courier-leg { display: grid; gap: 2px; padding-left: var(--sp-3); border-left: 3px solid var(--border); }
+.courier-leg.is-current { border-left-color: var(--brand); }
+.courier-links { flex-wrap: wrap; gap: var(--sp-3); font-size: var(--fs-sm); }
+.courier-links a { display: inline-flex; align-items: center; gap: 4px; }
+.courier-collect { display: flex; justify-content: space-between; align-items: center; padding: var(--sp-2) var(--sp-3); border-radius: var(--radius-md); background: var(--surface-2); }
+.courier-order a.link { color: var(--brand); font-weight: var(--fw-semibold); text-decoration: underline; text-underline-offset: 2px; }

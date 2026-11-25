@@ -179,6 +179,17 @@ export function createApp({ config, services, logger = console }) {
 
   // --- Kuryer ---
   api.get('/courier/orders', (req, res) => res.json({ ok: true, orders: services.orders.listForCourier(req.actor) }));
+  // --- Kuryer ekrani (14-bosqich): smena, takliflar, joriy buyurtma amallari. Vakolat — services.dispatch. ---
+  const D = services.dispatch;
+  const oid = (req) => v.id(req.params.id);
+  api.get('/courier/dashboard', (req, res) => res.json({ ok: true, ...D.dashboard(req.actor) }));
+  api.post('/courier/shift', async (req, res) => res.json({ ok: true, shift: await D.setOnline(req.actor, req.body?.courier_id, !!req.body?.online) }));
+  api.post('/courier/offers/:id/accept', async (req, res) => res.json({ ok: true, ...(await D.accept(req.actor, oid(req))) }));
+  api.post('/courier/offers/:id/decline', async (req, res) => res.json({ ok: true, ...(await D.decline(req.actor, oid(req))) }));
+  api.post('/courier/orders/:id/pickup', (req, res) => { D.pickup(req.actor, oid(req)); res.json({ ok: true }); });
+  api.post('/courier/orders/:id/deliver', (req, res) => { D.deliver(req.actor, oid(req)); res.json({ ok: true }); });
+  api.post('/courier/orders/:id/release', async (req, res) => res.json({ ok: true, ...(await D.release(req.actor, oid(req))) }));
+  api.post('/courier/orders/:id/problem', async (req, res) => res.json({ ok: true, ...(await D.reportProblem(req.actor, oid(req))) }));
 
   // --- Restoran paneli (ega/menejer/platforma admini) ---
   api.get('/panel/restaurants/:rid', (req, res) => {

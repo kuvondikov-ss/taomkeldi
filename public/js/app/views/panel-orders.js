@@ -37,6 +37,7 @@ export async function renderPanelOrders(el, params, rid, { go }) {
       <div class="tabs" role="tablist" id="groups" style="flex:1;margin-right:0"></div>
       <button class="btn btn-icon btn-ghost" id="sound" aria-pressed="${localStorage.getItem(SOUND_KEY) === '1'}"></button>
     </div>
+    <div id="dispatch-alert"></div>
     <div id="list" class="stack"><div class="skeleton skeleton-text"></div></div>
     <section class="sheet" id="order-sheet" hidden></section>`;
   const soundBtn = el.querySelector('#sound');
@@ -145,6 +146,11 @@ export async function renderPanelOrders(el, params, rid, { go }) {
       }
       el.querySelector('#groups').innerHTML = GROUPS.map((g) => `<button class="tab" role="tab" data-g="${g}" aria-selected="${g === group}">${t(`g_${g}`)}${board.counts[g] ? ` <span class="count-badge">${board.counts[g]}</span>` : ''}</button>`).join('');
       el.querySelectorAll('[data-g]').forEach((b) => b.addEventListener('click', () => go(`panel/${rid}/orders?g=${b.dataset.g}`, { replace: true })));
+      // Onlayn kuryer yo'q, kuryersiz yetkazish buyurtmasi bor — amaliy ogohlantirish.
+      const dsp = board.dispatch || {};
+      el.querySelector('#dispatch-alert').innerHTML = dsp.unassigned && !dsp.couriers_online
+        ? `<div class="alert alert-warning">${icon('alert')}<span>${dsp.couriers_linked ? t('dispatch_no_online', { n: dsp.unassigned }) : t('dispatch_no_couriers', { n: dsp.unassigned })}</span><a class="btn btn-ghost" href="#/panel/${rid}/couriers">${t('dispatch_to_couriers')}</a></div>`
+        : '';
       const list = el.querySelector('#list');
       list.innerHTML = '';
       if (!board.orders.length) list.append(stateBlock({ iconName: 'receipt', title: t('empty_group') }));
@@ -161,6 +167,7 @@ export async function renderPanelOrders(el, params, rid, { go }) {
           <div class="row" style="justify-content:space-between"><span class="small text-2 cust"></span><span class="price">${formatSum(o.total)}</span></div>
           ${o.prep_minutes && o.status === 'accepted' ? `<p class="xs text-2">${t('prep_time', { n: o.prep_minutes })}</p>` : ''}
           ${o.courier_name ? `<p class="xs">${icon('scooter', { className: 'icon-inline' })} ${o.courier_name}</p>` : ''}
+          ${!o.courier_name && o.type === 'delivery' && ['accepted', 'ready'].includes(o.status) && o.dispatch_status ? `<p class="xs ${o.dispatch_status === 'no_courier' ? 'warn-text' : 'text-2'}">${icon('scooter', { className: 'icon-inline' })} ${t(`dispatch_${o.dispatch_status}`)}</p>` : ''}
           ${o.status === 'cancelled' && o.cancel_reason ? '<p class="xs danger-text reason"></p>' : ''}
           ${o.comment ? '<p class="xs warn-text cm"></p>' : ''}
           <div class="order-actions row"></div>

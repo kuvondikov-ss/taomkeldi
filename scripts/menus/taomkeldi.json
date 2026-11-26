@@ -1,0 +1,63 @@
+{
+  "restaurant": {
+    "name": "Taomkeldi",
+    "description": "Milliy o‘zbek taomlari: osh, lag‘mon, manti, shashlik, somsa va choy.",
+    "cuisines": ["Milliy taomlar", "Shashlik"]
+  },
+  "categories": [
+    {
+      "name_uz": "Milliy taomlar", "name_ru": "Национальные блюда",
+      "items": [
+        { "name_uz": "To‘y oshi", "name_ru": "Свадебный плов", "portion": "1 porsiya" },
+        { "name_uz": "Choyxona oshi", "name_ru": "Плов чайханский", "portion": "1 porsiya" },
+        { "name_uz": "Lag‘mon", "name_ru": "Лагман", "portion": "1 kosa" },
+        { "name_uz": "Qovurma lag‘mon", "name_ru": "Жареный лагман", "portion": "1 porsiya" },
+        { "name_uz": "Manti", "name_ru": "Манты", "portion": "5 dona" },
+        { "name_uz": "Chuchvara", "name_ru": "Чучвара", "portion": "1 kosa" },
+        { "name_uz": "Mastava", "name_ru": "Мастава", "portion": "1 kosa" },
+        { "name_uz": "Sho‘rva", "name_ru": "Шурпа", "portion": "1 kosa" },
+        { "name_uz": "Norin", "name_ru": "Нарын", "portion": "1 porsiya" },
+        { "name_uz": "Dimlama", "name_ru": "Димлама", "portion": "1 porsiya" },
+        { "name_uz": "Qozon kabob", "name_ru": "Казан-кабоб", "portion": "1 porsiya" }
+      ]
+    },
+    {
+      "name_uz": "Shashliklar", "name_ru": "Шашлыки",
+      "items": [
+        { "name_uz": "Mol go‘shti shashlik", "name_ru": "Шашлык из говядины", "portion": "1 six" },
+        { "name_uz": "Qo‘y go‘shti shashlik", "name_ru": "Шашлык из баранины", "portion": "1 six" },
+        { "name_uz": "Tovuq shashlik", "name_ru": "Шашлык из курицы", "portion": "1 six" },
+        { "name_uz": "Jigar shashlik", "name_ru": "Шашлык из печени", "portion": "1 six" },
+        { "name_uz": "Qiyma kabob", "name_ru": "Люля-кебаб", "portion": "1 six" }
+      ]
+    },
+    {
+      "name_uz": "Somsa va non", "name_ru": "Самса и лепёшки",
+      "items": [
+        { "name_uz": "Tandir somsa", "name_ru": "Самса тандырная", "portion": "1 dona" },
+        { "name_uz": "Qovoqli somsa", "name_ru": "Самса с тыквой", "portion": "1 dona" },
+        { "name_uz": "Patir non", "name_ru": "Патыр", "portion": "1 dona" },
+        { "name_uz": "Tandir non", "name_ru": "Лепёшка тандырная", "portion": "1 dona" }
+      ]
+    },
+    {
+      "name_uz": "Salatlar", "name_ru": "Салаты",
+      "items": [
+        { "name_uz": "Achchiq-chuchuk", "name_ru": "Ачичук", "portion": "1 porsiya" },
+        { "name_uz": "Toshkent salati", "name_ru": "Салат «Ташкент»", "portion": "1 porsiya" },
+        { "name_uz": "Sabzavotli salat", "name_ru": "Овощной салат", "portion": "1 porsiya" }
+      ]
+    },
+    {
+      "name_uz": "Ichimliklar", "name_ru": "Напитки",
+      "items": [
+        { "name_uz": "Ko‘k choy", "name_ru": "Зелёный чай", "portion": "1 choynak" },
+        { "name_uz": "Qora choy", "name_ru": "Чёрный чай", "portion": "1 choynak" },
+        { "name_uz": "Limonli choy", "name_ru": "Чай с лимоном", "portion": "1 choynak" },
+        { "name_uz": "Kompot", "name_ru": "Компот", "portion": "1 l" },
+        { "name_uz": "Ayron", "name_ru": "Айран", "portion": "0,5 l" },
+        { "name_uz": "Mineral suv", "name_ru": "Минеральная вода", "portion": "0,5 l" }
+      ]
+    }
+  ]
+}

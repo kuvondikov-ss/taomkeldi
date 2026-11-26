@@ -8,11 +8,11 @@
 ### Joriy holat — production (2026-11-25 deploy)
 | Narsa | Holat |
 |---|---|
-| Kod | GitHub `kuvondikov-ss/taomkeldi`, **commit `7e19af9` ga qadalgan** (2026-11-26: Standart/Maxsus, tayyorlanish animatsiyasi; menyular yuklandi) (main'ga push avtomatik deploy QILMAYDI — yangi versiya faqat buyruq bilan) |
+| Kod | GitHub `kuvondikov-ss/taomkeldi`, **commit `e764b9d` ga qadalgan** (2026-11-26: xarita qotishi, to‘liq ekran; Taomkeldi bloklangan) (main'ga push avtomatik deploy QILMAYDI — yangi versiya faqat buyruq bilan) |
 | Servis | `Taomkeldi`, 1 replika, iad; deploy SUCCESS; log: `@taomkeldi_bot ishga tushdi` |
 | Volume | `taomkeldi-data` → `/data` (baza `/data/taomkeldi.db`, rasmlar `/data/uploads`); qayta deploydan keyin ma'lumot saqlanishi tekshirildi (2026-11-26) |
 | Domen | `https://taomkeldi-production.up.railway.app` (= `WEBAPP_URL`, bot menyu tugmasi shu manzilga) |
-| Healthcheck | `/health` → `db: ok`, `migration: 11`, `bot: running`, `version: 7e19af9` |
+| Healthcheck | `/health` → `db: ok`, `migration: 11`, `bot: running`, `version: e764b9d` |
 | O'zgaruvchilar (faqat nomlar) | `BOT_TOKEN`, `ADMIN_CHAT_ID`, `DATA_DIR`, `WEBAPP_URL`; eski `taomkeldi_bot` — **yaroqsiz qiymat** (Telegram 404), kod `BOT_TOKEN` ni birinchi o'qiydi; o'chirib tashlash mumkin |
 
 Deploy paytida topilgan muammo: `taomkeldi_bot` o'zgaruvchisidagi token buzilgan edi (`getMe` → 404), birinchi deploy CRASHED. Lokal `.env` dagi to'g'ri token `BOT_TOKEN` sifatida (Railway CLI orqali, chatga chiqarilmasdan) qo'yildi — ikkinchi deploy SUCCESS.

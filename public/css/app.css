@@ -274,3 +274,37 @@ details > summary.card-body { flex-direction: row; align-items: center; gap: var
 .ing-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-1); }
 .ing-grid .input { min-height: 40px; padding: 0 8px; }
 @media (max-width: 380px) { .ing-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* --- Kompyuter (keng ekran, to'liq ekran rejimi): bosh sahifa va restoran menyusi kengayadi --- */
+/* Boshqa sahifalar (savat, rasmiylashtirish, formalar) tor ustunda qoladi — o'qish va to'ldirish qulay. */
+@media (min-width: 900px) {
+  .page.home, .page.restaurant { max-width: 1180px; }
+  /* Restoranlar: kartalar to'r bo'lib (2–3 ustun). "Bepul yetkazish" bo'limi sarlavhalari butun qator. */
+  .restaurant-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--sp-4); align-items: start; }
+  .restaurant-list > .section-head, .restaurant-list > .card:has(> .state) { grid-column: 1 / -1; }
+  .home .banner { min-height: 220px; }
+  .home .banner-title { font-size: 1.5rem; }
+  /* Restoran: muqova chapda, ma'lumot o'ngda; tablar va menyu pastda butun kenglikda. */
+  .page.restaurant { display: grid; grid-template-columns: minmax(0, 440px) minmax(0, 1fr); column-gap: var(--sp-6); align-items: start; }
+  .page.restaurant > * { grid-column: 1 / -1; }
+  .page.restaurant > .restaurant-hero { grid-column: 1; }
+  .page.restaurant > .restaurant-hero + .stack { grid-column: 2; align-self: center; }
+  .page.restaurant .rname { font-size: 1.75rem; }
+  /* Taomlar: 4–5 ustun. */
+  .restaurant .menu .grid-2 { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: var(--sp-4); }
+  /* Pastki panel va savat tugmasi ekran bo'ylab cho'zilmaydi — markazda. */
+  .bottom-nav { padding-left: max(0px, calc((100vw - 640px) / 2)); padding-right: max(0px, calc((100vw - 640px) / 2)); }
+  .cart-bar { padding-left: max(var(--page-x), calc((100vw - 560px) / 2)); padding-right: max(var(--page-x), calc((100vw - 560px) / 2)); }
+  /* Taom oynasi: pastdan emas, ekran markazida dialog; rasm pastroq. */
+  .sheet {
+    top: 50%; bottom: auto; width: min(560px, calc(100vw - 48px)); max-height: min(86vh, calc(100vh - var(--safe-top) - 48px));
+    border-radius: var(--radius-lg); padding: var(--sp-4) var(--sp-5) var(--sp-5);
+    opacity: 0; transform: translateY(-46%); transition: transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
+  }
+  .sheet.is-open { opacity: 1; transform: translateY(-50%); }
+  .sheet-handle { display: none; }
+  .sheet .dish-photo { max-height: 300px; object-fit: contain; }
+}
+@media (min-width: 1400px) {
+  .page.home, .page.restaurant { max-width: 1320px; }
+}

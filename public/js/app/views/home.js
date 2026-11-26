@@ -1,4 +1,6 @@
-// Bosh sahifa: header → yetkazish manzili → qidiruv → banner → oshxona turlari → restoranlar.
+// Bosh sahifa: header → qidiruv → banner → oshxona turlari → filtrlar (aksiya, bepul yetkazish) → restoranlar.
+// Yetkazish manzili bosh sahifada ko'rsatilmaydi (Profil → Manzillarim va rasmiylashtirishda o'zgartiriladi).
+// Saralash menyusi yo'q — ro'yxat doim tavsiya tartibida (eski ?sort= havolalari hali ishlaydi).
 // Filtrlar URL'da (#/?cuisine=&sort=&promo=1&free=1) — orqaga qaytganda saqlanadi.
 // "Bepul yetkazish" — oshxona turi emas, yetkazish sharti bo'yicha bo'lim: "Hozir bepul" va "Summadan bepul" alohida.
 import { currentAddress } from '../state.js';
@@ -21,11 +23,6 @@ export async function renderHome(el, params, _m, ctx) {
         <img class="logo logo-dark" src="/brand/taomkeldi-compact-dark.svg" alt="Taomkeldi">
         <button class="btn btn-icon btn-ghost" id="favs" aria-label="${t('favorites')}">${icon('heart')}</button>
       </header>
-      <button class="address-bar" id="addr" type="button">
-        ${icon('pin')}
-        <span class="grow"><span class="xs text-2">${t('deliver_to')}</span><span class="address-bar-text"></span></span>
-        ${icon('chevron')}
-      </button>
       <button class="search search-link" id="search" type="button">${icon('search')}<span class="input">${t('search_home')}</span></button>
       <section class="banner has-photo" aria-labelledby="banner-title">
         <img class="banner-photo" src="/brand/banner-food.webp" alt="" width="740" height="190" decoding="async">
@@ -36,20 +33,13 @@ export async function renderHome(el, params, _m, ctx) {
       </section>
       <div class="chip-row" id="cuisines" aria-label="${t('nav_search')}"></div>
       <div class="row filter-row">
-        <label class="sort-select">
-          <span class="visually-hidden">${t('sort_label')}</span>
-          ${icon('filter', { className: 'icon-sm' })}
-          <select class="select" id="sort">${SORTS.map((s) => `<option value="${s}" ${f.sort === s ? 'selected' : ''}>${t(`sort_${s}`)}</option>`).join('')}</select>
-        </label>
         <button class="chip" id="promo" aria-pressed="${f.promo}">${t('promo')}</button>
         <button class="chip chip-free" id="free" aria-pressed="${f.free}">${icon('scooter', { className: 'icon-sm' })}${t('free_section')}<span class="count-badge" hidden></span></button>
       </div>
       <h2 class="h2" id="list-title">${t('restaurants_title')}</h2>
-      <div id="list" class="stack" aria-busy="true">${skeletonCards(2)}</div>
+      <div id="list" class="stack restaurant-list" aria-busy="true">${skeletonCards(2)}</div>
     </main>`;
 
-  el.querySelector('.address-bar-text').textContent = addr.label ? `${addr.label} · ${addr.text}` : addr.text;
-  el.querySelector('#addr').addEventListener('click', () => go('addresses'));
   el.querySelector('#favs').addEventListener('click', () => go('favorites'));
   el.querySelector('#search').addEventListener('click', () => go('search'));
   el.querySelector('#banner-cta').addEventListener('click', () => el.querySelector('#list-title').scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -63,7 +53,6 @@ export async function renderHome(el, params, _m, ctx) {
     if (n.free) q.set('free', '1');
     go(q.toString() ? `?${q}` : '', { replace: true });
   };
-  el.querySelector('#sort').addEventListener('change', (e) => setFilter({ sort: e.target.value }));
   el.querySelector('#promo').addEventListener('click', () => setFilter({ promo: !f.promo }));
   el.querySelector('#free').addEventListener('click', () => setFilter({ free: !f.free }));
 

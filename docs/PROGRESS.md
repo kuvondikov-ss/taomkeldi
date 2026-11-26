@@ -267,6 +267,12 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Deploy (2026-11-26, `7e19af9`, migratsiya 11): production'da #2 Starburger 10 taom, #3 Yaponamama 1, #4 Eshonbobo 8 (hammasi rasm va masalliqlar bilan), #1 Taomkeldi 29 taom (rasmsiz) — shu kuni faollashtirildi, vaqtincha joylashuv/yetkazish zonasi bilan (Jizzax markazi, 8 000 so'm, 10 km). Qidiruv: "burger", "shashlik", "sushi" va restoran nomlari to'g'ri topiladi.
 - Sinov: 300/300 (`test/options.test.js` — 9 ta). Brauzerda: Maxsus burger (+1 kotlet = +12 000, piyozsiz −600), savat yozuvi, buyurtma va animatsiya (plita, mangal, 30 s → Tayyor).
 
+## Xarita qotishi, to'liq ekran, Taomkeldi olib tashlandi (2026-11-26)
+- Taomkeldi (#1) production'da **bloklandi** — ro'yxat va qidiruvdan olib tashlandi, ma'lumoti saqlanadi (`/api/admin/restaurants/1/unblock` bilan qaytariladi).
+- Xarita (manzil tanlash) qotishi: pastki panel oqimda edi, manzil matni ("Aniqlanmoqda…" ↔ 2 qatorli manzil) panel balandligini o'zgartirardi → xarita o'lchami → `invalidateSize` → yana `moveend` → qayta geokodlash… Bitta surishda 4 ta `moveend` va 5 ta geokoder so'rovi, xarita sakrab turardi. Tuzatish: `onMove` pin 3 px dan kam siljigan bo'lsa hech narsa qilmaydi; `#place` doim 2 qator (uzuni qisqartiriladi). Natija: 1 surish = 1 `moveend` = 1 so'rov, panel balandligi o'zgarmaydi.
+- To'liq ekran: telefonda (android/ios, Bot API 8.0+) `requestFullscreen()`. Kontent Telegram tugmalari ostiga tushmaydi: `.page` yuqori chekkasi, yopishqoq tablar, pastdan ochiladigan oyna va xabarlar `--safe-top` bo'yicha; yuqorida fon chizig'i (aylantirilgan kontent tugmalar ostidan ko'rinmaydi). Kompyuterda oddiy rejim.
+- Barcha sahifalar brauzerda ochib ko'rildi — JS xatosi yo'q; production loglarida yangi xato yo'q.
+
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.
 - "Aloqa" ma'lumoti (oddiy botdagi `@delivo_uz`) — Taomkeldi uchun to'g'ri aloqa manzili.

@@ -75,8 +75,14 @@ export function renderPicker(el, params, _m, { go }) {
   let seq = 0;
   let timer = null;
 
+  // Faqat pin haqiqatan siljiganda qayta hisoblaymiz. Aks holda: manzil matni o'zgaradi → pastki panel balandligi
+  // o'zgaradi → xarita o'lchami (invalidateSize) → yana 'moveend' → "Aniqlanmoqda…" → ... cheksiz sakrash va geokoder so'rovlari.
+  let lastPoint = null;
   async function onMove() {
     const c = map.getCenter();
+    const px = map.latLngToContainerPoint(c);
+    if (lastPoint && map.latLngToContainerPoint(lastPoint).distanceTo(px) < 3) return;
+    lastPoint = c;
     const lat = Number(c.lat.toFixed(6));
     const lon = Number(c.lng.toFixed(6));
     const inside = pointInGeometry(state.region.geometry, lat, lon);

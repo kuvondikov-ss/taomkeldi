@@ -85,8 +85,8 @@ Object.assign(yapona.categories[0].items[0], { price: 180000, cook_style: 'sushi
 // Taomkeldi (yashirin restoran): TEST narxlar va asosiy taomlarga masalliqlar.
 const tk = JSON.parse(fs.readFileSync('scripts/menus/taomkeldi.json', 'utf8'));
 tk._izoh = NOTE;
-// Faollashtirilgan (2026-11-26): mijozga ko'rinishi uchun joylashuv va yetkazish zonasi (vaqtincha — Jizzax markazi).
-tk.restaurant.status = 'active';
+// 2026-11-26: production'da bloklangan (ro'yxatdan olib tashlangan). Joylashuv va yetkazish zonasi — vaqtincha (Jizzax markazi).
+tk.restaurant.status = 'pending';
 tk.restaurant.profile = { address_text: 'Jizzax shahri', lat: 40.1158, lon: 67.8422, delivery_base: 8000, delivery_base_m: 2000, delivery_per_km: 2000, delivery_radius_m: 10000 };
 const T = {
   'To‘y oshi': [38000, 'pot', [i('Go‘sht', 'Мясо', 'g', 80, 50, 200, 10, 1500), i('Qazi', 'Казы', 'g', 0, 0, 100, 25, 5000), i('Bedana tuxum', 'Перепелиное яйцо', 'dona', 0, 0, 4, 1, 1000)]],

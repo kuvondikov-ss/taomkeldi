@@ -49,7 +49,11 @@ body.fullscreen { overflow: hidden; }
 .picker-pin-icon { color: var(--brand); padding-top: 1px; }
 .picker-actions { gap: var(--sp-2); }
 .picker-actions .btn-secondary { min-height: var(--cta-h); }
-#place { min-height: 1.25em; }
+/* Manzil har doim 2 qator joy egallaydi (uzunrog'i qisqartiriladi): matn o'zgarganda panel va xarita o'lchami sakramaydi. */
+#place {
+  height: calc(2 * 1.3em); line-height: 1.3; margin: 0; overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+}
 #notice { flex-wrap: wrap; }
 .alert .btn-ghost { min-height: 36px; padding: 0; color: inherit; text-decoration: underline; white-space: nowrap; }
 
@@ -106,7 +110,7 @@ body.fullscreen { overflow: hidden; }
 .restaurant-hero { position: relative; }
 .restaurant-hero .card-media { border-radius: var(--radius-card); display: block; }
 .more-btn { align-self: flex-start; min-height: 36px; padding: 0; gap: var(--sp-1); color: var(--primary); }
-.restaurant .tabs { top: 0; }
+.restaurant .tabs { top: var(--safe-top); }
 .menu-section { scroll-margin-top: 56px; }
 .section-title { padding-top: var(--sp-2); }
 

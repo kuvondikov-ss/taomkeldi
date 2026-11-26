@@ -1,6 +1,6 @@
 // Restoran paneli — menyu: kategoriyalar (qo'shish, nomini o'zgartirish, tartib, o'chirish), taomlar (forma, rasm, stop-list).
 import { get, post, put, del, upload, ApiError } from '../api.js';
-import { t, formatSum } from '../i18n.js';
+import { t, formatSum, getLang } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
 import { toast, confirmDialog, promptDialog, openSheet, setLoading } from '../../ui/components.js';
 import { stateBlock } from './cards.js';
@@ -75,7 +75,7 @@ export async function renderPanelMenu(el, _params, rid) {
         const row = document.createElement('div');
         row.className = `list-item menu-row${p.is_available ? '' : ' is-unavailable'}`;
         row.innerHTML = `${p.image_path ? `<img class="thumb" alt="" src="${esc(p.image_path)}">` : `<span class="thumb placeholder">${icon('dish', { className: 'icon-sm' })}</span>`}
-          <button class="grow edit-btn" type="button"><span class="h3 title-2l pn"></span><span class="small"><span class="price">${formatSum(p.price)}</span>${p.old_price ? ` <span class="price-old">${formatSum(p.old_price)}</span>` : ''}${p.is_popular ? ` · ${t('f_popular')}` : ''}</span></button>
+          <button class="grow edit-btn" type="button"><span class="h3 title-2l pn"></span><span class="small"><span class="price">${formatSum(p.price)}</span>${p.old_price ? ` <span class="price-old">${formatSum(p.old_price)}</span> <span class="badge badge-warning">−${Math.round((1 - p.price / p.old_price) * 100)}%</span>` : ''}${p.is_popular ? ` · ${t('f_popular')}` : ''}</span></button>
           <label class="switch" title="${t('stop_list')}"><input type="checkbox" ${p.is_available ? 'checked' : ''} aria-label="${t('f_available')}"><span></span></label>`;
         row.querySelector('.pn').textContent = p.name_uz;
         row.querySelector('.edit-btn').addEventListener('click', () => productForm(p));

@@ -17,6 +17,7 @@ const silent = { log() {}, warn() {}, error() {} };
 async function botEnv(envOverrides = {}) {
   const env = await setup({ BOT_USERNAME: 'taomkeldi_test_bot', ...envOverrides });
   const ids = seed(env.services);
+  for (const id of [101, 102, 103, 900]) env.services.users.setLang(id, 'uz');
   const { bot } = createBot({ config: env.config, services: env.services, logger: silent, botInfo: BOT_INFO });
   const calls = [];
   bot.api.config.use(async (_prev, method, payload) => {
@@ -64,7 +65,9 @@ describe('Bot: /start va rolga qarab menyu', () => {
   after(() => e.close());
 
   test('oddiy mijoz: aynan /start matni va mijoz tugmalari', async () => {
-    const [msg] = await e.send(301, '/start');
+    const [choice] = await e.send(301, '/start');
+    assert.deepEqual(inlineButtons(choice).map((b) => b.callback_data), ['startlang:uz', 'startlang:ru']);
+    const [msg] = await e.press(301, 'startlang:uz');
     assert.ok(msg.text.includes('Taomkeldi’ga xush kelibsiz!'));
     assert.ok(msg.text.includes('Jizzaxdagi kafe va restoranlardan taom buyurtma qiling.'));
     assert.ok(msg.text.includes('DasturXona\'ning yangi loyihasi.'));
@@ -307,7 +310,11 @@ describe('Tillar', () => {
 
   test('Telegram tili ruscha bo\'lsa — ruscha; tanlov keyin ustun', async () => {
     const e = await botEnv();
-    const [ru] = await e.send(601, '/start', { lang: 'ru' });
+    const [choice] = await e.send(601, '/start', { lang: 'ru' });
+    assert.deepEqual(inlineButtons(choice).map((b) => b.callback_data), ['startlang:uz', 'startlang:ru']);
+    const [ru] = await e.press(601, 'startlang:ru');
+    assert.equal(e.services.users.get(601).lang, 'ru');
+    assert.ok((await e.send(601, '/start'))[0].text.includes('Добро пожаловать'));
     assert.ok(ru.text.includes('Добро пожаловать в Taomkeldi!'));
     assert.ok(ru.text.includes('DasturXona\'ning yangi loyihasi.'));
     assert.deepEqual(buttons(ru).slice(0, 3), ['Сделать заказ', 'Мои заказы', 'Помощь']);

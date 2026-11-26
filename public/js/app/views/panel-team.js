@@ -1,6 +1,6 @@
 // Restoran paneli — kuryerlar va xodimlar.
 import { get, post, put, del, ApiError } from '../api.js';
-import { t, formatSum } from '../i18n.js';
+import { t, formatSum, getLang } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
 import { toast, confirmDialog, openSheet, setLoading } from '../../ui/components.js';
 import { stateBlock } from './cards.js';
@@ -23,7 +23,8 @@ export async function renderPanelCouriers(el, _p, rid) {
       el.append(stateBlock({ iconName: 'wifiOff', error: true, title: errText(e) }));
       return;
     }
-    el.innerHTML = `<button class="btn btn-primary" id="add">${icon('plus', { className: 'icon-sm' })}${t('add_courier')}</button><div class="stack" id="list"></div><section class="sheet" id="c-sheet" hidden></section>`;
+    el.innerHTML = `<div class="row" style="flex-wrap:wrap"><button class="btn btn-secondary" id="refresh">${getLang() === 'ru' ? 'Обновить геопозиции' : 'Joylashuvlarni yangilash'}</button><button class="btn btn-primary" id="add">${icon('plus', { className: 'icon-sm' })}${t('add_courier')}</button></div><div class="stack" id="list"></div><section class="sheet" id="c-sheet" hidden></section>`;
+    el.querySelector('#refresh').addEventListener('click', load);
     el.querySelector('#add').addEventListener('click', () => form(null));
     const box = el.querySelector('#list');
     if (!list.length) box.append(stateBlock({ iconName: 'scooter', title: t('no_items') }));
@@ -41,6 +42,21 @@ export async function renderPanelCouriers(el, _p, rid) {
       card.querySelector('.n').textContent = c.name;
       card.querySelector('.meta').textContent = [c.phone, c.transport && t(`t_${c.transport}`), c.username && `@${c.username}`, c.active_orders ? `${t('g_on_way')}: ${c.active_orders}` : null].filter(Boolean).join(' · ');
       const acts = card.querySelector('.acts');
+      const ru = getLang() === 'ru';
+      const loc = c.location;
+      const location = document.createElement('p');
+      location.className = 'small text-2';
+      location.textContent = loc ? `${loc.state === 'live' ? (ru ? 'Актуальная геопозиция' : 'Yangi joylashuv') : (ru ? 'Последняя геопозиция' : 'Oxirgi joylashuv')} · ${new Date(loc.at).toLocaleString(ru ? 'ru-RU' : 'uz-UZ', { timeZone: 'Asia/Tashkent' })}` : (ru ? 'Геопозиция недоступна' : 'Joylashuv mavjud emas');
+      acts.before(location);
+      if (loc) {
+        const mapLink = document.createElement('a');
+        mapLink.className = 'btn btn-secondary';
+        mapLink.href = `https://www.google.com/maps?q=${loc.lat},${loc.lon}`;
+        mapLink.target = '_blank';
+        mapLink.rel = 'noopener noreferrer';
+        mapLink.textContent = ru ? 'На карте' : 'Xaritada ko‘rish';
+        acts.append(mapLink);
+      }
       const btn = (label, cls, fn) => {
         const b = Object.assign(document.createElement('button'), { className: `btn ${cls}`, type: 'button', textContent: label });
         b.addEventListener('click', async () => { try { setLoading(b, true); await fn(); } catch (e) { toast(errText(e), { type: 'error' }); } finally { setLoading(b, false); } });

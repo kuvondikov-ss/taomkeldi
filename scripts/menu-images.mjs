@@ -33,4 +33,17 @@ for (const [name, x0, x1, pad = 6] of skewers) {
   const trimmed = await sharp(rotated).trim({ threshold: 1 }).png().toBuffer();
   await dish(sharp(trimmed), 'eshonbobo', `${name}.webp`);
 }
-for (const r of ['yaponamama', 'eshonbobo']) console.log(r, fs.readdirSync(path.join('assets', 'menus', r)).join(', '));
+// Starburger: har taom alohida rasm (4:3, butunlay sig'adi), muqova — burger, fri va hot dog yonma-yon (16:9).
+const SB = [
+  ['12.webp', 'burger'], ['13.webp', 'fri'], ['14.webp', 'hotdog'], ['15.webp', 'pitsa-bolak'], ['16.webp', 'pitsa-konstruktor'],
+  ['17.webp', 'pitsa-2-bolak'], ['18.webp', 'tovuq-1'], ['19.webp', 'tovuq-4'], ['20.webp', 'shaurma'], ['21.webp', 'shaurma-achchiq'],
+];
+for (const [f, n] of SB) await dish(sharp(path.join(src, f)), 'starburger', `${n}.webp`);
+const tile = async (f, w, h) => sharp(path.join(src, f)).resize(w, h, { fit: 'contain', background: T }).png().toBuffer();
+await webp(sharp({ create: { width: 1280, height: 720, channels: 4, background: T } }).composite([
+  { input: await tile('13.webp', 470, 680), left: 0, top: 30 },
+  { input: await tile('12.webp', 680, 660), left: 300, top: 40 },
+  { input: await tile('14.webp', 640, 380), left: 640, top: 330 },
+])).toFile(out('starburger', 'cover.webp'));
+
+for (const r of ['yaponamama', 'eshonbobo', 'starburger']) console.log(r, fs.readdirSync(path.join('assets', 'menus', r)).join(', '));

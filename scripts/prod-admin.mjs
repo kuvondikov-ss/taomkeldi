@@ -36,7 +36,8 @@ export function adminClient({ base = process.env.PROD_URL || 'https://taomkeldi-
         res = await fetch(base + path, {
           method,
           // Buffer — fayl yuklash (rasm), aks holda JSON.
-          headers: { Authorization: `tma ${initData()}`, ...(Buffer.isBuffer(body) ? { 'Content-Type': 'application/octet-stream' } : body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+          // DEV_USER — faqat lokal sinov serveri (DEV_AUTH=1): X-Dev-User sarlavhasi bilan.
+          headers: { ...(process.env.DEV_USER ? { 'X-Dev-User': process.env.DEV_USER } : { Authorization: `tma ${initData()}` }), ...(Buffer.isBuffer(body) ? { 'Content-Type': 'application/octet-stream' } : body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
           body: Buffer.isBuffer(body) ? body : body !== undefined ? JSON.stringify(body) : undefined,
           signal: AbortSignal.timeout(20_000),
         });

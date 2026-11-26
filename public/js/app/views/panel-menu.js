@@ -7,6 +7,8 @@ import { stateBlock } from './cards.js';
 
 const errText = (e) => (e instanceof ApiError && e.message ? e.message : t('offline'));
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+// Tayyorlanish animatsiyasi turlari (server: services/options.js COOK_STYLES bilan bir xil).
+const COOK_STYLES = ['grill', 'griddle', 'oven', 'fryer', 'wrap', 'pot', 'sushi', 'pan'];
 
 export async function renderPanelMenu(el, _params, rid) {
   let data;
@@ -105,6 +107,16 @@ export async function renderPanelMenu(el, _params, rid) {
         <div class="field"><label class="label">${t('f_desc_ru')}</label><textarea class="textarea" name="description_ru" maxlength="1000"></textarea></div>
         <label class="row check-row"><input type="checkbox" name="is_popular"> ${t('f_popular')}</label>
         <label class="row check-row"><input type="checkbox" name="is_available" checked> ${t('f_available')}</label>
+        <div class="grid-2" style="gap:var(--sp-2)">
+          <div class="field"><label class="label">${t('f_cook_style')}</label><select class="select" name="cook_style"><option value="">${t('cook_auto')}</option>${COOK_STYLES.map((c) => `<option value="${c}">${t(`cook_${c}`)}</option>`).join('')}</select></div>
+          <div class="field"><label class="label">${t('f_prep_seconds')}</label><input class="input" name="prep_seconds" inputmode="numeric" placeholder="30"></div>
+        </div>
+        <section class="stack ing-editor">
+          <h3 class="h3">${t('f_ingredients')}</h3>
+          <p class="xs text-2">${t('f_ingredients_hint')}</p>
+          <div class="stack" id="ing-rows" style="gap:var(--sp-2)"></div>
+          <button class="btn btn-secondary" type="button" id="ing-add">${icon('plus', { className: 'icon-sm' })}${t('f_ing_add')}</button>
+        </section>
         <div class="alert alert-danger" id="perr" hidden></div>
         <button class="btn btn-primary btn-lg btn-block" type="submit">${t('save')}</button>
         ${p ? `<button class="btn btn-ghost" type="button" id="pdel">${icon('trash', { className: 'icon-sm' })}${t('delete')}</button>` : ''}
@@ -118,7 +130,33 @@ export async function renderPanelMenu(el, _params, rid) {
       f.elements.category_id.value = p.category_id ?? '';
       f.elements.is_popular.checked = !!p.is_popular;
       f.elements.is_available.checked = !!p.is_available;
+      f.elements.cook_style.value = p.cook_style || '';
+      f.elements.prep_seconds.value = p.prep_seconds ?? '';
     }
+    // --- "Maxsus" masalliqlari: nom, birlik, standart/min/max, qadam va qadam narxi ---
+    const rows = sheet.querySelector('#ing-rows');
+    const UNITS = ['g', 'ml', 'dona', 'bo‘lak', 'halqa', 'sih'];
+    function addIngRow(i = { name_uz: '', unit: 'g', std_qty: 0, min_qty: 0, max_qty: 0, step: 1, step_price: 0 }) {
+      const row = document.createElement('div');
+      row.className = 'card ing-edit';
+      if (i.id) row.dataset.id = i.id;
+      row.innerHTML = `<div class="card-body stack" style="gap:var(--sp-2)">
+        <div class="row" style="gap:var(--sp-2)"><input class="input grow" data-k="name_uz" maxlength="60" placeholder="${t('f_ing_name')}"><select class="select" data-k="unit" style="width:auto">${UNITS.map((u) => `<option value="${u}">${t(`unit_${u}`)}</option>`).join('')}</select>
+          <button class="btn btn-icon btn-ghost" type="button" data-del aria-label="${t('delete')}">${icon('trash', { className: 'icon-sm' })}</button></div>
+        <div class="ing-grid">
+          ${['std_qty', 'min_qty', 'max_qty', 'step', 'step_price'].map((k) => `<label class="field"><span class="xs text-2">${t(`f_ing_${k}`)}</span><input class="input" data-k="${k}" inputmode="numeric"></label>`).join('')}
+        </div></div>`;
+      for (const k of ['name_uz', 'unit', 'std_qty', 'min_qty', 'max_qty', 'step', 'step_price']) row.querySelector(`[data-k="${k}"]`).value = i[k] ?? '';
+      row.querySelector('[data-del]').addEventListener('click', () => row.remove());
+      rows.append(row);
+    }
+    for (const i of p?.ingredients || []) addIngRow(i);
+    sheet.querySelector('#ing-add').addEventListener('click', () => addIngRow());
+    const readIngredients = () => [...rows.querySelectorAll('.ing-edit')].map((row) => {
+      const g = (k) => row.querySelector(`[data-k="${k}"]`).value.trim();
+      const n = (k) => Number(g(k).replace(/\s/g, '') || 0);
+      return { ...(row.dataset.id ? { id: Number(row.dataset.id) } : {}), name_uz: g('name_uz'), unit: g('unit'), std_qty: n('std_qty'), min_qty: n('min_qty'), max_qty: n('max_qty'), step: n('step') || 1, step_price: n('step_price') };
+    }).filter((x) => x.name_uz);
     sheet.querySelector('input[type=file]').addEventListener('change', async (ev) => {
       const file = ev.target.files[0];
       if (!file) return;
@@ -138,6 +176,8 @@ export async function renderPanelMenu(el, _params, rid) {
         portion: f.elements.portion.value || null, category_id: f.elements.category_id.value ? Number(f.elements.category_id.value) : null,
         description_uz: f.elements.description_uz.value || null, description_ru: f.elements.description_ru.value || null,
         is_popular: f.elements.is_popular.checked, is_available: f.elements.is_available.checked, image_path: image,
+        cook_style: f.elements.cook_style.value || null, prep_seconds: num(f.elements.prep_seconds.value),
+        ingredients: readIngredients(),
       };
       const btn = f.querySelector('[type=submit]');
       setLoading(btn, true);

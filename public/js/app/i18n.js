@@ -189,6 +189,20 @@ const uz = {
   fp_threshold: 'Ro‘yxat va restoran sahifasida: «{sum}dan bepul».', fp_threshold_cart: 'Savatda: «Bepul yetkazish uchun yana … so‘m», {sum}ga yetganda «Yetkazish: 0 so‘m — bepul».',
   fp_below_min: 'Chegara minimal buyurtmadan katta emas — amalda har bir yetkazish bepul bo‘ladi.', fp_none: 'Bepul yetkazish yo‘q — mijoz yetkazish narxini to‘laydi.',
   fp_cost_note: 'Bepul yetkazish xarajatini restoran o‘z kuryerlari bilan qoplaydi; platforma subsidiya bermaydi.',
+  // Standart / Maxsus va tayyorlanish animatsiyasi
+  mode_label: 'Tayyorlash usuli', mode_std: 'Standart', mode_custom: 'Maxsus',
+  mode_std_hint: 'O‘rtacha miqdor — oshpaz tavsiyasi bo‘yicha.', mode_custom_hint: 'Har bir masalliq soni va miqdorini o‘zingiz tanlang — narx darrov hisoblanadi.',
+  qty_count: 'Soni', opt_none: 'yo‘q', opt_reset: 'Standartga qaytarish',
+  options_changed_item: 'Taom tarkibi o‘zgargan — qaytadan tanlang', problem_options_changed: 'Savatdagi taom tarkibi o‘zgargan — qaytadan tanlang',
+  unit_g: 'g', unit_ml: 'ml', unit_dona: 'dona', 'unit_bo‘lak': 'bo‘lak', unit_halqa: 'halqa', unit_sih: 'six',
+  cook_title: 'Taomingiz tayyorlanmoqda', cook_note: 'Taxminiy tayyorlanish jarayoni. Buyurtma holatini restoran yangilaydi.',
+  cook_done: 'Tayyor', cook_all_done: 'Tayyor', cook_in_progress: 'Pishmoqda', cook_left: 'Qoldi: {time}',
+  f_cook_style: 'Tayyorlanish animatsiyasi', cook_auto: 'Avtomatik (nomidan)', f_prep_seconds: 'Tayyorlanish vaqti, soniya',
+  cook_grill: 'Mangal', cook_griddle: 'Plita (burger, hot dog)', cook_oven: 'Pech (pitsa)', cook_fryer: 'Fritur', cook_wrap: 'Doner (shaurma)',
+  cook_pot: 'Qozon (osh)', cook_sushi: 'Sushi', cook_pan: 'Tova',
+  f_ingredients: '“Maxsus” uchun masalliqlar', f_ingredients_hint: 'Standart — o‘rtacha miqdor. Mijoz min…max oralig‘ida qadam bilan o‘zgartiradi; har qadam narxi qo‘shiladi (kamaytirsa ayriladi).',
+  f_ing_add: 'Masalliq qo‘shish', f_ing_name: 'Masalliq nomi', f_ing_std_qty: 'Standart', f_ing_min_qty: 'Min', f_ing_max_qty: 'Max',
+  f_ing_step: 'Qadam', f_ing_step_price: 'Qadam narxi, so‘m',
 };
 
 const ru = {
@@ -381,6 +395,20 @@ const ru = {
   fp_threshold: 'В списке и на странице ресторана: «бесплатно от {sum}».', fp_threshold_cart: 'В корзине: «До бесплатной доставки ещё … сум», при {sum} — «Доставка: 0 сум — бесплатно».',
   fp_below_min: 'Порог не больше минимального заказа — фактически каждая доставка будет бесплатной.', fp_none: 'Бесплатной доставки нет — клиент оплачивает доставку.',
   fp_cost_note: 'Расходы на бесплатную доставку ресторан покрывает своими курьерами; платформа не субсидирует.',
+  // Стандарт / Особый и анимация приготовления
+  mode_label: 'Способ приготовления', mode_std: 'Стандарт', mode_custom: 'Особый',
+  mode_std_hint: 'Средняя порция — по рекомендации повара.', mode_custom_hint: 'Выберите количество каждого ингредиента — цена пересчитывается сразу.',
+  qty_count: 'Количество', opt_none: 'без', opt_reset: 'Вернуть стандарт',
+  options_changed_item: 'Состав блюда изменился — выберите заново', problem_options_changed: 'Состав блюда в корзине изменился — выберите заново',
+  unit_g: 'г', unit_ml: 'мл', unit_dona: 'шт', 'unit_bo‘lak': 'кус.', unit_halqa: 'кольцо', unit_sih: 'шампур',
+  cook_title: 'Ваш заказ готовится', cook_note: 'Примерный процесс приготовления. Статус заказа обновляет ресторан.',
+  cook_done: 'Готово', cook_all_done: 'Готово', cook_in_progress: 'Готовится', cook_left: 'Осталось: {time}',
+  f_cook_style: 'Анимация приготовления', cook_auto: 'Автоматически (по названию)', f_prep_seconds: 'Время приготовления, сек',
+  cook_grill: 'Мангал', cook_griddle: 'Гриль (бургер, хот-дог)', cook_oven: 'Печь (пицца)', cook_fryer: 'Фритюр', cook_wrap: 'Донер (шаурма)',
+  cook_pot: 'Казан (плов)', cook_sushi: 'Суши', cook_pan: 'Сковорода',
+  f_ingredients: 'Ингредиенты для «Особого»', f_ingredients_hint: 'Стандарт — средняя порция. Клиент меняет от мин. до макс. с шагом; цена шага прибавляется (при уменьшении — вычитается).',
+  f_ing_add: 'Добавить ингредиент', f_ing_name: 'Название', f_ing_std_qty: 'Стандарт', f_ing_min_qty: 'Мин', f_ing_max_qty: 'Макс',
+  f_ing_step: 'Шаг', f_ing_step_price: 'Цена шага, сум',
 };
 
 export const DICTS = { uz, ru };

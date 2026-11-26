@@ -20,7 +20,13 @@ export function clip(text, max = LIMIT) {
 const mapsDir = (lat, lon) => `https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}`;
 
 export function createTemplates(db, config) {
-  const items = (oid) => db.prepare('SELECT name, qty, line_total FROM order_items WHERE order_id = ? ORDER BY id').all(oid);
+  const items = (oid) => db.prepare('SELECT name, qty, line_total, options FROM order_items WHERE order_id = ? ORDER BY id').all(oid);
+  // "Maxsus" tanlov: "go'sht 300 g, dumba yo'q" — restoran nima tayyorlashini aniq ko'rsin.
+  const optionsText = (raw, lang) => {
+    let list = [];
+    try { list = raw ? JSON.parse(raw) : []; } catch { list = []; }
+    return list.map((x) => `${esc((lang === 'ru' && x.name_ru) || x.name_uz)} ${x.qty ? `${x.qty} ${esc(x.unit)}` : L(lang, 'opt_none')}`).join(', ');
+  };
   const courierName = (o) => (o.courier_id ? db.prepare('SELECT name FROM couriers WHERE id = ?').get(o.courier_id)?.name : null);
   const appUrl = (route) => (config.webapp?.ok ? `${config.webapp.url}/#/${route}` : null);
   const panelUrl = (o) => (config.botUsername ? `https://t.me/${config.botUsername}?start=${PANEL_PREFIX}${o.id}` : null);
@@ -39,7 +45,10 @@ export function createTemplates(db, config) {
   }
   function itemLines(o, lang) {
     const list = items(o.id);
-    const lines = list.slice(0, MAX_ITEMS).map((i) => `• ${esc(i.name)} × ${i.qty} — ${sum(i.line_total, lang)}`);
+    const lines = list.slice(0, MAX_ITEMS).map((i) => {
+      const opt = optionsText(i.options, lang);
+      return `• ${esc(i.name)} × ${i.qty} — ${sum(i.line_total, lang)}${opt ? `\n   ✎ ${L(lang, 'opt_custom')}: ${opt}` : ''}`;
+    });
     if (list.length > MAX_ITEMS) lines.push(L(lang, 'g_more_items', { n: list.length - MAX_ITEMS }));
     return lines;
   }

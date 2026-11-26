@@ -21,6 +21,7 @@ import { createTemplates } from './templates.js';
 import { createOrderNotifier } from './order-notify.js';
 import { createDispatchService } from './dispatch.js';
 import { createTrackingService } from './tracking.js';
+import { createOptionsService } from './options.js';
 
 export function createServices(db, config, { fetchImpl, logger = console } = {}) {
   // Buyurtma o'zgarishi hodisasi: ('order', orderId, kind). Tinglovchilar (masalan, restoran guruhi xabari)
@@ -37,14 +38,15 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
   const uploads = createUploadService(config, access);
   const invites = createInviteService(db, access, restaurants);
   const geocoder = createGeocoderService(config, geo, { fetchImpl });
-  const catalog = createCatalogService(db, geo, access);
+  const options = createOptionsService(db);
+  const catalog = createCatalogService(db, geo, access, options);
   const payments = createPaymentService(db, config, { access, orders });
-  const checkout = createCheckoutService(db, { geo, addresses, users, payments });
+  const checkout = createCheckoutService(db, { geo, addresses, users, payments, options });
   const outbox = createOutbox(db, { logger });
   const templates = createTemplates(db, config);
   const notify = createNotifyService(users, outbox);
   const platform = createPlatformService(db, { access, restaurants, geo, catalog, notify, users, outbox });
-  const manage = createManageService(db, { access, geo });
+  const manage = createManageService(db, { access, geo, options });
   const group = createGroupService(db, { access, notify, config, templates, logger });
   const orderNotify = createOrderNotifier(db, { users, templates, notify, logger });
   const dispatch = createDispatchService(db, { access, users, templates, notify, orders, emitOrder, logger });
@@ -105,6 +107,6 @@ export function createServices(db, config, { fetchImpl, logger = console } = {})
   const setBotApi = (api) => { payments.setBotApi(api); outbox.setBotApi(api); group.setBotApi(api); orderNotify.setBotApi(api); dispatch.setBotApi(api); };
   return {
     geo, users, access, restaurants, orders, addresses, uploads, invites, geocoder, catalog, checkout, payments, notify, platform, manage, group,
-    outbox, templates, orderNotify, dispatch, tracking, setBotApi, events, idle, health,
+    outbox, templates, orderNotify, dispatch, tracking, options, setBotApi, events, idle, health,
   };
 }

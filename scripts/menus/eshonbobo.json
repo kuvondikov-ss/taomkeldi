@@ -3,34 +3,346 @@
     "name": "Eshonbobo oshmarkazi",
     "description": "Milliy osh va mangalda pishirilgan shashliklar.",
     "status": "active",
-    "cuisines": ["Milliy taomlar", "Shashlik"],
+    "cuisines": [
+      "Milliy taomlar",
+      "Shashlik"
+    ],
     "cover": "assets/menus/eshonbobo/cover.webp",
     "profile": {
       "address_text": "Jizzax shahri",
-      "lat": 40.1158, "lon": 67.8422,
-      "delivery_base": 8000, "delivery_base_m": 2000, "delivery_per_km": 2000, "delivery_radius_m": 10000
+      "lat": 40.1158,
+      "lon": 67.8422,
+      "delivery_base": 8000,
+      "delivery_base_m": 2000,
+      "delivery_per_km": 2000,
+      "delivery_radius_m": 10000
     }
   },
   "categories": [
     {
-      "name_uz": "Osh", "name_ru": "Плов",
+      "name_uz": "Osh",
+      "name_ru": "Плов",
       "items": [
-        { "name_uz": "Osh", "name_ru": "Плов", "portion": "1 porsiya",
-          "description_uz": "Mol go‘shti, sabzi, no‘xat va sarimsoq bilan.", "description_ru": "С говядиной, морковью, нутом и чесноком.",
-          "image": "assets/menus/eshonbobo/osh.webp" }
+        {
+          "name_uz": "Osh",
+          "name_ru": "Плов",
+          "portion": "1 porsiya",
+          "description_uz": "Mol go‘shti, sabzi, no‘xat va sarimsoq bilan.",
+          "description_ru": "С говядиной, морковью, нутом и чесноком.",
+          "image": "assets/menus/eshonbobo/osh.webp",
+          "price": 35000,
+          "cook_style": "pot",
+          "ingredients": [
+            {
+              "name_uz": "Go‘sht",
+              "name_ru": "Мясо",
+              "unit": "g",
+              "std_qty": 80,
+              "min_qty": 50,
+              "max_qty": 200,
+              "step": 10,
+              "step_price": 1500
+            },
+            {
+              "name_uz": "No‘xat",
+              "name_ru": "Нут",
+              "unit": "g",
+              "std_qty": 20,
+              "min_qty": 0,
+              "max_qty": 40,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Sarimsoq",
+              "name_ru": "Чеснок",
+              "unit": "dona",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 2,
+              "step": 1,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Qazi",
+              "name_ru": "Казы",
+              "unit": "g",
+              "std_qty": 0,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 25,
+              "step_price": 5000
+            }
+          ]
+        }
       ]
     },
     {
-      "name_uz": "Shashliklar", "name_ru": "Шашлыки",
+      "name_uz": "Shashliklar",
+      "name_ru": "Шашлыки",
       "items": [
-        { "name_uz": "Mol go‘shti shashlik", "name_ru": "Шашлык из говядины", "portion": "1 six (~250 g)", "image": "assets/menus/eshonbobo/mol-shashlik.webp" },
-        { "name_uz": "Tovuq shashlik", "name_ru": "Шашлык из курицы", "portion": "1 six", "image": "assets/menus/eshonbobo/tovuq-shashlik.webp" },
-        { "name_uz": "Qo‘y qovurg‘a shashlik", "name_ru": "Шашлык из бараньих рёбрышек", "portion": "1 six", "image": "assets/menus/eshonbobo/qoy-qovurga.webp" },
-        { "name_uz": "Sabzavotli mol go‘shti shashlik", "name_ru": "Шашлык из говядины с овощами", "portion": "1 six", "image": "assets/menus/eshonbobo/sabzavotli-mol.webp" },
-        { "name_uz": "Qiyma kabob", "name_ru": "Люля-кебаб", "portion": "1 six", "image": "assets/menus/eshonbobo/qiyma-kabob.webp" },
-        { "name_uz": "Qo‘ziqorin shashlik", "name_ru": "Шашлык из шампиньонов", "portion": "1 six", "image": "assets/menus/eshonbobo/qoziqorin.webp" },
-        { "name_uz": "Sabzavotli shashlik", "name_ru": "Овощной шашлык", "portion": "1 six (~200 g)", "image": "assets/menus/eshonbobo/sabzavotli.webp" }
+        {
+          "name_uz": "Mol go‘shti shashlik",
+          "name_ru": "Шашлык из говядины",
+          "portion": "1 six (~250 g)",
+          "image": "assets/menus/eshonbobo/mol-shashlik.webp",
+          "price": 30000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Mol go‘shti",
+              "name_ru": "Говядина",
+              "unit": "g",
+              "std_qty": 250,
+              "min_qty": 150,
+              "max_qty": 400,
+              "step": 50,
+              "step_price": 6000
+            },
+            {
+              "name_uz": "Dumba yog‘i",
+              "name_ru": "Курдючный жир",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 90,
+              "step": 10,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Tovuq shashlik",
+          "name_ru": "Шашлык из курицы",
+          "portion": "1 six",
+          "image": "assets/menus/eshonbobo/tovuq-shashlik.webp",
+          "price": 22000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Tovuq go‘shti",
+              "name_ru": "Курица",
+              "unit": "g",
+              "std_qty": 250,
+              "min_qty": 150,
+              "max_qty": 400,
+              "step": 50,
+              "step_price": 4000
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Qo‘y qovurg‘a shashlik",
+          "name_ru": "Шашлык из бараньих рёбрышек",
+          "portion": "1 six",
+          "image": "assets/menus/eshonbobo/qoy-qovurga.webp",
+          "price": 38000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Qovurg‘a",
+              "name_ru": "Рёбрышки",
+              "unit": "dona",
+              "std_qty": 3,
+              "min_qty": 2,
+              "max_qty": 5,
+              "step": 1,
+              "step_price": 12000
+            },
+            {
+              "name_uz": "Dumba yog‘i",
+              "name_ru": "Курдючный жир",
+              "unit": "g",
+              "std_qty": 0,
+              "min_qty": 0,
+              "max_qty": 90,
+              "step": 10,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Sabzavotli mol go‘shti shashlik",
+          "name_ru": "Шашлык из говядины с овощами",
+          "portion": "1 six",
+          "image": "assets/menus/eshonbobo/sabzavotli-mol.webp",
+          "price": 32000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Mol go‘shti",
+              "name_ru": "Говядина",
+              "unit": "g",
+              "std_qty": 200,
+              "min_qty": 150,
+              "max_qty": 400,
+              "step": 50,
+              "step_price": 6000
+            },
+            {
+              "name_uz": "Bolgar qalampiri",
+              "name_ru": "Болгарский перец",
+              "unit": "bo‘lak",
+              "std_qty": 3,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 3,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Qiyma kabob",
+          "name_ru": "Люля-кебаб",
+          "portion": "1 six",
+          "image": "assets/menus/eshonbobo/qiyma-kabob.webp",
+          "price": 26000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Qiyma",
+              "name_ru": "Фарш",
+              "unit": "g",
+              "std_qty": 200,
+              "min_qty": 150,
+              "max_qty": 300,
+              "step": 50,
+              "step_price": 5000
+            },
+            {
+              "name_uz": "Dumba yog‘i",
+              "name_ru": "Курдючный жир",
+              "unit": "g",
+              "std_qty": 20,
+              "min_qty": 0,
+              "max_qty": 90,
+              "step": 10,
+              "step_price": 1000
+            }
+          ]
+        },
+        {
+          "name_uz": "Qo‘ziqorin shashlik",
+          "name_ru": "Шашлык из шампиньонов",
+          "portion": "1 six",
+          "image": "assets/menus/eshonbobo/qoziqorin.webp",
+          "price": 18000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Qo‘ziqorin",
+              "name_ru": "Шампиньоны",
+              "unit": "dona",
+              "std_qty": 6,
+              "min_qty": 4,
+              "max_qty": 10,
+              "step": 1,
+              "step_price": 1500
+            }
+          ]
+        },
+        {
+          "name_uz": "Sabzavotli shashlik",
+          "name_ru": "Овощной шашлык",
+          "portion": "1 six (~200 g)",
+          "image": "assets/menus/eshonbobo/sabzavotli.webp",
+          "price": 15000,
+          "cook_style": "grill",
+          "ingredients": [
+            {
+              "name_uz": "Pomidor",
+              "name_ru": "Помидор",
+              "unit": "dona",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Qovoqcha",
+              "name_ru": "Кабачок",
+              "unit": "bo‘lak",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Bolgar qalampiri",
+              "name_ru": "Болгарский перец",
+              "unit": "bo‘lak",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 4,
+              "step": 1,
+              "step_price": 800
+            },
+            {
+              "name_uz": "Baqlajon",
+              "name_ru": "Баклажан",
+              "unit": "bo‘lak",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "bo‘lak",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 500
+            }
+          ]
+        }
       ]
     }
-  ]
+  ],
+  "_izoh": "TEST narxlar (2026-11-26): taxminiy, restoran tasdiqlagach panelda yoki shu faylda o‘zgartiring."
 }

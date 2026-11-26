@@ -18,7 +18,7 @@ export function normalize(s) {
 
 const rating = (r) => (r.rating_count > 0 ? { value: Math.round((r.rating_sum / r.rating_count) * 10) / 10, count: r.rating_count } : null);
 
-export function createCatalogService(db, geo, access) {
+export function createCatalogService(db, geo, access, options) {
   const cuisinesOf = db.prepare(`
     SELECT c.id, c.slug, c.name_uz, c.name_ru FROM restaurant_cuisines rc JOIN cuisines c ON c.id = rc.cuisine_id
     WHERE rc.restaurant_id = ? ORDER BY c.sort
@@ -126,9 +126,13 @@ export function createCatalogService(db, geo, access) {
       SELECT id, name_uz, name_ru, sort FROM menu_categories WHERE restaurant_id = ? AND is_active = 1 ORDER BY sort, id
     `).all(r.id).map((c) => ({ ...c }));
     const products = db.prepare(`
-      SELECT id, category_id, name_uz, name_ru, description_uz, description_ru, portion, price, old_price, image_path, is_available, is_popular
+      SELECT id, category_id, name_uz, name_ru, description_uz, description_ru, portion, price, old_price, image_path, is_available, is_popular,
+             cook_style, prep_seconds
       FROM products WHERE restaurant_id = ? AND is_deleted = 0 ORDER BY sort, id
     `).all(r.id).map((p) => ({ ...p, is_available: p.is_available === 1, is_popular: p.is_popular === 1 }));
+    // "Standart / Maxsus": masalliqlar (bo'lmasa — faqat standart).
+    const ing = options.ingredientsFor(products.map((p) => p.id));
+    for (const p of products) p.ingredients = (ing.get(p.id) || []).map(({ product_id, sort, ...i }) => i);
     return { ...card(r, geo.deliveryFor(r, point), actor), address_text: r.address_text, work_hours: r.work_hours, categories, products };
   }
 
@@ -143,15 +147,19 @@ export function createCatalogService(db, geo, access) {
     if (!r || r.status !== 'active') throw new AppError('NOT_FOUND');
 
     const get = db.prepare('SELECT id, name_uz, price, is_available, is_deleted FROM products WHERE id = ? AND restaurant_id = ?');
+    const ing = options.ingredientsFor([...new Set(items.map((i) => Number(i?.product_id)).filter(Number.isInteger))]);
     const lines = [];
     let total = 0;
     for (const it of items) {
       const pid = v.id(it.product_id, 'product_id');
       const qty = v.int(it.qty, 'qty', { min: 1, max: 99 });
       const p = get.get(pid, restaurantId);
-      if (!p || p.is_deleted) { lines.push({ product_id: pid, qty, status: 'removed', price: null, name: null }); continue; }
+      if (!p || p.is_deleted) { lines.push({ key: it.key || String(pid), product_id: pid, qty, status: 'removed', price: null, name: null }); continue; }
+      const pl = options.priceLine(p, ing.get(pid) || [], it.options);
+      if (!pl.ok) { lines.push({ key: it.key || pl.key, product_id: pid, qty, status: 'options_changed', price: null, name: p.name_uz }); continue; }
       const clientPrice = Number.isSafeInteger(it.price) ? it.price : null;
-      const line = { product_id: pid, qty, name: p.name_uz, price: p.price, line_total: p.price * qty, price_changed: clientPrice != null && clientPrice !== p.price, old_price: clientPrice };
+      const line = { key: pl.key, product_id: pid, qty, name: p.name_uz, price: pl.unit_price, line_total: pl.unit_price * qty, options: pl.options, options_label: pl.options_label,
+        price_changed: clientPrice != null && clientPrice !== pl.unit_price, old_price: clientPrice };
       if (!p.is_available) { lines.push({ ...line, status: 'unavailable', line_total: 0 }); continue; }
       lines.push({ ...line, status: 'ok' });
       total += line.line_total;

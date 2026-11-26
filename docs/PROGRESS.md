@@ -258,6 +258,14 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Railway holati o'qib tekshirildi (o'zgartirilmadi): servis bor, **volume va domen yo'q**, o'zgaruvchilar `ADMIN_CHAT_ID`, `taomkeldi_bot`. Deploy rejasi: [OPERATIONS.md](OPERATIONS.md).
 - Qo'shildi: `railway.json`, haqiqiy `/health`, `scripts/backup.mjs`, zaxira/tiklash/migratsiya/rollback yo'riqnomasi, Node `>=22.13 <25`.
 
+## Standart / Maxsus taom va tayyorlanish animatsiyasi
+- Taom oynasida **Standart** (o'rtacha miqdor, faqat ko'rish) va **Maxsus** (har masalliq soni/miqdori −/+, narx shu zahoti) rejimlari. Qoida bitta: `public/js/shared/options-core.js` — narx = asosiy + Σ((miqdor − standart)/qadam × qadam narxi), 100 so'mga yaxlitlanadi, asosiy narxning yarmidan past emas. Server narxni o'zi hisoblaydi (klient narxi e'tiborsiz).
+- Ma'lumot: 11-migratsiya — `product_ingredients` (std/min/max/qadam/qadam narxi, birlik: g, ml, dona, bo'lak, halqa, sih), `products.cook_style` / `prep_seconds` (standart 30 s), `order_items.options` (snapshot), `cook_style`, `prep_seconds`. Panel taom formasida masalliqlar muharriri, animatsiya turi va vaqt.
+- Savat qatori kaliti: `"<id>"` — standart, `"<id>~ing:qty,..."` — maxsus; bir taomning turli sozlamalari alohida qator, bir xillari birlashadi. Panelda masalliq o'zgarsa eski qator `options_changed` bo'ladi. Restoran/kuryer xabarida "✎ Maxsus: …".
+- Buyurtma sahifasida (holat `new`/`accepted`) 30 soniyalik taxminiy tayyorlanish animatsiyasi: mangal (shashlik sixlari), plita (burger), pech (pitsa), fritur, shaurma, qozon, sushi, tova — taom rasmi bilan, "Qoldi: m:ss" → "✓ Tayyor". Haqiqiy holatni baribir restoran o'zgartiradi. `prefers-reduced-motion` hurmat qilinadi.
+- Menyular: Starburger (10 taom, rasmlar `assets/menus/starburger`), Eshonbobo, Yaponamama, Taomkeldi — `scripts/menus/*.json`, narxlar **TEST** (generator: `scripts/menus/generate.cjs`).
+- Sinov: 300/300 (`test/options.test.js` — 9 ta). Brauzerda: Maxsus burger (+1 kotlet = +12 000, piyozsiz −600), savat yozuvi, buyurtma va animatsiya (plita, mangal, 30 s → Tayyor).
+
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.
 - "Aloqa" ma'lumoti (oddiy botdagi `@delivo_uz`) — Taomkeldi uchun to'g'ri aloqa manzili.

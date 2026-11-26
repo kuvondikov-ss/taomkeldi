@@ -7,6 +7,7 @@ import { openSheet, confirmDialog, toast } from '../../ui/components.js';
 import { cuisineName, deliveryLine, ratingHtml, stateBlock } from './cards.js';
 import * as cart from '../cart.js';
 import { hoursText } from '../../shared/hours.js';
+import { normalize, changes, lineKey, unitPrice, label } from '../../shared/options-core.js';
 
 const nameOf = (x) => (getLang() === 'ru' && x.name_ru) || x.name_uz;
 const descOf = (x) => (getLang() === 'ru' && x.description_ru) || x.description_uz || '';
@@ -104,17 +105,18 @@ export async function renderRestaurant(el, params, m, { go }) {
   });
 
   // --- Savatga qo'shish (boshqa restoran bo'lsa — tasdiq) ---
-  async function setQty(p, qty) {
+  // opts: "Maxsus" qator uchun { key, options, optionsLabel, price } (berilmasa — standart).
+  async function setQty(p, qty, opts = {}) {
     if (!canOrder && qty > cart.qtyOf(p.id)) return false;
-    const item = { id: p.id, name: nameOf(p), price: p.price, portion: p.portion, image_path: p.image_path, is_available: p.is_available };
-    let res = cart.setQty(restaurantRef, item, qty);
+    const item = { id: p.id, name: nameOf(p), price: opts.price ?? p.price, portion: p.portion, image_path: p.image_path, is_available: p.is_available };
+    let res = cart.setQty(restaurantRef, item, qty, opts);
     if (res.conflict) {
       const ok = await confirmDialog({
         title: t('switch_title'), text: t('switch_text', { name: cart.getCart().restaurantName }),
         confirm: t('switch_confirm'), cancel: t('cancel'), danger: true,
       });
       if (!ok) return false;
-      res = cart.setQty(restaurantRef, item, qty, { force: true });
+      res = cart.setQty(restaurantRef, item, qty, { ...opts, force: true });
     }
     return !!res.ok;
   }
@@ -182,11 +184,19 @@ export async function renderRestaurant(el, params, m, { go }) {
     await setQty(p, cart.qtyOf(p.id) + (act === 'inc' ? 1 : -1));
   });
 
-  // --- Taom oynasi ---
+  // --- Taom oynasi: "Standart" (o'rtacha miqdor) yoki "Maxsus" (har masalliq soni/miqdori) — narx darrov hisoblanadi ---
   function openDish(p) {
     const sheet = el.querySelector('#dish-sheet');
+    const ings = p.ingredients || [];
+    const hasCustom = ings.length > 0;
+    let mode = 'std';
+    const sel = new Map(ings.map((i) => [i.id, i.std_qty]));
     let q = Math.max(1, cart.qtyOf(p.id));
     const inCart = cart.qtyOf(p.id) > 0;
+    const lang = getLang();
+    const ingName = (i) => (lang === 'ru' && i.name_ru) || i.name_uz;
+    const unitOf = (i) => t(`unit_${i.unit}`) === `unit_${i.unit}` ? i.unit : t(`unit_${i.unit}`);
+
     sheet.innerHTML = `<div class="sheet-handle"></div>
       ${p.image_path ? `<img class="card-media dish-photo" alt="" src="${esc(p.image_path)}">` : `<div class="placeholder dish-photo">${icon('dish')}</div>`}
       <div class="sheet-header" style="margin-top:var(--sp-3)">
@@ -196,9 +206,15 @@ export async function renderRestaurant(el, params, m, { go }) {
       <div class="stack" style="gap:var(--sp-2)">
         ${p.portion ? '<p class="small text-2 portion"></p>' : ''}
         ${descOf(p) ? '<p class="small desc"></p>' : ''}
+        ${hasCustom ? `<div class="mode-switch" role="tablist" aria-label="${t('mode_label')}">
+            <button class="mode-btn" role="tab" data-mode="std" aria-selected="true">${t('mode_std')}</button>
+            <button class="mode-btn" role="tab" data-mode="custom" aria-selected="false">${t('mode_custom')}</button>
+          </div>
+          <p class="xs text-2" id="mode-hint"></p>
+          <div class="ing-list" id="ings"></div>` : ''}
         <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3)">
-          <span><span class="price" style="font-size:var(--fs-lg)">${formatSum(p.price)}</span> ${hasDiscount(p) ? `<span class="price-old">${formatSum(p.old_price)}</span>` : ''}</span>
-          ${p.is_available && canOrder ? `<span class="qty" role="group"><button class="btn" data-q="-1" aria-label="${t('qty_dec')}">${icon('minus', { className: 'icon-sm' })}</button><span class="qty-value" aria-live="polite">${q}</span><button class="btn" data-q="1" aria-label="${t('qty_inc')}">${icon('plus', { className: 'icon-sm' })}</button></span>` : ''}
+          <span><span class="price" id="unit-price" style="font-size:var(--fs-lg)"></span> ${hasDiscount(p) ? `<span class="price-old">${formatSum(p.old_price)}</span>` : ''}</span>
+          ${p.is_available && canOrder ? `<span class="qty" role="group" aria-label="${t('qty_count')}"><button class="btn" data-q="-1" aria-label="${t('qty_dec')}">${icon('minus', { className: 'icon-sm' })}</button><span class="qty-value" id="dish-qty" aria-live="polite">${q}</span><button class="btn" data-q="1" aria-label="${t('qty_inc')}">${icon('plus', { className: 'icon-sm' })}</button></span>` : ''}
         </div>
         ${!p.is_available ? `<div class="alert alert-danger">${icon('info')}<span>${t('out_of_stock')}</span></div>` : ''}
         ${p.is_available && !canOrder ? `<div class="alert alert-warning">${icon('alert')}<span>${t(r.is_open ? 'not_deliverable' : 'cannot_order_closed')}</span></div>` : ''}
@@ -209,15 +225,59 @@ export async function renderRestaurant(el, params, m, { go }) {
     if (p.portion) sheet.querySelector('.portion').textContent = p.portion;
     if (descOf(p)) sheet.querySelector('.desc').textContent = descOf(p);
     const addBtn = sheet.querySelector('#dish-add');
-    const sync = () => {
-      sheet.querySelector('.qty-value') && (sheet.querySelector('.qty-value').textContent = q);
-      if (addBtn) addBtn.textContent = t(inCart ? 'update_sum' : 'add_sum', { sum: formatSum(p.price * q) });
+
+    const price = () => (mode === 'custom' ? unitPrice(p.price, ings, sel) : p.price);
+    const deltaText = (i) => {
+      const d = Math.round(((sel.get(i.id) - i.std_qty) / i.step) * i.step_price);
+      return d === 0 ? '' : `${d > 0 ? '+' : '−'}${formatSum(Math.abs(d))}`;
     };
+    function drawIngredients() {
+      if (!hasCustom) return;
+      sheet.querySelector('#mode-hint').textContent = t(mode === 'custom' ? 'mode_custom_hint' : 'mode_std_hint');
+      sheet.querySelectorAll('.mode-btn').forEach((b2) => b2.setAttribute('aria-selected', String(b2.dataset.mode === mode)));
+      const box = sheet.querySelector('#ings');
+      box.innerHTML = ings.map((i) => {
+        const val = mode === 'custom' ? sel.get(i.id) : i.std_qty;
+        return `<div class="ing-row" data-id="${i.id}">
+          <span class="grow"><span class="small ing-name"></span><span class="xs text-2 ing-price">${mode === 'custom' ? deltaText(i) : ''}</span></span>
+          ${mode === 'custom' ? `<span class="qty qty-sm" role="group">
+              <button class="btn" data-d="-1" aria-label="${t('qty_dec')}" ${val <= i.min_qty ? 'disabled' : ''}>${icon('minus', { className: 'icon-sm' })}</button>
+              <span class="qty-value ing-val">${val} ${esc(unitOf(i))}</span>
+              <button class="btn" data-d="1" aria-label="${t('qty_inc')}" ${val >= i.max_qty ? 'disabled' : ''}>${icon('plus', { className: 'icon-sm' })}</button>
+            </span>` : `<span class="small ing-val">${val ? `${val} ${esc(unitOf(i))}` : t('opt_none')}</span>`}
+        </div>`;
+      }).join('') + (mode === 'custom' ? `<button class="btn btn-ghost small" id="ing-reset" type="button">${t('opt_reset')}</button>` : '');
+      box.querySelectorAll('.ing-row').forEach((row) => { row.querySelector('.ing-name').textContent = ingName(ings.find((i) => i.id === Number(row.dataset.id))); });
+      box.querySelectorAll('[data-d]').forEach((btn) => btn.addEventListener('click', () => {
+        const i = ings.find((x) => x.id === Number(btn.closest('.ing-row').dataset.id));
+        const nv = Math.max(i.min_qty, Math.min(i.max_qty, sel.get(i.id) + Number(btn.dataset.d) * i.step));
+        sel.set(i.id, nv);
+        drawIngredients();
+        sync();
+      }));
+      box.querySelector('#ing-reset')?.addEventListener('click', () => { for (const i of ings) sel.set(i.id, i.std_qty); drawIngredients(); sync(); });
+    }
+    const sync = () => {
+      sheet.querySelector('#unit-price').textContent = formatSum(price());
+      if (sheet.querySelector('#dish-qty')) sheet.querySelector('#dish-qty').textContent = q;
+      if (addBtn) addBtn.textContent = t(inCart && mode === 'std' ? 'update_sum' : 'add_sum', { sum: formatSum(price() * q) });
+    };
+    sheet.querySelectorAll('.mode-btn').forEach((b2) => b2.addEventListener('click', () => { mode = b2.dataset.mode; drawIngredients(); sync(); }));
+    drawIngredients();
     sync();
-    sheet.querySelectorAll('[data-q]').forEach((b) => b.addEventListener('click', () => { q = Math.max(1, Math.min(99, q + Number(b.dataset.q))); sync(); }));
+    sheet.querySelectorAll('[data-q]').forEach((b2) => b2.addEventListener('click', () => { q = Math.max(1, Math.min(99, q + Number(b2.dataset.q))); sync(); }));
     const { close } = openSheet(sheet);
     addBtn?.addEventListener('click', async () => {
-      if (await setQty(p, q)) { close(); toast(t('added'), { type: 'success' }); }
+      let ok;
+      const norm = normalize(ings, [...sel].map(([id, qty]) => ({ id, qty })));
+      const changed = mode === 'custom' ? changes(ings, norm) : [];
+      if (changed.length) {
+        // Maxsus: alohida savat qatori; bir xil sozlama bo'lsa — miqdor qo'shiladi.
+        const key = lineKey(p.id, changed);
+        const prev = cart.getCart().items[key]?.qty || 0;
+        ok = await setQty(p, prev + q, { key, options: changed, optionsLabel: label(ings, norm, lang), price: unitPrice(p.price, ings, norm) });
+      } else ok = await setQty(p, q);
+      if (ok) { close(); toast(t('added'), { type: 'success' }); }
     });
     sheet.querySelector('#dish-remove')?.addEventListener('click', async () => { await setQty(p, 0); close(); });
   }

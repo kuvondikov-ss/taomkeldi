@@ -415,6 +415,36 @@ const migrations = [
       CREATE INDEX idx_order_ratings_restaurant ON order_ratings(restaurant_id, created_at);
     `,
   },
+  {
+    id: 11,
+    name: 'product_options',
+    sql: `
+      -- "Maxsus" tanlov: taom masalliqlari (standart miqdor, chegaralar, qadam va qadam narxi).
+      CREATE TABLE product_ingredients (
+        id          INTEGER PRIMARY KEY,
+        product_id  INTEGER NOT NULL REFERENCES products(id),
+        name_uz     TEXT NOT NULL,
+        name_ru     TEXT,
+        unit        TEXT NOT NULL DEFAULT 'g',
+        std_qty     INTEGER NOT NULL,
+        min_qty     INTEGER NOT NULL DEFAULT 0,
+        max_qty     INTEGER NOT NULL,
+        step        INTEGER NOT NULL DEFAULT 1,
+        step_price  INTEGER NOT NULL DEFAULT 0,
+        sort        INTEGER NOT NULL DEFAULT 0,
+        created_at  INTEGER NOT NULL,
+        updated_at  INTEGER NOT NULL
+      );
+      CREATE INDEX idx_product_ingredients ON product_ingredients(product_id, sort);
+      -- Tayyorlanish animatsiyasi: turi (mangal, pech, fritur...) va davomiyligi (soniya; bo'sh — 30).
+      ALTER TABLE products ADD COLUMN cook_style TEXT;
+      ALTER TABLE products ADD COLUMN prep_seconds INTEGER;
+      -- Buyurtma snapshot'i: tanlangan masalliqlar (JSON), animatsiya turi va davomiyligi.
+      ALTER TABLE order_items ADD COLUMN options TEXT;
+      ALTER TABLE order_items ADD COLUMN cook_style TEXT;
+      ALTER TABLE order_items ADD COLUMN prep_seconds INTEGER;
+    `,
+  },
 ];
 
 export function migrate(db) {

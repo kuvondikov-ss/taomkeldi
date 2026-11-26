@@ -255,3 +255,18 @@ details > summary.card-body { flex-direction: row; align-items: center; gap: var
 .section-head { margin-top: var(--sp-2); }
 .free-preview { display: grid; gap: 4px; padding: var(--sp-3); border-radius: var(--radius-md); background: var(--surface-2); }
 .chip-free .count-badge { background: var(--success-bg); color: var(--success); font-weight: var(--fw-semibold); }
+/* Standart / Maxsus (taom oynasi) */
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--radius-pill); background: var(--surface-2); }
+.mode-btn { min-height: 40px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--text-2); font: inherit; font-weight: var(--fw-semibold); cursor: pointer; }
+.mode-btn[aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }
+.ing-list { display: grid; gap: 2px; }
+.ing-row { display: flex; align-items: center; gap: var(--sp-2); min-height: 44px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.ing-row .grow { display: grid; }
+.ing-price { color: var(--primary); }
+.qty-sm .btn { min-width: 36px; min-height: 36px; }
+.qty-sm .qty-value { min-width: 64px; text-align: center; font-size: var(--fs-sm); }
+.opt-label { display: block; color: var(--primary); }
+/* Panel: masalliq muharriri */
+.ing-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--sp-1); }
+.ing-grid .input { min-height: 40px; padding: 0 8px; }
+@media (max-width: 380px) { .ing-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

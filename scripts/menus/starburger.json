@@ -1,14 +1,618 @@
 {
+  "_izoh": "TEST narxlar (2026-11-26): taxminiy, restoran tasdiqlagach panelda yoki shu faylda o‘zgartiring.",
   "restaurant": {
     "name": "Starburger",
-    "description": "Burgerlar, lavash va fast food.",
+    "description": "Burgerlar, hot dog, pitsa, qarsildoq tovuq, shaurma va kartoshka fri.",
     "status": "active",
-    "cuisines": ["Fast food"],
+    "cuisines": [
+      "Fast food",
+      "Pitsa"
+    ],
+    "cover": "assets/menus/starburger/cover.webp",
     "profile": {
       "address_text": "Jizzax shahri",
-      "lat": 40.1158, "lon": 67.8422,
-      "delivery_base": 8000, "delivery_base_m": 2000, "delivery_per_km": 2000, "delivery_radius_m": 10000
+      "lat": 40.1158,
+      "lon": 67.8422,
+      "delivery_base": 8000,
+      "delivery_base_m": 2000,
+      "delivery_per_km": 2000,
+      "delivery_radius_m": 10000
     }
   },
-  "categories": []
+  "categories": [
+    {
+      "name_uz": "Burgerlar va hot dog",
+      "name_ru": "Бургеры и хот-доги",
+      "items": [
+        {
+          "name_uz": "Klassik burger",
+          "name_ru": "Классический бургер",
+          "portion": "Ø 10–12 sm",
+          "price": 32000,
+          "cook_style": "griddle",
+          "image": "assets/menus/starburger/burger.webp",
+          "description_uz": "Mol go‘shti kotleti, cheddar pishlog‘i, salat, pomidor, qizil piyoz, sous.",
+          "description_ru": "Говяжья котлета, чеддер, салат, помидор, красный лук, соус.",
+          "ingredients": [
+            {
+              "name_uz": "Kotlet",
+              "name_ru": "Котлета",
+              "unit": "dona",
+              "std_qty": 1,
+              "min_qty": 1,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 12000
+            },
+            {
+              "name_uz": "Pishloq",
+              "name_ru": "Сыр",
+              "unit": "bo‘lak",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 3000
+            },
+            {
+              "name_uz": "Salat bargi",
+              "name_ru": "Лист салата",
+              "unit": "dona",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Pomidor",
+              "name_ru": "Помидор",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 4,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 4,
+              "step": 1,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Tuzlangan bodring",
+              "name_ru": "Маринованный огурец",
+              "unit": "bo‘lak",
+              "std_qty": 3,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Ketchup",
+              "name_ru": "Кетчуп",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Mayonez",
+              "name_ru": "Майонез",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Hot dog",
+          "name_ru": "Хот-дог",
+          "portion": "15–18 sm",
+          "price": 18000,
+          "cook_style": "griddle",
+          "image": "assets/menus/starburger/hotdog.webp",
+          "description_uz": "Grilda pishgan sosiska, tuzlangan bodring, ketchup va xantal.",
+          "description_ru": "Сосиска на гриле, маринованный огурец, кетчуп и горчица.",
+          "ingredients": [
+            {
+              "name_uz": "Sosiska",
+              "name_ru": "Сосиска",
+              "unit": "dona",
+              "std_qty": 1,
+              "min_qty": 1,
+              "max_qty": 2,
+              "step": 1,
+              "step_price": 8000
+            },
+            {
+              "name_uz": "Salat bargi",
+              "name_ru": "Лист салата",
+              "unit": "dona",
+              "std_qty": 1,
+              "min_qty": 0,
+              "max_qty": 3,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Pomidor",
+              "name_ru": "Помидор",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 4,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 2,
+              "min_qty": 0,
+              "max_qty": 4,
+              "step": 1,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Tuzlangan bodring",
+              "name_ru": "Маринованный огурец",
+              "unit": "bo‘lak",
+              "std_qty": 3,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Ketchup",
+              "name_ru": "Кетчуп",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Xantal",
+              "name_ru": "Горчица",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name_uz": "Pitsa",
+      "name_ru": "Пицца",
+      "items": [
+        {
+          "name_uz": "Pitsa «Konstruktor»",
+          "name_ru": "Пицца «Конструктор»",
+          "portion": "Ø 30 sm",
+          "price": 75000,
+          "cook_style": "oven",
+          "image": "assets/menus/starburger/pitsa-konstruktor.webp",
+          "description_uz": "Masalliqlarni o‘zingiz tanlang: sous, pishloq, kolbasa, qo‘ziqorin, zaytun, qalampir, pomidor, piyoz.",
+          "description_ru": "Соберите сами: соус, сыр, колбаса, грибы, оливки, перец, помидор, лук.",
+          "ingredients": [
+            {
+              "name_uz": "Pomidor sousi",
+              "name_ru": "Томатный соус",
+              "unit": "g",
+              "std_qty": 100,
+              "min_qty": 80,
+              "max_qty": 140,
+              "step": 20,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Pishloq",
+              "name_ru": "Сыр",
+              "unit": "g",
+              "std_qty": 170,
+              "min_qty": 150,
+              "max_qty": 250,
+              "step": 10,
+              "step_price": 1500
+            },
+            {
+              "name_uz": "Kolbasa (pepperoni)",
+              "name_ru": "Пепперони",
+              "unit": "bo‘lak",
+              "std_qty": 10,
+              "min_qty": 0,
+              "max_qty": 16,
+              "step": 1,
+              "step_price": 1500
+            },
+            {
+              "name_uz": "Qo‘ziqorin",
+              "name_ru": "Грибы",
+              "unit": "dona",
+              "std_qty": 6,
+              "min_qty": 0,
+              "max_qty": 10,
+              "step": 1,
+              "step_price": 1000
+            },
+            {
+              "name_uz": "Zaytun",
+              "name_ru": "Оливки",
+              "unit": "g",
+              "std_qty": 20,
+              "min_qty": 0,
+              "max_qty": 40,
+              "step": 10,
+              "step_price": 2000
+            },
+            {
+              "name_uz": "Bolgar qalampiri",
+              "name_ru": "Болгарский перец",
+              "unit": "bo‘lak",
+              "std_qty": 6,
+              "min_qty": 0,
+              "max_qty": 10,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Pomidor",
+              "name_ru": "Помидор",
+              "unit": "halqa",
+              "std_qty": 4,
+              "min_qty": 0,
+              "max_qty": 8,
+              "step": 1,
+              "step_price": 500
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "halqa",
+              "std_qty": 3,
+              "min_qty": 0,
+              "max_qty": 6,
+              "step": 1,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Pepperoni pitsa — 1 bo‘lak",
+          "name_ru": "Пицца пепперони — 1 кусок",
+          "portion": "1 bo‘lak",
+          "price": 14000,
+          "cook_style": "oven",
+          "image": "assets/menus/starburger/pitsa-bolak.webp",
+          "ingredients": [
+            {
+              "name_uz": "Pishloq",
+              "name_ru": "Сыр",
+              "unit": "g",
+              "std_qty": 40,
+              "min_qty": 20,
+              "max_qty": 80,
+              "step": 10,
+              "step_price": 1500
+            },
+            {
+              "name_uz": "Pepperoni",
+              "name_ru": "Пепперони",
+              "unit": "bo‘lak",
+              "std_qty": 4,
+              "min_qty": 2,
+              "max_qty": 8,
+              "step": 1,
+              "step_price": 1500
+            }
+          ]
+        },
+        {
+          "name_uz": "Pepperoni pitsa — 2 bo‘lak",
+          "name_ru": "Пицца пепперони — 2 куска",
+          "portion": "2 bo‘lak",
+          "price": 26000,
+          "cook_style": "oven",
+          "image": "assets/menus/starburger/pitsa-2-bolak.webp",
+          "ingredients": [
+            {
+              "name_uz": "Pishloq",
+              "name_ru": "Сыр",
+              "unit": "g",
+              "std_qty": 80,
+              "min_qty": 40,
+              "max_qty": 160,
+              "step": 10,
+              "step_price": 1500
+            },
+            {
+              "name_uz": "Pepperoni",
+              "name_ru": "Пепперони",
+              "unit": "bo‘lak",
+              "std_qty": 8,
+              "min_qty": 4,
+              "max_qty": 14,
+              "step": 1,
+              "step_price": 1500
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name_uz": "Tovuq va shaurma",
+      "name_ru": "Курица и шаурма",
+      "items": [
+        {
+          "name_uz": "Qarsildoq tovuq — 1 dona",
+          "name_ru": "Хрустящая курица — 1 шт",
+          "portion": "1 dona",
+          "price": 12000,
+          "cook_style": "fryer",
+          "image": "assets/menus/starburger/tovuq-1.webp",
+          "ingredients": [
+            {
+              "name_uz": "Sous",
+              "name_ru": "Соус",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 500
+            }
+          ]
+        },
+        {
+          "name_uz": "Qarsildoq tovuq — 4 dona",
+          "name_ru": "Хрустящая курица — 4 шт",
+          "portion": "4 dona",
+          "price": 42000,
+          "cook_style": "fryer",
+          "image": "assets/menus/starburger/tovuq-4.webp",
+          "ingredients": [
+            {
+              "name_uz": "Sous",
+              "name_ru": "Соус",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 120,
+              "step": 10,
+              "step_price": 500
+            }
+          ]
+        },
+        {
+          "name_uz": "Shaurma (tovuqli)",
+          "name_ru": "Шаурма с курицей",
+          "portion": "Ø 30–35 sm lavash",
+          "price": 28000,
+          "cook_style": "wrap",
+          "image": "assets/menus/starburger/shaurma.webp",
+          "description_uz": "Tovuq go‘shti, karam, sabzi, bodring, pomidor, piyoz, oq sous va ketchup.",
+          "description_ru": "Курица, капуста, морковь, огурец, помидор, лук, белый соус и кетчуп.",
+          "ingredients": [
+            {
+              "name_uz": "Tovuq go‘shti",
+              "name_ru": "Курица",
+              "unit": "g",
+              "std_qty": 170,
+              "min_qty": 150,
+              "max_qty": 250,
+              "step": 10,
+              "step_price": 1200
+            },
+            {
+              "name_uz": "Karam",
+              "name_ru": "Капуста",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 10,
+              "step_price": 200
+            },
+            {
+              "name_uz": "Sabzi",
+              "name_ru": "Морковь",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 10,
+              "step_price": 200
+            },
+            {
+              "name_uz": "Bodring",
+              "name_ru": "Огурец",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Pomidor",
+              "name_ru": "Помидор",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "g",
+              "std_qty": 40,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 200
+            },
+            {
+              "name_uz": "Oq sous",
+              "name_ru": "Белый соус",
+              "unit": "g",
+              "std_qty": 40,
+              "min_qty": 0,
+              "max_qty": 80,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Ketchup",
+              "name_ru": "Кетчуп",
+              "unit": "g",
+              "std_qty": 40,
+              "min_qty": 0,
+              "max_qty": 80,
+              "step": 10,
+              "step_price": 300
+            }
+          ]
+        },
+        {
+          "name_uz": "Achchiq shaurma",
+          "name_ru": "Острая шаурма",
+          "portion": "Ø 30–35 sm lavash",
+          "price": 30000,
+          "cook_style": "wrap",
+          "image": "assets/menus/starburger/shaurma-achchiq.webp",
+          "description_uz": "Tovuq go‘shti, qizil piyoz, bodring, pomidor, achchiq va oq sous.",
+          "description_ru": "Курица, красный лук, огурец, помидор, острый и белый соус.",
+          "ingredients": [
+            {
+              "name_uz": "Tovuq go‘shti",
+              "name_ru": "Курица",
+              "unit": "g",
+              "std_qty": 170,
+              "min_qty": 150,
+              "max_qty": 250,
+              "step": 10,
+              "step_price": 1200
+            },
+            {
+              "name_uz": "Achchiq sous",
+              "name_ru": "Острый соус",
+              "unit": "g",
+              "std_qty": 40,
+              "min_qty": 0,
+              "max_qty": 80,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Oq sous",
+              "name_ru": "Белый соус",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 80,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Piyoz",
+              "name_ru": "Лук",
+              "unit": "g",
+              "std_qty": 40,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 200
+            },
+            {
+              "name_uz": "Bodring",
+              "name_ru": "Огурец",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Pomidor",
+              "name_ru": "Помидор",
+              "unit": "g",
+              "std_qty": 60,
+              "min_qty": 0,
+              "max_qty": 100,
+              "step": 10,
+              "step_price": 300
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name_uz": "Garnir",
+      "name_ru": "Гарниры",
+      "items": [
+        {
+          "name_uz": "Kartoshka fri",
+          "name_ru": "Картофель фри",
+          "portion": "150 g",
+          "price": 15000,
+          "cook_style": "fryer",
+          "image": "assets/menus/starburger/fri.webp",
+          "ingredients": [
+            {
+              "name_uz": "Kartoshka",
+              "name_ru": "Картофель",
+              "unit": "g",
+              "std_qty": 150,
+              "min_qty": 100,
+              "max_qty": 300,
+              "step": 50,
+              "step_price": 4000
+            },
+            {
+              "name_uz": "Ketchup",
+              "name_ru": "Кетчуп",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 300
+            },
+            {
+              "name_uz": "Mayonez",
+              "name_ru": "Майонез",
+              "unit": "g",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 10,
+              "step_price": 300
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -36,10 +36,13 @@ function blockReason(order, to, role, opts = {}) {
 
 export function createOrderService(db, access, config) {
   const getStmt = db.prepare('SELECT * FROM orders WHERE id = ?');
-  const itemsStmt = db.prepare('SELECT id, product_id, name, price, qty, line_total FROM order_items WHERE order_id = ? ORDER BY id');
+  const itemsStmt = db.prepare(`SELECT id, product_id, name, price, qty, line_total, options, cook_style, prep_seconds,
+      (SELECT image_path FROM products WHERE products.id = order_items.product_id) AS image_path
+    FROM order_items WHERE order_id = ? ORDER BY id`);
+  const parseItem = (i) => ({ ...i, options: i.options ? JSON.parse(i.options) : null });
 
   function withItems(order) {
-    return { ...order, items: itemsStmt.all(order.id) };
+    return { ...order, items: itemsStmt.all(order.id).map(parseItem) };
   }
 
   // Ko'ruvchi uchun mumkin bo'lgan amallar (UI tugmalari shu ro'yxatdan chiziladi).

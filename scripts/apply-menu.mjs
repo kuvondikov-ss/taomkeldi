@@ -65,10 +65,21 @@ for (const c of menu.categories || []) {
     if (!it.price) { if (!ex) waiting.push(`${c.name_uz} → ${it.name_uz}${it.portion ? ` (${it.portion})` : ''}${it.image ? ' 📷' : ''}`); continue; }
     if (dry) { log(`[dry] ${ex ? 'yangilanadi' : 'taom'}: ${it.name_uz} — ${it.price}`); continue; }
     const image_path = ex?.image_path || (it.image ? await upload(rid, it.image) : undefined);
+    // "Maxsus" masalliqlari: mavjudlari nom bo'yicha id bilan yuboriladi (savatdagi tanlovlar yaroqli qoladi).
+    const F = ['name_uz', 'name_ru', 'unit', 'std_qty', 'min_qty', 'max_qty', 'step', 'step_price'];
+    const pick = (g) => Object.fromEntries(F.map((k) => [k, g[k] ?? null]));
+    const ingredients = it.ingredients ? it.ingredients.map((g) => {
+      const old = (ex?.ingredients || []).find((x) => x.name_uz === g.name_uz);
+      return { ...(old ? { id: old.id } : {}), ...g };
+    }) : undefined;
+    const ingChanged = ingredients !== undefined && JSON.stringify((ex?.ingredients || []).map(pick)) !== JSON.stringify(ingredients.map(pick));
     const body = { category_id: cat.id, name_uz: it.name_uz, name_ru: it.name_ru, portion: it.portion, price: it.price,
-      description_uz: it.description_uz, description_ru: it.description_ru, image_path };
+      description_uz: it.description_uz, description_ru: it.description_ru, image_path,
+      ...(it.cook_style !== undefined ? { cook_style: it.cook_style } : {}), ...(it.prep_seconds !== undefined ? { prep_seconds: it.prep_seconds } : {}),
+      ...(ingredients !== undefined ? { ingredients } : {}) };
     if (ex) {
-      if (ex.price !== it.price || ex.portion !== it.portion || (image_path && ex.image_path !== image_path)) {
+      if (ex.price !== it.price || ex.portion !== it.portion || (image_path && ex.image_path !== image_path) || ingChanged
+        || (it.cook_style !== undefined && ex.cook_style !== it.cook_style)) {
         await call('PUT', `/api/panel/restaurants/${rid}/products/${ex.id}`, { ...body, is_available: ex.is_available !== 0 });
         log(`✓ yangilandi: ${it.name_uz} — ${it.price} so'm`);
       }

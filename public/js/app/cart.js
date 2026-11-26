@@ -20,6 +20,7 @@ function save(cart) {
 }
 
 export const qtyOf = (pid) => core.qtyOf(getCart(), pid);
+export const qtyAll = (pid) => core.qtyAll(getCart(), pid);
 export const count = () => core.count(getCart());
 export const itemsTotal = () => core.itemsTotal(getCart());
 
@@ -42,5 +43,5 @@ export function clearCart() {
 // Server tekshiruvi uchun so'rov tanasi.
 export function cartPayload() {
   const c = getCart();
-  return { restaurant_id: c.restaurantId, items: Object.entries(c.items).map(([product_id, i]) => ({ product_id: Number(product_id), qty: i.qty, price: i.price })) };
+  return { restaurant_id: c.restaurantId, items: core.payloadItems(c) };
 }

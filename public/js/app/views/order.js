@@ -10,6 +10,7 @@ import { stateBlock } from './cards.js';
 import { state, currentAddress } from '../state.js';
 import * as cart from '../cart.js';
 import { createMap } from '../../ui/map.js';
+import { mountCooking } from '../../ui/cooking.js';
 
 const STEPS = {
   delivery: ['new', 'accepted', 'ready', 'on_way', 'delivered'],
@@ -38,10 +39,12 @@ export async function renderOrder(el, _p, m, { go }) {
   let mapApi = null;
   let layers = null;
   let fitted = false;
+  let cooking = null; // { stop, key }
 
   el.innerHTML = `<main class="page stack order">
     <div id="o-head"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-text"></div></div>
     <div id="payment" class="stack"></div>
+    <div id="cooking"></div>
     <section id="track" class="card track" hidden><div id="track-map" class="track-map"></div><div class="card-body stack" id="track-info"></div></section>
     <div id="o-after" class="stack"></div>
     <div id="o-details" class="stack"></div>
@@ -225,7 +228,7 @@ export async function renderOrder(el, _p, m, { go }) {
             ${o.type === 'delivery' ? `<div class="list-item">${icon('pin')}<span class="grow small addr"></span></div>` : `<div class="list-item">${icon('store')}<span class="grow small paddr"></span></div>`}
             <div class="list-item">${icon('receipt')}<span class="grow small">${t('payment_status')}: ${t(`pay_${o.payment_method}`)} · ${t(`ps_${o.payment_status}`)}</span></div>
           </div>
-          <div class="list">${o.items.map((it) => `<div class="list-item"><span class="grow"><span class="iname"></span> <span class="text-2">× ${it.qty}</span></span><span class="price">${formatSum(it.line_total)}</span></div>`).join('')}</div>
+          <div class="list">${o.items.map((it, idx) => `<div class="list-item" data-idx="${idx}"><span class="grow"><span class="iname"></span> <span class="text-2">× ${it.qty}</span>${it.options?.length ? '<br><span class="xs text-2 iopt"></span>' : ''}</span><span class="price">${formatSum(it.line_total)}</span></div>`).join('')}</div>
           <div>
             <div class="row sum-row"><span>${t('items_title')}</span><span>${formatSum(o.items_total)}</span></div>
             ${o.type === 'delivery' ? `<div class="row sum-row"><span>${t('delivery_fee', { sum: '' }).trim()}</span><span>${o.delivery_fee ? formatSum(o.delivery_fee) : t('delivery_free')}</span></div>` : ''}
@@ -234,6 +237,12 @@ export async function renderOrder(el, _p, m, { go }) {
         </div></details>
       ${ACTIVE.includes(o.status) ? `<p class="xs text-2" style="text-align:center">${t('refreshing')}</p>` : ''}`;
     box.querySelectorAll('.iname').forEach((n, i) => { n.textContent = o.items[i].name; });
+    // "Maxsus" tanlov: masalliq va miqdor.
+    const optText = (it) => (it.options || []).map((x) => `${(getLang() === 'ru' && x.name_ru) || x.name_uz} ${x.qty ? `${x.qty} ${x.unit}` : t('opt_none')}`).join(', ');
+    box.querySelectorAll('.list-item[data-idx] .iopt').forEach((opt) => {
+      const it = o.items[Number(opt.closest('[data-idx]').dataset.idx)];
+      opt.textContent = `${t('mode_custom')}: ${optText(it)}`;
+    });
     if (box.querySelector('.addr')) box.querySelector('.addr').textContent = o.address_text || '';
     if (box.querySelector('.paddr')) box.querySelector('.paddr').textContent = `${t('pickup_from')}: ${o.restaurant.address_text || o.restaurant.name}`;
     if (cancelled) box.querySelector('.creason').textContent = `${t('step_cancelled')}${cancelEvent?.data?.reason ? `. ${t('cancel_reason', { reason: cancelEvent.data.reason === 'payment_timeout' ? t('expired_note') : cancelEvent.data.reason })}` : ''}`;
@@ -268,8 +277,26 @@ export async function renderOrder(el, _p, m, { go }) {
     }
   }
 
+  // Tayyorlanish animatsiyasi: buyurtma restoranga tushgach (status 'new') har taom uchun ~30 s. Holatni restoran o'zgartiradi.
+  function drawCooking(o) {
+    const box = el.querySelector('#cooking');
+    const show = ['new', 'accepted'].includes(o.status);
+    if (!show) { cooking?.stop(); cooking = null; box.innerHTML = ''; return; }
+    const ev = o.events.find((e) => e.to_status === 'new');
+    const startedAt = ev ? ev.created_at : o.created_at;
+    const key = `${o.id}:${startedAt}`;
+    if (cooking?.key === key) return; // har yangilanishda qayta chizilmaydi
+    cooking?.stop();
+    const stop = mountCooking(box, {
+      startedAt,
+      items: o.items.map((it) => ({ name: it.name, image: it.image_path, qty: it.qty, cook_style: it.cook_style, prep_seconds: it.prep_seconds, options: it.options })),
+    });
+    cooking = { stop, key };
+  }
+
   function draw(o, tr) {
     drawHead(o, tr);
+    drawCooking(o);
     drawPayment(o);
     drawTrack(o, tr);
     drawAfter(o);
@@ -360,5 +387,5 @@ export async function renderOrder(el, _p, m, { go }) {
   }
 
   await load();
-  return () => { clearTimeout(timer); mapApi?.destroy(); };
+  return () => { clearTimeout(timer); mapApi?.destroy(); cooking?.stop(); };
 }

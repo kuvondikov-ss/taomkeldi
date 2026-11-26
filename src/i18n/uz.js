@@ -213,4 +213,6 @@ export default {
   k_shift_off: '⚪ Ish tugatildi ({restaurant}). Yangi takliflar kelmaydi.',
   k_location_ok: '📍 Joylashuv qabul qilindi.',
   courier_app_hint: 'Joriy buyurtmalar, takliflar va tarix — kuryer ekranida:',
+  opt_custom: 'Maxsus',
+  opt_none: 'yo‘q',
 };

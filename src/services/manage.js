@@ -19,7 +19,9 @@ export const ORDER_GROUPS = {
   done: ['delivered', 'cancelled'],
 };
 
-export function createManageService(db, { access, geo }) {
+import { COOK_STYLES } from './options.js';
+
+export function createManageService(db, { access, geo, options }) {
   const getR = (id) => db.prepare('SELECT * FROM restaurants WHERE id = ?').get(id);
   const staff = (actor, rid, opts) => {
     if (!getR(rid)) { if (!access.isPlatformAdmin(actor)) throw new AppError('FORBIDDEN'); throw new AppError('NOT_FOUND'); }
@@ -95,8 +97,9 @@ export function createManageService(db, { access, geo }) {
     staff(actor, rid);
     return {
       categories: db.prepare('SELECT id, name_uz, name_ru, sort, is_active FROM menu_categories WHERE restaurant_id = ? ORDER BY sort, id').all(rid).map((c) => ({ ...c })),
-      products: db.prepare(`SELECT id, category_id, name_uz, name_ru, description_uz, description_ru, portion, price, old_price, image_path, is_available, is_popular, sort
-        FROM products WHERE restaurant_id = ? AND is_deleted = 0 ORDER BY sort, id`).all(rid).map((p) => ({ ...p })),
+      products: db.prepare(`SELECT id, category_id, name_uz, name_ru, description_uz, description_ru, portion, price, old_price, image_path, is_available, is_popular, sort,
+          cook_style, prep_seconds
+        FROM products WHERE restaurant_id = ? AND is_deleted = 0 ORDER BY sort, id`).all(rid).map((p) => ({ ...p, ingredients: options.ingredientsOf(p.id).map(({ product_id, sort, ...i }) => i) })),
     };
   }
 
@@ -159,16 +162,29 @@ export function createManageService(db, { access, geo }) {
       data.is_available === false ? 0 : 1,
       data.is_popular ? 1 : 0,
     ];
+    // Tayyorlanish animatsiyasi turi va vaqti (soniya). Bo'sh — standart (30 s, umumiy animatsiya).
+    const cookStyle = data.cook_style ? v.oneOf(data.cook_style, 'cook_style', COOK_STYLES) : null;
+    const prepSeconds = data.prep_seconds == null || data.prep_seconds === '' ? null : v.int(data.prep_seconds, 'prep_seconds', { min: 5, max: 3600 });
     const t = now();
-    if (productId) {
-      const res = db.prepare(`UPDATE products SET category_id = ?, name_uz = ?, name_ru = ?, description_uz = ?, description_ru = ?, portion = ?,
-        price = ?, old_price = ?, image_path = ?, is_available = ?, is_popular = ?, updated_at = ? WHERE id = ? AND restaurant_id = ? AND is_deleted = 0`)
-        .run(...rec, t, v.id(productId), rid);
-      if (res.changes !== 1) throw new AppError('NOT_FOUND');
-      return v.id(productId);
-    }
-    return Number(db.prepare(`INSERT INTO products (category_id, name_uz, name_ru, description_uz, description_ru, portion, price, old_price, image_path,
-      is_available, is_popular, restaurant_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(...rec, rid, t, t).lastInsertRowid);
+    return tx(db, () => {
+      let id;
+      if (productId) {
+        const res = db.prepare(`UPDATE products SET category_id = ?, name_uz = ?, name_ru = ?, description_uz = ?, description_ru = ?, portion = ?,
+          price = ?, old_price = ?, image_path = ?, is_available = ?, is_popular = ?, updated_at = ? WHERE id = ? AND restaurant_id = ? AND is_deleted = 0`)
+          .run(...rec, t, v.id(productId), rid);
+        if (res.changes !== 1) throw new AppError('NOT_FOUND');
+        id = v.id(productId);
+      } else {
+        id = Number(db.prepare(`INSERT INTO products (category_id, name_uz, name_ru, description_uz, description_ru, portion, price, old_price, image_path,
+          is_available, is_popular, restaurant_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(...rec, rid, t, t).lastInsertRowid);
+      }
+      if (data.cook_style !== undefined || data.prep_seconds !== undefined || !productId) {
+        db.prepare('UPDATE products SET cook_style = ?, prep_seconds = ? WHERE id = ?').run(cookStyle, prepSeconds, id);
+      }
+      // "Maxsus" masalliqlari: berilsa — ro'yxat to'liq almashtiriladi (bo'sh massiv — faqat standart).
+      if (data.ingredients !== undefined) options.saveIngredients(id, data.ingredients);
+      return id;
+    });
   }
 
   function setAvailability(actor, rid, productId, available) {

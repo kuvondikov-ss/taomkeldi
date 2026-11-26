@@ -1,0 +1,93 @@
+/* Taom tayyorlanish animatsiyasi (ui/cooking.js). --doneness: 0…1 (tayyorlanish darajasi). */
+.cooking .ck-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-3); }
+.ck-tile { display: grid; gap: 4px; --doneness: 0; }
+.ck-caption { display: grid; }
+.ck-name { font-weight: var(--fw-semibold); }
+.ck-progress { height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; }
+.ck-progress span { display: block; height: 100%; width: 0; background: var(--warning); border-radius: 3px; transition: width .25s linear; }
+.ck-tile.is-done .ck-progress span { background: var(--success); }
+.ck-tile.is-done .ck-left { color: var(--success); font-weight: var(--fw-semibold); }
+
+.ck-scene { position: relative; height: 130px; border-radius: var(--radius-md); background: radial-gradient(ellipse at 50% 120%, rgba(255, 140, 0, .18), transparent 60%), var(--surface-2); overflow: hidden; }
+.ck-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.ck-photo-ph { background: var(--border); border-radius: 50%; }
+.ck-item { position: absolute; }
+
+/* Pishish darajasi: rasm asta-sekin to'qlashadi */
+.ck-scene .ck-photo { filter: saturate(calc(1 + var(--doneness) * .25)) brightness(calc(1 - var(--doneness) * .12)); }
+
+/* --- Mangal (shashlik): sixlar mangalga tushadi, ko'mir yonadi, tutun chiqadi --- */
+.ck-mangal { position: absolute; left: 8%; right: 8%; bottom: 8px; height: 34px; border-radius: 4px 4px 8px 8px; background: linear-gradient(#3a3a3a, #1f1f1f); box-shadow: inset 0 3px 0 #555; }
+.ck-coals { position: absolute; inset: 6px 8px 8px; display: flex; gap: 4px; align-items: center; }
+.ck-coals i { flex: 1; height: 12px; border-radius: 50%; background: radial-gradient(circle, #ffd27a, #ff6a00 60%, #8a2a00); animation: ck-flicker 1.2s ease-in-out infinite alternate; }
+.ck-coals i:nth-child(2n) { animation-delay: .4s; } .ck-coals i:nth-child(3n) { animation-delay: .8s; }
+.ck-skewers { position: absolute; left: 0; right: 0; top: 6px; height: 86px; }
+.ck-skewer { position: absolute; left: 10%; right: 10%; height: 86px; top: calc(var(--i) * 6px); animation: ck-to-mangal .9s cubic-bezier(.2, .8, .3, 1.1) both, ck-turn 3s ease-in-out .9s infinite; animation-delay: calc(var(--i) * .25s), calc(.9s + var(--i) * .3s); }
+.ck-skewer .ck-photo { transform: rotate(-38deg) scale(1.55); transform-origin: center; }
+.ck-tile.is-done .ck-skewer { animation: none; transform: translateY(-6px); }
+
+/* --- Pilta (burger, hot dog): issiq plita, olov va bug' --- */
+.ck-griddle .ck-item { left: 18%; right: 18%; top: 10px; height: 82px; animation: ck-sizzle .5s ease-in-out infinite alternate; }
+.ck-plate { position: absolute; left: 6%; right: 6%; bottom: 22px; height: 10px; border-radius: 3px; background: linear-gradient(#777, #444); }
+.ck-flames { position: absolute; left: 14%; right: 14%; bottom: 4px; height: 18px; display: flex; justify-content: space-around; }
+.ck-flames i, .ck-fire i { width: 12px; height: 18px; border-radius: 50% 50% 40% 40%; background: radial-gradient(circle at 50% 70%, #fff3b0, #ff9a1f 45%, #e8430c 80%); animation: ck-flame .45s ease-in-out infinite alternate; transform-origin: bottom; }
+.ck-flames i:nth-child(2n), .ck-fire i:nth-child(2n) { animation-delay: .2s; }
+
+/* --- Pech (pitsa): ichkariga kiradi, oyna yonadi --- */
+.ck-oven-box { position: absolute; left: 12%; right: 12%; top: 8px; bottom: 8px; border-radius: 10px; background: linear-gradient(#8b8b8b, #5a5a5a); padding: 8px; }
+.ck-oven-window { position: relative; height: calc(100% - 14px); border-radius: 6px; background: #241309; overflow: hidden; }
+.ck-oven-window .ck-item { left: 10%; right: 10%; top: 6%; bottom: 0; animation: ck-slide-in 1s ease-out both; }
+.ck-glow { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 100%, rgba(255, 120, 20, .55), transparent 70%); animation: ck-flicker 1.6s ease-in-out infinite alternate; }
+.ck-knobs { display: flex; gap: 8px; justify-content: center; margin-top: 3px; } .ck-knobs i { width: 8px; height: 8px; border-radius: 50%; background: #2b2b2b; }
+
+/* --- Fritur (kartoshka, tovuq): savat yog'ga tushadi, pufakchalar --- */
+.ck-fryer .ck-basket { position: absolute; left: 20%; right: 20%; top: 4px; height: 84px; animation: ck-dip 2.4s ease-in-out infinite; }
+.ck-fryer .ck-item { inset: 0; }
+.ck-oil { position: absolute; left: 8%; right: 8%; bottom: 6px; height: 40px; border-radius: 6px 6px 12px 12px; background: linear-gradient(rgba(240, 180, 40, .75), rgba(190, 110, 10, .9)); overflow: hidden; }
+.ck-oil i { position: absolute; bottom: -6px; width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, .7); animation: ck-bubble 1.4s ease-in infinite; }
+.ck-oil i:nth-child(1) { left: 12%; } .ck-oil i:nth-child(2) { left: 32%; animation-delay: .3s; } .ck-oil i:nth-child(3) { left: 52%; animation-delay: .6s; } .ck-oil i:nth-child(4) { left: 70%; animation-delay: .9s; } .ck-oil i:nth-child(5) { left: 86%; animation-delay: 1.1s; }
+
+/* --- Doner (shaurma): sih aylanadi, keyin lavash o'raladi --- */
+.ck-doner { position: absolute; left: 12%; top: 8px; bottom: 8px; width: 34px; border-radius: 14px 14px 6px 6px; background: repeating-linear-gradient(0deg, #b5652a 0 8px, #8a4517 8px 12px); animation: ck-spin 1.2s linear infinite; }
+.ck-doner span { position: absolute; left: 50%; top: -6px; bottom: -6px; width: 3px; transform: translateX(-50%); background: #bbb; }
+.ck-wrap .ck-item { left: 34%; right: 2%; top: 10px; height: 100px; animation: ck-sizzle .8s ease-in-out infinite alternate; }
+
+/* --- Qozon (osh): bug', olov, ohista qaynaydi --- */
+.ck-qozon { position: absolute; left: 14%; right: 14%; bottom: 20px; height: 70px; border-radius: 0 0 50% 50% / 0 0 70% 70%; background: linear-gradient(#4a4a4a, #222); overflow: hidden; }
+.ck-qozon .ck-item { left: 4%; right: 4%; top: -34px; height: 90px; animation: ck-simmer 1.6s ease-in-out infinite alternate; }
+.ck-fire { position: absolute; left: 30%; right: 30%; bottom: 2px; height: 18px; display: flex; justify-content: space-around; }
+
+/* --- Sushi: taxta, pichoq --- */
+.ck-board { position: absolute; left: 6%; right: 6%; bottom: 10px; height: 26px; border-radius: 6px; background: linear-gradient(#d9a066, #b9793d); }
+.ck-sushi .ck-item { left: 10%; right: 10%; top: 6px; height: 96px; }
+.ck-knife { position: absolute; right: 14%; top: 10px; width: 8px; height: 60px; border-radius: 2px 2px 0 0; background: linear-gradient(90deg, #ddd, #999); transform-origin: bottom; animation: ck-chop .7s ease-in-out infinite; }
+
+/* --- Umumiy tova --- */
+.ck-pan .ck-item { left: 22%; right: 22%; top: 8px; height: 76px; animation: ck-flip 2.2s ease-in-out infinite; }
+.ck-pan-body { position: absolute; left: 14%; right: 26%; bottom: 14px; height: 18px; border-radius: 0 0 40px 40px; background: #333; }
+.ck-pan-body::after { content: ''; position: absolute; right: -30%; top: 6px; width: 34%; height: 6px; border-radius: 3px; background: #222; }
+
+/* --- Bug' / tutun --- */
+.ck-smoke, .ck-steam { position: absolute; left: 0; right: 0; top: 0; height: 60px; pointer-events: none; z-index: 2; }
+.ck-smoke i, .ck-steam i { position: absolute; bottom: 0; width: 22px; height: 22px; border-radius: 50%; background: rgba(200, 200, 200, .5); filter: blur(3px); animation: ck-rise 2.4s ease-out infinite; }
+.ck-smoke i:nth-child(1), .ck-steam i:nth-child(1) { left: 30%; } .ck-smoke i:nth-child(2), .ck-steam i:nth-child(2) { left: 50%; animation-delay: .8s; } .ck-smoke i:nth-child(3), .ck-steam i:nth-child(3) { left: 68%; animation-delay: 1.6s; }
+.ck-tile.is-done .ck-smoke, .ck-tile.is-done .ck-flames, .ck-tile.is-done .ck-fire, .ck-tile.is-done .ck-oil i { display: none; }
+.ck-tile.is-done .ck-item, .ck-tile.is-done .ck-basket, .ck-tile.is-done .ck-doner, .ck-tile.is-done .ck-knife { animation: none; }
+
+@keyframes ck-flicker { from { opacity: .7; filter: brightness(.85); } to { opacity: 1; filter: brightness(1.2); } }
+@keyframes ck-to-mangal { from { transform: translateY(-90px) rotate(-6deg); opacity: 0; } to { transform: translateY(0) rotate(0); opacity: 1; } }
+@keyframes ck-turn { 0%, 100% { transform: translateY(0) scaleY(1); } 50% { transform: translateY(-3px) scaleY(.92); } }
+@keyframes ck-sizzle { from { transform: translateY(0); } to { transform: translateY(-2px); } }
+@keyframes ck-flame { from { transform: scaleY(.8); opacity: .8; } to { transform: scaleY(1.15); opacity: 1; } }
+@keyframes ck-slide-in { from { transform: translateX(-110%); } to { transform: translateX(0); } }
+@keyframes ck-dip { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(14px); } }
+@keyframes ck-bubble { from { transform: translateY(0) scale(.6); opacity: .9; } to { transform: translateY(-44px) scale(1.1); opacity: 0; } }
+@keyframes ck-spin { from { transform: scaleX(1); } 50% { transform: scaleX(.75); } to { transform: scaleX(1); } }
+@keyframes ck-simmer { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+@keyframes ck-chop { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-22deg); } }
+@keyframes ck-flip { 0%, 70%, 100% { transform: translateY(0) rotate(0); } 85% { transform: translateY(-26px) rotate(180deg); } }
+@keyframes ck-rise { from { transform: translateY(10px) scale(.5); opacity: .6; } to { transform: translateY(-50px) scale(1.4); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ck-scene * { animation: none !important; }
+}

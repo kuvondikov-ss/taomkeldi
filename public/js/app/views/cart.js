@@ -38,17 +38,19 @@ export function renderCart(el, _p, _m, { go }) {
     });
 
     const items = body.querySelector('#items');
-    for (const [pid, it] of Object.entries(c.items)) {
+    for (const [key, it] of Object.entries(c.items)) {
       const row = document.createElement('div');
       row.className = 'list-item cart-row';
-      row.dataset.pid = pid;
-      row.innerHTML = `<span class="grow"><span class="h3 title-2l name"></span><span class="small text-2 unit"></span><span class="xs line-note"></span></span>
+      row.dataset.key = key;
+      row.innerHTML = `<span class="grow"><span class="h3 title-2l name"></span>${it.options_label ? '<span class="xs opt-label"></span>' : ''}<span class="small text-2 unit"></span><span class="xs line-note"></span></span>
         <span class="qty" role="group"><button class="btn" data-d="-1" aria-label="${t('qty_dec')}">${icon(it.qty === 1 ? 'trash' : 'minus', { className: 'icon-sm' })}</button><span class="qty-value">${it.qty}</span><button class="btn" data-d="1" aria-label="${t('qty_inc')}">${icon('plus', { className: 'icon-sm' })}</button></span>`;
       row.querySelector('.name').textContent = it.name;
+      if (it.options_label) row.querySelector('.opt-label').textContent = `${t('mode_custom')}: ${it.options_label}`;
       row.querySelector('.unit').textContent = formatSum(it.price);
       row.querySelectorAll('[data-d]').forEach((b) => b.addEventListener('click', () => {
         const cur = cart.getCart();
-        cart.setQty({ id: cur.restaurantId, name: cur.restaurantName }, { id: Number(pid), name: it.name, price: it.price, portion: it.portion, is_available: true }, it.qty + Number(b.dataset.d));
+        const product = { id: it.product_id ?? Number(String(key).split('~')[0]), name: it.name, price: it.price, portion: it.portion, image_path: it.image, is_available: true };
+        cart.setQty({ id: cur.restaurantId, name: cur.restaurantName }, product, it.qty + Number(b.dataset.d), { key, options: it.options, optionsLabel: it.options_label });
         draw();
       }));
       items.append(row);
@@ -65,11 +67,13 @@ export function renderCart(el, _p, _m, { go }) {
       const warnings = el.querySelector('#warnings');
       warnings.innerHTML = '';
       for (const line of q.lines) {
-        const row = el.querySelector(`.cart-row[data-pid="${line.product_id}"]`);
+        const lk = line.key ?? String(line.product_id);
+        const row = [...el.querySelectorAll('.cart-row')].find((x) => x.dataset.key === lk);
         if (!row) continue;
         const note = row.querySelector('.line-note');
-        const oldPrice = before.items[line.product_id]?.price;
+        const oldPrice = before.items[lk]?.price;
         if (line.status === 'removed') { note.textContent = t('removed_item'); note.className = 'xs danger-text line-note'; continue; }
+        if (line.status === 'options_changed') { note.textContent = t('options_changed_item'); note.className = 'xs danger-text line-note'; continue; }
         row.querySelector('.unit').textContent = formatSum(line.price);
         if (line.status === 'unavailable') { note.textContent = t('out_of_stock'); note.className = 'xs danger-text line-note'; }
         else if (oldPrice != null && oldPrice !== line.price) { note.textContent = t('price_changed', { old: formatSum(oldPrice), new: formatSum(line.price) }); note.className = 'xs line-note warn-text'; }

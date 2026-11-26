@@ -6,7 +6,7 @@ import * as v from '../lib/validate.js';
 import { freeDeliveryInfo } from '../../public/js/shared/geo-core.js';
 import { openNow } from './catalog.js';
 
-export function createCheckoutService(db, { geo, addresses, users, payments }) {
+export function createCheckoutService(db, { geo, addresses, users, payments, options }) {
   // Mavjud to'lov usullari: restoran yoqqan va ishlashga tayyor bo'lganlari.
   //  - karta o'tkazmasi: karta raqami va egasi kiritilgan bo'lsa;
   //  - onlayn: PAYMENT_PROVIDER_TOKEN va bot ulangan bo'lsa (aks holda umuman ko'rsatilmaydi).
@@ -38,24 +38,32 @@ export function createCheckoutService(db, { geo, addresses, users, payments }) {
       address = { id: a.id, text: a.text, lat: a.lat, lon: a.lon, entrance: a.entrance, floor: a.floor, apartment: a.apartment, comment: a.comment, label: a.label };
     }
 
-    const get = db.prepare('SELECT id, name_uz, price, is_available, is_deleted FROM products WHERE id = ? AND restaurant_id = ?');
+    const get = db.prepare('SELECT id, name_uz, price, is_available, is_deleted, cook_style, prep_seconds FROM products WHERE id = ? AND restaurant_id = ?');
+    const ing = options.ingredientsFor([...new Set(items.map((i) => Number(i?.product_id)).filter(Number.isInteger))]);
+    // Qatorlar taom + "Maxsus" sozlama bo'yicha birlashadi (bir xil sozlama — bitta qator). Narx faqat server hisobi.
     const merged = new Map();
     for (const it of items) {
       const pid = v.id(it.product_id, 'product_id');
       const qty = v.int(it.qty, 'qty', { min: 1, max: 99 });
-      merged.set(pid, Math.min(99, (merged.get(pid) || 0) + qty));
+      const p = get.get(pid, restaurantId);
+      if (!p || p.is_deleted) { merged.set(`x${it.key || pid}`, { key: it.key || String(pid), product_id: pid, qty, status: 'removed', name: null, price: null, line_total: 0 }); continue; }
+      const pl = options.priceLine(p, ing.get(pid) || [], it.options);
+      if (!pl.ok) { merged.set(`!${it.key || pl.key}`, { key: it.key || pl.key, product_id: pid, qty, status: 'options_changed', name: p.name_uz, price: null, line_total: 0 }); continue; }
+      const cur = merged.get(pl.key);
+      if (cur) { cur.qty = Math.min(99, cur.qty + qty); continue; }
+      merged.set(pl.key, { key: pl.key, product_id: pid, qty, status: p.is_available ? 'ok' : 'unavailable', name: p.name_uz, price: pl.unit_price,
+        options: pl.options, options_label: pl.options_label, snapshot: pl.snapshot, cook_style: p.cook_style, prep_seconds: p.prep_seconds });
     }
     const lines = [];
     let itemsTotal = 0;
-    for (const [pid, qty] of merged) {
-      const p = get.get(pid, restaurantId);
-      if (!p || p.is_deleted) { lines.push({ product_id: pid, qty, status: 'removed', name: null, price: null, line_total: 0 }); continue; }
-      if (!p.is_available) { lines.push({ product_id: pid, qty, status: 'unavailable', name: p.name_uz, price: p.price, line_total: 0 }); continue; }
-      lines.push({ product_id: pid, qty, status: 'ok', name: p.name_uz, price: p.price, line_total: p.price * qty });
-      itemsTotal += p.price * qty;
+    for (const l of merged.values()) {
+      l.line_total = l.status === 'ok' ? l.price * l.qty : 0;
+      itemsTotal += l.line_total;
+      lines.push(l);
     }
     if (lines.some((l) => l.status === 'removed')) problems.push('product_removed');
     if (lines.some((l) => l.status === 'unavailable')) problems.push('product_unavailable');
+    if (lines.some((l) => l.status === 'options_changed')) problems.push('options_changed');
     if (!openNow(r)) problems.push('restaurant_closed');
     if (itemsTotal === 0) problems.push('empty');
     if (itemsTotal < r.min_order) problems.push('below_min_order');
@@ -123,8 +131,11 @@ export function createCheckoutService(db, { geo, addresses, users, payments }) {
         comment, key, t, t,
       );
       const orderId = Number(res.lastInsertRowid);
-      const ins = db.prepare('INSERT INTO order_items (order_id, product_id, name, price, qty, line_total) VALUES (?, ?, ?, ?, ?, ?)');
-      for (const l of q.lines) ins.run(orderId, l.product_id, l.name, l.price, l.qty, l.line_total);
+      const ins = db.prepare(`INSERT INTO order_items (order_id, product_id, name, price, qty, line_total, options, cook_style, prep_seconds)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      for (const l of q.lines) {
+        ins.run(orderId, l.product_id, l.name, l.price, l.qty, l.line_total, l.snapshot?.length ? JSON.stringify(l.snapshot) : null, l.cook_style || null, l.prep_seconds || null);
+      }
       db.prepare(`INSERT INTO order_events (order_id, actor_id, actor_role, type, to_status, data, created_at)
         VALUES (?, ?, 'customer', 'created', ?, ?, ?)`).run(orderId, actor.id, status, JSON.stringify({ total: q.total, payment_method: method }), t);
       // Kontaktni keyingi safar uchun saqlaymiz.

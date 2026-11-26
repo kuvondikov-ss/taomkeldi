@@ -3,25 +3,69 @@
     "name": "Yaponamama",
     "description": "Sushi va rollar: Filadelfiya, Kaliforniya, maki va setlar.",
     "status": "active",
-    "cuisines": ["Sushi"],
+    "cuisines": [
+      "Sushi"
+    ],
     "cover": "assets/menus/yaponamama/cover.webp",
     "profile": {
       "address_text": "Jizzax shahri",
-      "lat": 40.1158, "lon": 67.8422,
-      "delivery_base": 8000, "delivery_base_m": 2000, "delivery_per_km": 2000, "delivery_radius_m": 10000
+      "lat": 40.1158,
+      "lon": 67.8422,
+      "delivery_base": 8000,
+      "delivery_base_m": 2000,
+      "delivery_per_km": 2000,
+      "delivery_radius_m": 10000
     }
   },
   "categories": [
     {
-      "name_uz": "Sushi setlari", "name_ru": "Сеты",
+      "name_uz": "Sushi setlari",
+      "name_ru": "Сеты",
       "items": [
         {
-          "name_uz": "Sushi seti «Kema»", "name_ru": "Сет «Лодка»", "portion": "1 set",
+          "name_uz": "Sushi seti «Kema»",
+          "name_ru": "Сет «Лодка»",
+          "portion": "1 set",
           "description_uz": "Filadelfiya, Kaliforniya, tuna va ugor rollari, losos maki; zanjabil, vasabi va soya sousi bilan.",
           "description_ru": "Филадельфия, Калифорния, роллы с тунцом и угрём, маки с лососем; имбирь, васаби и соевый соус.",
-          "image": "assets/menus/yaponamama/kema-seti.webp"
+          "image": "assets/menus/yaponamama/kema-seti.webp",
+          "price": 180000,
+          "cook_style": "sushi",
+          "ingredients": [
+            {
+              "name_uz": "Soya sousi",
+              "name_ru": "Соевый соус",
+              "unit": "ml",
+              "std_qty": 30,
+              "min_qty": 0,
+              "max_qty": 90,
+              "step": 30,
+              "step_price": 2000
+            },
+            {
+              "name_uz": "Vasabi",
+              "name_ru": "Васаби",
+              "unit": "g",
+              "std_qty": 10,
+              "min_qty": 0,
+              "max_qty": 30,
+              "step": 10,
+              "step_price": 2000
+            },
+            {
+              "name_uz": "Zanjabil",
+              "name_ru": "Имбирь",
+              "unit": "g",
+              "std_qty": 20,
+              "min_qty": 0,
+              "max_qty": 60,
+              "step": 20,
+              "step_price": 2000
+            }
+          ]
         }
       ]
     }
-  ]
+  ],
+  "_izoh": "TEST narxlar (2026-11-26): taxminiy, restoran tasdiqlagach panelda yoki shu faylda o‘zgartiring."
 }

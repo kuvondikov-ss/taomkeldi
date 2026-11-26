@@ -85,6 +85,11 @@ export function createBot({ config, services, logger = console, botInfo }) {
     // Guruhdagi "Panelda ochish" havolasi: faqat restoran xodimiga buyurtma paneli ochiladi.
     if (groupBot.isPanelLink(payload)) return groupBot.openOrderFromLink(ctx, payload, replyWithApp);
     if (payload?.startsWith(INVITE_PREFIX)) await handleInvite(ctx, payload);
+    if (!payload && !ctx.user.lang) {
+      return ctx.reply('🇺🇿 Tilni tanlang / 🇷🇺 Выберите язык', {
+        reply_markup: new InlineKeyboard().text('🇺🇿 O‘zbekcha', 'startlang:uz').text('🇷🇺 Русский', 'startlang:ru'),
+      });
+    }
     // Boshqa payload'lar (masalan, ommaviy r_<id> reklama havolasi) hech qanday rol bermaydi.
     await ctx.reply(ctx.t('start'), { ...html, reply_markup: mainKeyboard(ctx) });
   });
@@ -107,6 +112,15 @@ export function createBot({ config, services, logger = console, botInfo }) {
     return new InlineKeyboard().text('O‘zbekcha', 'lang:uz').text('Русский', 'lang:ru');
   }
   const showHelp = (ctx) => ctx.reply(ctx.t('help'), { ...html, reply_markup: isPrivate(ctx) ? langKeyboard() : undefined });
+
+  bot.callbackQuery(/^startlang:(uz|ru)$/, async (ctx) => {
+    if (!isPrivate(ctx)) return ctx.answerCallbackQuery();
+    ctx.lang = ctx.match[1];
+    ctx.user = users.setLang(ctx.user.id, ctx.lang);
+    await ctx.answerCallbackQuery();
+    await ctx.editMessageReplyMarkup({ reply_markup: new InlineKeyboard() });
+    return ctx.reply(ctx.t('start'), { ...html, reply_markup: mainKeyboard(ctx) });
+  });
 
   bot.callbackQuery(/^lang:(uz|ru)$/, async (ctx) => {
     const lang = ctx.match[1];

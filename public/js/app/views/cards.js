@@ -43,7 +43,11 @@ export function restaurantCard(r, { go, onFavoriteChange } = {}) {
     </button>`;
   el.querySelector('.name').textContent = r.name;
   el.querySelector('.cuisines').textContent = r.cuisines.map(cuisineName).join(', ');
-  el.querySelector('.card-open').addEventListener('click', () => go?.(`r/${r.id}`));
+  el.style.cursor = 'pointer';
+  el.addEventListener('click', (event) => {
+    if (event.target.closest('.fav-btn')) return;
+    go?.(`r/${r.id}`);
+  });
   const fav = el.querySelector('.fav-btn');
   fav.addEventListener('click', async () => {
     const on = fav.getAttribute('aria-pressed') !== 'true';

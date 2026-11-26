@@ -7,6 +7,26 @@ import * as v from '../lib/validate.js';
 
 const CACHE_MAX = 500;
 
+// Qisqa, o'qiladigan manzil: "ko'cha uy, mahalla, shahar" (pochta indeksi, mamlakat, viloyat — olib tashlanadi).
+const DROP = /^(\d{5,6}|o[ʻ'‘’]?zbekiston|uzbekistan|узбекистан|.*viloyati|.*область|.*tumani|.*район)$/i;
+export function shortAddress(r) {
+  const a = r?.address;
+  if (a) {
+    const street = a.road || a.pedestrian || a.footway || a.street;
+    const parts = [
+      street ? (a.house_number ? `${street} ${a.house_number}` : street) : (a.amenity || a.building || null),
+      a.neighbourhood || a.quarter || a.suburb || a.residential || null,
+      a.city || a.town || a.village || a.hamlet || null,
+    ].filter(Boolean);
+    const uniq = [...new Set(parts)];
+    if (uniq.length) return uniq.join(', ');
+  }
+  const name = r?.display_name;
+  if (!name) return null;
+  const parts = name.split(',').map((x) => x.trim()).filter((x) => x && !DROP.test(x));
+  return [...new Set(parts)].slice(0, 3).join(', ') || name;
+}
+
 export function createGeocoderService(config, geo, { fetchImpl = globalThis.fetch } = {}) {
   const cache = new Map();
   let chain = Promise.resolve();
@@ -52,18 +72,18 @@ export function createGeocoderService(config, geo, { fetchImpl = globalThis.fetc
     const [minLat, maxLat, minLon, maxLon] = geo.region.properties.bbox;
     const rows = await request('/search', {
       q: query, countrycodes: 'uz', limit: '10', bounded: '1',
-      viewbox: `${minLon},${maxLat},${maxLon},${minLat}`,
+      viewbox: `${minLon},${maxLat},${maxLon},${minLat}`, addressdetails: '1',
     }, lang);
     return (Array.isArray(rows) ? rows : [])
-      .map((r) => ({ text: r.display_name, lat: Number(r.lat), lon: Number(r.lon) }))
+      .map((r) => ({ text: shortAddress(r), lat: Number(r.lat), lon: Number(r.lon) }))
       .filter((r) => geo.isInServiceArea(r.lat, r.lon))
       .slice(0, 6);
   }
 
   async function reverse(latIn, lonIn, lang = 'uz') {
     const { lat, lon } = geo.requireServiceArea(latIn, lonIn);
-    const r = await request('/reverse', { lat: lat.toFixed(5), lon: lon.toFixed(5), zoom: '18', addressdetails: '0' }, lang);
-    return { text: r?.display_name || null, lat, lon };
+    const r = await request('/reverse', { lat: lat.toFixed(5), lon: lon.toFixed(5), zoom: '18', addressdetails: '1' }, lang);
+    return { text: shortAddress(r), lat, lon };
   }
 
   return { search, reverse };

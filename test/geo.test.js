@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { setup, seed, call } from './helpers.js';
 import { pointInGeometry, distanceMeters, deliveryFee } from '../public/js/shared/geo-core.js';
+import { shortAddress } from '../src/services/geocoder.js';
 
 const REGION = JSON.parse(fs.readFileSync('public/geo/jizzax.json', 'utf8'));
 const inside = (lat, lon) => pointInGeometry(REGION.geometry, lat, lon);
@@ -210,4 +211,11 @@ describe('Geokoder (server proksi)', () => {
     assert.equal(r.status, 503);
     await off.close();
   });
+});
+
+test('manzil matni qisqa: ko\'cha uy, mahalla, shahar (indeks, viloyat, mamlakatsiz)', () => {
+  assert.equal(shortAddress({ address: { road: 'Sharof Rashidov ko‘chasi', house_number: '12', neighbourhood: 'Obod', city: 'Jizzax', state: 'Jizzax viloyati', postcode: '130100', country: 'Oʻzbekiston' } }), 'Sharof Rashidov ko‘chasi 12, Obod, Jizzax');
+  assert.equal(shortAddress({ display_name: 'Тукимачилар улица, Махалля Обод, S2, Jizzax, Jizzax viloyati, 130100, Oʻzbekiston' }), 'Тукимачилар улица, Махалля Обод, S2');
+  assert.equal(shortAddress({ address: {}, display_name: 'Jizzax, Uy 5' }), 'Jizzax, Uy 5');
+  assert.equal(shortAddress(null), null);
 });

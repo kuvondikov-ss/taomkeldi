@@ -9,6 +9,7 @@ import { confirmDialog, toast, setLoading } from '../../ui/components.js';
 import { stateBlock } from './cards.js';
 import { state, currentAddress } from '../state.js';
 import * as cart from '../cart.js';
+import { createMap } from '../../ui/map.js';
 
 const STEPS = {
   delivery: ['new', 'accepted', 'ready', 'on_way', 'delivered'],
@@ -34,6 +35,7 @@ export async function renderOrder(el, _p, m, { go }) {
   const id = Number(m[1]);
   let timer;
   let map = null;
+  let mapApi = null;
   let layers = null;
   let fitted = false;
 
@@ -83,8 +85,8 @@ export async function renderOrder(el, _p, m, { go }) {
   // ---------- Xarita va kuryer ----------
   function ensureMap() {
     if (map || !window.L || !state.config?.map) return map;
-    map = window.L.map(el.querySelector('#track-map'), { zoomControl: false, attributionControl: true });
-    window.L.tileLayer(state.config.map.tileUrl, { attribution: state.config.map.attribution, maxZoom: 19 }).addTo(map);
+    mapApi = createMap(el.querySelector('#track-map'), { center: [40.1158, 67.8422], zoom: 13, tileUrl: state.config.map.tileUrl, attribution: state.config.map.attribution });
+    map = mapApi.map;
     layers = window.L.layerGroup().addTo(map);
     return map;
   }
@@ -120,7 +122,7 @@ export async function renderOrder(el, _p, m, { go }) {
       else map.fitBounds(pts, { padding: [36, 36], animate: false, maxZoom: 16 });
       fitted = !!loc; // kuryer paydo bo'lgach bir marta moslashtiramiz, keyin foydalanuvchi o'zi suradi
     }
-    setTimeout(() => map.invalidateSize(), 0);
+    mapApi.refresh();
   }
 
   // ---------- Baholash va qayta buyurtma ----------
@@ -358,5 +360,5 @@ export async function renderOrder(el, _p, m, { go }) {
   }
 
   await load();
-  return () => { clearTimeout(timer); map?.remove(); };
+  return () => { clearTimeout(timer); mapApi?.destroy(); };
 }

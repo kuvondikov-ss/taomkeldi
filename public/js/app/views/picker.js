@@ -5,6 +5,7 @@ import { get, ApiError } from '../api.js';
 import { t } from '../i18n.js';
 import { pointInGeometry } from '../../shared/geo-core.js';
 import { icon } from '../../ui/icons.js';
+import { createMap } from '../../ui/map.js';
 
 const JIZZAX_CITY = [40.1158, 67.8422];
 
@@ -61,8 +62,7 @@ export function renderPicker(el, params, _m, { go }) {
   const start = state.draft ? [state.draft.lat, state.draft.lon]
     : editing ? [editing.lat, editing.lon]
       : JIZZAX_CITY;
-  const map = window.L.map($('#map'), { zoomControl: false, attributionControl: true }).setView(start, 15);
-  window.L.tileLayer(state.config.map.tileUrl, { attribution: state.config.map.attribution, maxZoom: 19 }).addTo(map);
+  const { map, refresh, destroy } = createMap($('#map'), { center: start, zoom: 15, tileUrl: state.config.map.tileUrl, attribution: state.config.map.attribution });
   const regionLayer = window.L.geoJSON(state.region, {
     interactive: false,
     style: { color: cssVar('--brand'), weight: 2, dashArray: '6 6', fill: false },
@@ -108,13 +108,15 @@ export function renderPicker(el, params, _m, { go }) {
   }
   map.on('moveend', onMove);
   onMove();
+  // Xaritaga bosilgan joyga pin ko'chadi (faqat surish emas).
+  map.on('click', (e) => map.panTo(e.latlng, { animate: true, duration: 0.25 }));
 
   // Pin xaritaning ko'rinadigan qismi markazida tursin (pastki panel balandligi o'zgaradi).
   const picker = $('.picker');
   const bottom = $('.picker-bottom');
   const ro = new ResizeObserver(() => {
     picker.style.setProperty('--picker-bottom-h', `${bottom.offsetHeight}px`);
-    map.invalidateSize();
+    refresh();
   });
   ro.observe(bottom);
 
@@ -176,5 +178,5 @@ export function renderPicker(el, params, _m, { go }) {
     go(target === 'new' ? 'address/new' : `address/${target}/edit`);
   });
 
-  return () => { clearTimeout(timer); ro.disconnect(); map.remove(); };
+  return () => { clearTimeout(timer); ro.disconnect(); destroy(); };
 }

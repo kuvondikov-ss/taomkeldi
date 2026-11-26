@@ -1,7 +1,7 @@
 // Restoran paneli: restoranlar ro'yxati, bosh ekran (bo'limlar + tayyorlik ro'yxati) va bo'limlar.
 import { state } from '../state.js';
 import { get, ApiError } from '../api.js';
-import { t } from '../i18n.js';
+import { t, formatSum, getLang } from '../i18n.js';
 import { icon } from '../../ui/icons.js';
 import { stateBlock } from './cards.js';
 import { renderPanelOrders } from './panel-orders.js';
@@ -54,14 +54,18 @@ export function renderPanelList(el, _p, _m, { go }) {
 export async function renderPanel(el, _p, m) {
   const rid = Number(m[1]);
   el.innerHTML = '<main class="page stack"><div class="skeleton skeleton-title"></div></main>';
-  let r;
+  let r, report;
   try {
     r = await get(`/panel/restaurants/${rid}/readiness`);
+    report = await get(`/panel/restaurants/${rid}/report`).then(x => x.report).catch(() => null);
   } catch (e) {
     el.innerHTML = '<main class="page"></main>';
     el.firstChild.append(stateBlock({ iconName: 'info', error: true, title: e instanceof ApiError && e.message ? e.message : t('offline') }));
     return;
   }
+  const ru = getLang() === 'ru';
+  const metric = (label, value) => `<div class="metric"><span class="metric-value">${value}</span><span class="xs text-2">${label}</span></div>`;
+  const summary = report ? `<section class="card"><div class="card-body stack"><h2 class="h3">${t('rep_today')}</h2><div class="metrics">${metric(t('rep_orders'), report.today.orders)}${metric(t('rep_delivered'), report.today.delivered)}${metric(t('rep_revenue'), formatSum(report.today.revenue))}${metric(ru ? 'Выручка за блюда' : 'Taomlar tushumi', formatSum(report.today.food_revenue))}${metric(t('fin_delivery_fees'), formatSum(report.today.delivery_revenue))}${metric(ru ? 'Блюд в меню' : 'Menyudagi taomlar', report.counts.products)}${metric(ru ? 'Доступно блюд' : 'Sotuvdagi taomlar', report.counts.available)}${metric(ru ? 'Чистая прибыль' : 'Sof foyda', '—')}</div><p class="xs text-2">${ru ? 'Для расчёта прибыли нужны данные о расходах.' : 'Sof foydani hisoblash uchun xarajatlar ma’lumoti kerak.'}</p><a class="btn btn-secondary" href="#/panel/${rid}/report">${t('s_report')}</a></div></section>` : '';
   const done = r.items.filter((i) => i.done).length;
   el.innerHTML = `
     <main class="page stack">
@@ -70,6 +74,7 @@ export async function renderPanel(el, _p, m) {
         <span class="badge ${r.restaurant.status === 'active' ? 'badge-success' : 'badge-danger'}">${t(`rs_${r.restaurant.status}`)}</span>
       </div>
       ${r.restaurant.status_reason && r.restaurant.status !== 'active' ? '<div class="alert alert-danger"><span class="reason"></span></div>' : ''}
+      ${summary}
       <section class="stack">
         <nav class="section-grid">${SECTIONS.map(([k, ic]) => `<a class="section-tile" href="#/panel/${rid}/${k}">${icon(ic)}<span>${t(`s_${k}`)}</span></a>`).join('')}</nav>
         <div class="row" style="justify-content:space-between"><h2 class="h3">${t('readiness_title')}</h2><span class="small text-2">${done}/${r.items.length}</span></div>

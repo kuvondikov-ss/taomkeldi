@@ -34,9 +34,8 @@ export async function renderPanelSection(el, params, m, { go }) {
 
 export function renderPanelList(el, _p, _m, { go }) {
   const staff = state.me.roles.staff;
-  el.innerHTML = `<main class="page stack"><h1 class="h2">${t('panel_title')}</h1><div class="list" id="list"></div>
-    <button class="btn btn-secondary" id="apply">${icon('plus', { className: 'icon-sm' })}${t('connect_restaurant')}</button></main>`;
-  el.querySelector('#apply').addEventListener('click', () => go('apply'));
+  // Restoranni faqat platforma admini qo'shadi (Admin → Yangi restoran) — bu yerda "ulash" tugmasi yo'q.
+  el.innerHTML = `<main class="page stack"><h1 class="h2">${t('panel_title')}</h1><div class="list" id="list"></div></main>`;
   const list = el.querySelector('#list');
   if (!staff.length) {
     list.replaceWith(stateBlock({ iconName: 'store', title: t('no_restaurants_panel') }));

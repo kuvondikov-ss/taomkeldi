@@ -14,13 +14,15 @@ export async function renderAdmin(el, params, _m, { go }) {
     el.firstChild.append(stateBlock({ iconName: 'info', title: t('no_access') || '—' }));
     return;
   }
-  const tab = ['applications', 'restaurants', 'new'].includes(params.get('tab')) ? params.get('tab') : 'applications';
+  // Restoranni faqat admin qo'shadi ("Yangi restoran"). "Arizalar" — bazada qolgan eski arizalar uchun.
+  const TABS = ['finance', 'restaurants', 'new', 'applications'];
+  const tab = TABS.includes(params.get('tab')) ? params.get('tab') : 'finance';
   el.innerHTML = `
-    <main class="page stack">
+    <main class="page stack admin">
       <h1 class="h2">${t('admin_title')}</h1>
       <div class="metrics" id="metrics"><div class="skeleton skeleton-text"></div></div>
       <div class="tabs" role="tablist">
-        ${['applications', 'restaurants', 'new'].map((k) => `<button class="tab" role="tab" data-tab="${k}" aria-selected="${tab === k}">${t(`tab_${k}`)}</button>`).join('')}
+        ${TABS.map((k) => `<button class="tab" role="tab" data-tab="${k}" aria-selected="${tab === k}">${t(`tab_${k}`)}</button>`).join('')}
       </div>
       <div id="body" class="stack"></div>
       <button class="btn btn-ghost" id="demo">${icon('trash', { className: 'icon-sm' })}${t('demo_delete')}</button>
@@ -57,6 +59,7 @@ export async function renderAdmin(el, params, _m, { go }) {
   });
 
   if (tab === 'new') return drawNew(body, go);
+  if (tab === 'finance') return drawFinance(body, params, go);
 
   const status = tab === 'applications' ? 'pending' : undefined;
   let list;
@@ -128,7 +131,67 @@ export async function renderAdmin(el, params, _m, { go }) {
   }
 }
 
-// --- B yo'l: admin restoran yaratadi, keyin egasiga havola beradi ---
+// --- Moliya: barcha restoranlar bo'yicha pul harakati (davr: bugun / 7 / 30 kun) ---
+const PERIODS = ['today', 'week', 'month'];
+async function drawFinance(body, params, go) {
+  const period = PERIODS.includes(params.get('period')) ? params.get('period') : 'week';
+  body.innerHTML = `<div class="row chip-row" role="group">${PERIODS.map((p) => `<button class="chip" type="button" data-period="${p}" aria-pressed="${p === period}">${t(`fin_${p}`)}</button>`).join('')}</div>
+    <div id="fin" class="stack" aria-busy="true"><div class="skeleton skeleton-media" style="aspect-ratio:16/5"></div></div>`;
+  body.querySelectorAll('[data-period]').forEach((b) => b.addEventListener('click', () => go(`admin?tab=finance&period=${b.dataset.period}`, { replace: true })));
+  const box = body.querySelector('#fin');
+  let f;
+  try { f = (await get(`/admin/finance?period=${period}`)).finance; } catch (e) {
+    box.removeAttribute('aria-busy');
+    box.innerHTML = '';
+    box.append(stateBlock({ iconName: 'wifiOff', error: true, title: errText(e) }));
+    return;
+  }
+  const T = f.totals;
+  const line = (k, val, cls = '') => `<div class="row sum-row small ${cls}"><span>${t(k)}</span><span>${val}</span></div>`;
+  const max = Math.max(1, ...f.days.map((d) => d.revenue));
+  box.removeAttribute('aria-busy');
+  box.innerHTML = `
+    <div class="alert">${icon('info')}<span>${t('fin_note')}</span></div>
+    <div class="metrics fin-metrics">
+      <div class="metric"><span class="metric-value">${formatSum(T.revenue)}</span><span class="xs text-2">${t('fin_revenue')}</span></div>
+      <div class="metric"><span class="metric-value">${T.delivered} / ${T.orders}</span><span class="xs text-2">${t('fin_delivered')} / ${t('fin_orders')}</span></div>
+      <div class="metric"><span class="metric-value">${formatSum(T.average)}</span><span class="xs text-2">${t('fin_average')}</span></div>
+      <div class="metric"><span class="metric-value">${formatSum(T.delivery_fees)}</span><span class="xs text-2">${t('fin_delivery_fees')}</span></div>
+    </div>
+    <div class="card"><div class="card-body stack" style="gap:var(--sp-2)">
+      ${line('fin_items', formatSum(T.items))}${line('fin_delivery_fees', formatSum(T.delivery_fees))}
+      ${line('fin_cash', formatSum(T.cash))}${line('fin_prepaid', formatSum(T.prepaid))}
+      ${line('fin_awaiting', formatSum(T.awaiting_confirm), T.awaiting_confirm ? 'warn-text' : 'text-2')}
+      ${line('fin_refunded', formatSum(T.refunded), 'text-2')}
+      ${line('fin_in_progress', T.in_progress, 'text-2')}${line('fin_cancelled', T.cancelled, 'text-2')}
+    </div></div>
+    ${f.days.length > 1 ? `<div class="card"><div class="card-body stack"><h3 class="h3">${t('fin_by_day')}</h3>
+      <div class="bars">${f.days.map((d) => `<div class="bar-row"><span class="xs text-2">${d.date.slice(5)}</span><span class="bar"><span style="width:${(d.revenue / max) * 100}%"></span></span><span class="xs">${formatSum(d.revenue)}</span></div>`).join('')}</div>
+    </div></div>` : ''}
+    <h2 class="h3">${t('fin_by_restaurant')}</h2>
+    <div class="stack fin-list" id="fin-list"></div>`;
+  const list = box.querySelector('#fin-list');
+  if (!f.restaurants.length) list.append(stateBlock({ iconName: 'store', title: t('no_items') }));
+  for (const r of f.restaurants) {
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.innerHTML = `<div class="card-body stack" style="gap:var(--sp-2)">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <span class="h3 name"></span><span class="price">${formatSum(r.revenue)}</span>
+      </div>
+      ${r.orders ? `<span class="small text-2">${t('fin_delivered')}: ${r.delivered} / ${r.orders} · ${t('fin_average')}: ${formatSum(r.average)}</span>
+        ${line('fin_cash', formatSum(r.cash))}${line('fin_prepaid', formatSum(r.prepaid))}${line('fin_delivery_fees', formatSum(r.delivery_fees))}
+        ${r.awaiting_confirm ? line('fin_awaiting', formatSum(r.awaiting_confirm), 'warn-text') : ''}${r.refunded ? line('fin_refunded', formatSum(r.refunded), 'text-2') : ''}
+        ${r.cancelled ? line('fin_cancelled', r.cancelled, 'text-2') : ''}` : `<span class="small text-2">${t('fin_no_orders')}</span>`}
+      <button class="btn btn-ghost small" type="button">${icon('chart', { className: 'icon-sm' })}${t('fin_report')}</button>
+    </div>`;
+    card.querySelector('.name').textContent = `${r.name}${r.status === 'blocked' ? ` (${t('fin_blocked')})` : ''}`;
+    card.querySelector('button').addEventListener('click', () => go(`panel/${r.id}/report`));
+    list.append(card);
+  }
+}
+
+// --- Admin restoran yaratadi, keyin egasiga havola beradi (yagona yo'l) ---
 function drawNew(body, go) {
   body.innerHTML = `<form class="stack" id="new" novalidate>
     <div class="field"><label class="label" for="n-name">${t('f_rest_name')}</label><input class="input" id="n-name" name="name" maxlength="120" required></div>

@@ -273,6 +273,13 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - To'liq ekran: telefonda (android/ios, Bot API 8.0+) `requestFullscreen()`. Kontent Telegram tugmalari ostiga tushmaydi: `.page` yuqori chekkasi, yopishqoq tablar, pastdan ochiladigan oyna va xabarlar `--safe-top` bo'yicha; yuqorida fon chizig'i (aylantirilgan kontent tugmalar ostidan ko'rinmaydi). Kompyuterda oddiy rejim.
 - Barcha sahifalar brauzerda ochib ko'rildi — JS xatosi yo'q; production loglarida yangi xato yo'q.
 
+## Restoranni faqat admin qo'shadi; admin moliya hisoboti (2026-11-26)
+- Foydalanuvchi arizasi yopildi: botda "Restoran ulash" tugmasi va ariza suhbati, Mini App'da "Restoranni ulash" (profil, panel) va ariza sahifasi olib tashlandi. `POST /api/applications` → 403 `admin_only` (eski Mini App ham aniq javob oladi); eski klaviaturadagi tugma — "faqat platforma administratori qo'shadi" javobi va yangi klaviatura.
+- Restoranni qo'shish yagona yo'li: Admin → **Yangi restoran** → egasiga bir martalik havola. Bazada qolgan eski arizalar ("Arizalar" tabi) tasdiqlanadi/rad etiladi.
+- Admin → **Moliya** (birinchi tab): bugun / 7 kun / 30 kun bo'yicha barcha restoranlar — tushum (yalpi), taomlar va yetkazish haqi, naqd va karta/onlayn, to'lov tasdig'i kutilayotgan, qaytarilgan, bekor qilingan, jarayondagi; kunlar bo'yicha grafik; har restoranda "Batafsil hisobot" (restoran paneli hisoboti). `GET /api/admin/finance?period=today|week|month` — faqat platforma admini (ega/menejer — 403).
+- Tuzatildi: admin ko'rsatkichlaridagi "bugun" server vaqti (UTC) bo'yicha hisoblanardi — endi Toshkent kuni bo'yicha.
+- Sinov: 302/302 (yangi: ariza yopilgani, faqat admin yaratadi, moliya hisob-kitobi, davr va Toshkent kuni; bot tugmasi).
+
 ## Ochiq savollar
 - Bot avatari tayyor: `public/brand/taomkeldi-avatar-512.png` — @BotFather → /setuserpic orqali foydalanuvchi o'zi qo'yadi.
 - "Aloqa" ma'lumoti (oddiy botdagi `@delivo_uz`) — Taomkeldi uchun to'g'ri aloqa manzili.

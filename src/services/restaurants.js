@@ -108,26 +108,6 @@ export function createRestaurantService(db, access, geo) {
 
   // Bot orqali restoran arizasi. Bitta foydalanuvchida bir vaqtda bitta ko'rib chiqilayotgan ariza.
   // Natija: { restaurant, created: boolean }. Tasdiqlash va egalik — 10-bosqich.
-  function createApplication(user, data) {
-    const name = v.str(data.name, 'name', { min: 2, max: 120 });
-    const phone = v.str(data.phone, 'phone', { max: 32 });
-    if (!/^\+?\d{9,15}$/.test(phone.replace(/[\s()-]/g, ''))) throw new AppError('VALIDATION', { details: { field: 'phone' } });
-    return tx(db, () => {
-      const pending = db.prepare("SELECT * FROM restaurants WHERE applicant_id = ? AND status = 'pending' ORDER BY id DESC LIMIT 1").get(user.id);
-      if (pending) return { restaurant: pending, created: false };
-      const t = now();
-      const res = db.prepare(`
-        INSERT INTO restaurants (name, phone, status, applicant_id, created_by, created_at, updated_at)
-        VALUES (?, ?, 'pending', ?, ?, ?, ?)
-      `).run(name, phone, user.id, user.id, t, t);
-      return { restaurant: getRaw(Number(res.lastInsertRowid)), created: true };
-    });
-  }
-
-  function pendingApplicationOf(user) {
-    return db.prepare("SELECT * FROM restaurants WHERE applicant_id = ? AND status = 'pending' ORDER BY id DESC LIMIT 1").get(user.id) || null;
-  }
-
   function statusCounts(actor) {
     access.requirePlatformAdmin(actor);
     const counts = { pending: 0, active: 0, blocked: 0, rejected: 0 };
@@ -218,7 +198,7 @@ export function createRestaurantService(db, access, geo) {
 
   return {
     getRaw, getForPanel, create, listAll, updatePayment, updatePaymentMethods,
-    createApplication, pendingApplicationOf, statusCounts,
+    statusCounts,
     listForPoint, getPublic, assertCanDeliver, updateLocation,
     addStaff, addCourier, addCategory, addProduct, setProductPrice,
     tx: (fn) => tx(db, fn),

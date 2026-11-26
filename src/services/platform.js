@@ -1,54 +1,21 @@
-// Platforma boshqaruvi va restoranlarni ulash.
-//  A) Restoran egasi ariza yuboradi (nom, telefon, tavsif, Jizzaxdagi nuqta, oshxona turlari) → admin ko'rib chiqadi.
-//  B) Admin restoran yaratadi → egasiga bir martalik taklif havolasi (services/invites.js).
-// Qaror va sabab egasiga bot orqali yuboriladi.
+// Platforma boshqaruvi. Restoranni FAQAT platforma admini qo'shadi (restaurants.create) → egasiga bir martalik
+// taklif havolasi (services/invites.js). Foydalanuvchi arizasi yopilgan (2026-11-26); bazada qolgan eski
+// arizalar (status 'pending') admin tomonidan tasdiqlanadi yoki rad etiladi — qaror egasiga bot orqali yuboriladi.
+// Moliya hisoboti (finance) — barcha restoranlar bo'yicha, faqat platforma admini uchun.
 import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
+
+const DAY_MS = 86400000;
+const TZ_MS = 5 * 3600000; // Asia/Tashkent (UTC+5, yozgi vaqt yo'q)
+const dayStartUtc = (ms) => Math.floor((ms + TZ_MS) / DAY_MS) * DAY_MS - TZ_MS;
+const FINANCE_PERIODS = { today: 1, week: 7, month: 30 };
 
 export function createPlatformService(db, { access, restaurants, geo, catalog, notify, users, outbox }) {
   const getR = (id) => db.prepare('SELECT * FROM restaurants WHERE id = ?').get(id);
   const logEvent = (rid, actorId, type, from, to, reason) => db.prepare(`
     INSERT INTO restaurant_events (restaurant_id, actor_id, type, from_status, to_status, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run(rid, actorId, type, from, to, reason ?? null, now());
-
-  // --- A) Ariza (Mini App to'liq shakli) ---
-  function apply(actor, data) {
-    const name = v.str(data.name, 'name', { min: 2, max: 120 });
-    const phone = v.phoneUz(data.phone, 'phone');
-    const description = v.str(data.description, 'description', { optional: true, max: 1000 });
-    const addressText = v.str(data.address_text, 'address_text', { optional: true, max: 300 });
-    const { lat, lon } = geo.requireServiceArea(data.lat, data.lon); // nuqta Jizzax viloyati ichida
-    const cuisineIds = Array.isArray(data.cuisine_ids) ? [...new Set(data.cuisine_ids.map((x) => v.id(x, 'cuisine_ids')))] : [];
-    if (cuisineIds.length > 5) throw new AppError('VALIDATION', { details: { field: 'cuisine_ids' } });
-    if (cuisineIds.length) {
-      const known = db.prepare(`SELECT COUNT(*) AS n FROM cuisines WHERE id IN (${cuisineIds.map(() => '?').join(',')})`).get(...cuisineIds).n;
-      if (known !== cuisineIds.length) throw new AppError('VALIDATION', { details: { field: 'cuisine_ids' } });
-    }
-    return tx(db, () => {
-      const pending = db.prepare("SELECT id FROM restaurants WHERE applicant_id = ? AND status = 'pending'").get(actor.id);
-      if (pending) throw new AppError('CONFLICT', { details: { reason: 'application_exists', restaurant_id: pending.id } });
-      const t = now();
-      const res = db.prepare(`
-        INSERT INTO restaurants (name, phone, description, address_text, lat, lon, status, applicant_id, created_by, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
-      `).run(name, phone, description, addressText, lat, lon, actor.id, actor.id, t, t);
-      const id = Number(res.lastInsertRowid);
-      const ins = db.prepare('INSERT INTO restaurant_cuisines (restaurant_id, cuisine_id) VALUES (?, ?)');
-      for (const c of cuisineIds) ins.run(id, c);
-      logEvent(id, actor.id, 'applied', null, 'pending');
-      return getR(id);
-    });
-  }
-
-  function myApplications(actor) {
-    return db.prepare(`SELECT id, name, status, status_reason, created_at, updated_at FROM restaurants WHERE applicant_id = ? ORDER BY id DESC`).all(actor.id);
-  }
-
-  // Admin uchun bildirishnoma: ariza (bot yoki Mini App orqali) kelganda.
-  async function notifyAdminsAboutApplication(r) {
-    for (const id of access.platformAdminIds()) await notify.send(id, 'apply_admin', { id: r.id, name: r.name, phone: r.phone, user: r.applicant_id });
-  }
 
   // --- Qarorlar ---
   function changeStatus(actor, restaurantId, { from, to, type, reason, requireReason }) {
@@ -114,15 +81,13 @@ export function createPlatformService(db, { access, restaurants, geo, catalog, n
   function overview(actor, at = now()) {
     access.requirePlatformAdmin(actor);
     const counts = restaurants.statusCounts(actor);
-    const dayStart = new Date(at);
-    dayStart.setHours(0, 0, 0, 0);
     const today = db.prepare(`
       SELECT COUNT(*) AS orders,
              SUM(CASE WHEN status = 'delivered' THEN total ELSE 0 END) AS delivered_total,
              SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
              SUM(CASE WHEN status NOT IN ('delivered','cancelled') THEN 1 ELSE 0 END) AS in_progress
       FROM orders WHERE created_at >= ?
-    `).get(dayStart.getTime());
+    `).get(dayStartUtc(at)); // Toshkent vaqti bo'yicha "bugun" (server UTC'da ishlaydi)
     return {
       restaurants: counts,
       today: { orders: today.orders, delivered_total: today.delivered_total || 0, cancelled: today.cancelled || 0, in_progress: today.in_progress || 0 },
@@ -131,6 +96,52 @@ export function createPlatformService(db, { access, restaurants, geo, catalog, n
       // Bot xabarlari navbati: kutilayotgan va yuborilmay qolgan xabarlar (Telegram ishlamasa ham buyurtmalar panelda).
       notifications: outbox ? outbox.stats() : null,
     };
+  }
+
+  // --- Moliya: barcha restoranlar bo'yicha pul harakati (faqat platforma admini) ---
+  // Davr: bugun / 7 kun / 30 kun (Toshkent kuni bo'yicha, buyurtma yaratilgan vaqt). Tushum — yetkazilgan
+  // buyurtmalar jami (yalpi, xarajatlarsiz): taomlar + yetkazish; naqd va oldindan to'langan (karta/onlayn) alohida.
+  // "Tasdiq kutilmoqda" — mijoz "To'ladim" degan, restoran hali tasdiqlamagan o'tkazmalar; "Qaytarilgan" — refund.
+  function finance(actor, { period = 'week' } = {}, at = now()) {
+    access.requirePlatformAdmin(actor);
+    const days = FINANCE_PERIODS[period];
+    if (!days) throw new AppError('VALIDATION', { details: { field: 'period' } });
+    const to = dayStartUtc(at) + DAY_MS;
+    const from = to - days * DAY_MS;
+    const rows = db.prepare(`
+      SELECT r.id, r.name, r.status, r.is_demo,
+        COUNT(o.id) AS orders,
+        SUM(CASE WHEN o.status = 'delivered' THEN 1 ELSE 0 END) AS delivered,
+        SUM(CASE WHEN o.status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
+        SUM(CASE WHEN o.status NOT IN ('delivered','cancelled') THEN 1 ELSE 0 END) AS in_progress,
+        COALESCE(SUM(CASE WHEN o.status = 'delivered' THEN o.total END), 0) AS revenue,
+        COALESCE(SUM(CASE WHEN o.status = 'delivered' THEN o.items_total END), 0) AS items,
+        COALESCE(SUM(CASE WHEN o.status = 'delivered' THEN o.delivery_fee END), 0) AS delivery_fees,
+        COALESCE(SUM(CASE WHEN o.status = 'delivered' AND o.payment_method = 'cash' THEN o.total END), 0) AS cash,
+        COALESCE(SUM(CASE WHEN o.status = 'delivered' AND o.payment_method <> 'cash' THEN o.total END), 0) AS prepaid,
+        COALESCE(SUM(CASE WHEN o.payment_status = 'claimed' THEN o.total END), 0) AS awaiting_confirm,
+        COALESCE(SUM(CASE WHEN o.payment_status = 'refunded' THEN o.total END), 0) AS refunded
+      FROM restaurants r
+      LEFT JOIN orders o ON o.restaurant_id = r.id AND o.created_at >= ? AND o.created_at < ?
+      WHERE r.status IN ('active', 'blocked')
+      GROUP BY r.id
+      ORDER BY revenue DESC, orders DESC, r.id
+    `).all(from, to).map((r) => ({
+      ...r, is_demo: r.is_demo === 1, delivered: r.delivered || 0, cancelled: r.cancelled || 0, in_progress: r.in_progress || 0,
+      average: r.delivered ? Math.round(r.revenue / r.delivered) : 0,
+    }));
+    const SUM = ['orders', 'delivered', 'cancelled', 'in_progress', 'revenue', 'items', 'delivery_fees', 'cash', 'prepaid', 'awaiting_confirm', 'refunded'];
+    const totals = Object.fromEntries(SUM.map((k) => [k, rows.reduce((s, r) => s + (r[k] || 0), 0)]));
+    totals.average = totals.delivered ? Math.round(totals.revenue / totals.delivered) : 0;
+    const perDay = db.prepare(`
+      SELECT COUNT(*) AS orders, COALESCE(SUM(CASE WHEN status = 'delivered' THEN total END), 0) AS revenue
+      FROM orders WHERE created_at >= ? AND created_at < ?`);
+    const series = [];
+    for (let d = from; d < to; d += DAY_MS) {
+      const x = perDay.get(d, d + DAY_MS);
+      series.push({ date: new Date(d + TZ_MS).toISOString().slice(0, 10), orders: x.orders, revenue: x.revenue });
+    }
+    return { period, from, to, totals, restaurants: rows, days: series, revenue_note: 'gross_without_costs' };
   }
 
   // --- Tayyorlik ro'yxati (restoran egasining birinchi paneli) ---
@@ -179,5 +190,5 @@ export function createPlatformService(db, { access, restaurants, geo, catalog, n
     });
   }
 
-  return { apply, myApplications, notifyAdminsAboutApplication, approve, reject, block, unblock, list, overview, readiness, deleteDemo };
+  return { approve, reject, block, unblock, list, overview, finance, readiness, deleteDemo };
 }

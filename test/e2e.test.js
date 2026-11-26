@@ -142,13 +142,16 @@ describe('E2E', () => {
     assert.ok(e.to(301).some((m) => m.text.includes('topshirildi')));
   });
 
-  test('4. ariza → admin tasdig\'i → egasi → menejer va kuryer takliflari → guruhga ulash', async () => {
-    const app = await call(e.base, 401, 'POST', '/api/applications', { name: 'Yangi Choyxona', phone: '+998 90 555 44 33', lat: 40.13, lon: 67.83, address_text: 'Jizzax' });
-    assert.equal(app.status, 201);
-    const rid = app.body.restaurant.id;
-    assert.equal((await call(e.base, 301, 'POST', `/api/admin/restaurants/${rid}/approve`)).status, 403);
-    assert.equal((await call(e.base, 900, 'POST', `/api/admin/restaurants/${rid}/approve`)).status, 200);
-    assert.ok(e.to(401).some((m) => m.text.includes('tasdiqlandi')));
+  test('4. admin restoran yaratadi → egasiga havola → menejer va kuryer takliflari → guruhga ulash', async () => {
+    // Foydalanuvchi arizasi yopilgan: restoranni faqat platforma admini qo'shadi.
+    assert.equal((await call(e.base, 401, 'POST', '/api/applications', { name: 'Yangi Choyxona', phone: '+998 90 555 44 33', lat: 40.13, lon: 67.83 })).status, 403);
+    assert.equal((await call(e.base, 401, 'POST', '/api/admin/restaurants', { name: 'Yangi Choyxona', status: 'active' })).status, 403);
+    const created = await call(e.base, 900, 'POST', '/api/admin/restaurants', { name: 'Yangi Choyxona', phone: '+998905554433', address_text: 'Jizzax', status: 'active' });
+    assert.equal(created.status, 201);
+    const rid = created.body.restaurant.id;
+    const own = (await call(e.base, 900, 'POST', `/api/panel/restaurants/${rid}/invites`, { kind: 'owner' })).body.invite;
+    await e.cmd(401, `/start ${own.start_payload}`);
+    assert.equal(e.S.access.staffRole(e.u(401), rid), 'owner');
     const mgr = (await call(e.base, 401, 'POST', `/api/panel/restaurants/${rid}/invites`, { kind: 'manager' })).body.invite;
     await e.cmd(402, `/start ${mgr.start_payload}`);
     assert.equal(e.S.access.staffRole(e.u(402), rid), 'manager');

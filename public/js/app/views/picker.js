@@ -32,8 +32,8 @@ export function renderPicker(el, params, _m, { go }) {
         </div>
         <div class="alert alert-warning" id="notice" hidden></div>
         <div class="row picker-actions">
-          ${state.addresses.length && target !== 'apply' ? `<button class="btn btn-secondary" id="saved" type="button">${t('saved_addresses')}</button>` : ''}
-          <button class="btn btn-primary btn-lg grow" id="confirm" disabled>${t(target === 'apply' ? 'choose_on_map' : 'deliver_here')}</button>
+          ${state.addresses.length ? `<button class="btn btn-secondary" id="saved" type="button">${t('saved_addresses')}</button>` : ''}
+          <button class="btn btn-primary btn-lg grow" id="confirm" disabled>${t('deliver_here')}</button>
         </div>
       </div>
     </div>`;
@@ -180,7 +180,6 @@ export function renderPicker(el, params, _m, { go }) {
   confirmBtn.addEventListener('click', () => {
     if (!current?.inside) return;
     state.draft = { lat: current.lat, lon: current.lon, text: current.text, for: target };
-    if (target === 'apply') return go('apply', { replace: true }); // restoran arizasi uchun nuqta
     go(target === 'new' ? 'address/new' : `address/${target}/edit`);
   });
 

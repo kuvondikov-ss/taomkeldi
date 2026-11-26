@@ -290,19 +290,16 @@ export function createApp({ config, services, logger = console }) {
     res.json({ ok: true });
   });
 
-  // --- Restoranni ulash: ariza (A yo'l) ---
-  api.post('/applications', async (req, res) => {
-    const r = services.platform.apply(req.actor, req.body || {});
-    services.platform.notifyAdminsAboutApplication(r).catch(() => {});
-    res.status(201).json({ ok: true, restaurant: { id: r.id, name: r.name, status: r.status } });
-  });
-  api.get('/applications/mine', (req, res) => res.json({ ok: true, applications: services.platform.myApplications(req.actor) }));
+  // Restoranni faqat platforma admini qo'shadi (POST /admin/restaurants). Foydalanuvchi arizasi yopilgan:
+  // eski Mini App versiyasidan kelgan so'rov ham aniq javob oladi.
+  api.post('/applications', () => { throw new AppError('FORBIDDEN', { details: { reason: 'admin_only' } }); });
   api.get('/panel/restaurants/:rid/readiness', (req, res) => {
     res.json({ ok: true, ...services.platform.readiness(req.actor, v.id(req.params.rid, 'rid')) });
   });
 
   // --- Platforma administratori ---
   api.get('/admin/overview', (req, res) => res.json({ ok: true, overview: services.platform.overview(req.actor) }));
+  api.get('/admin/finance', (req, res) => res.json({ ok: true, finance: services.platform.finance(req.actor, { period: req.query.period || 'week' }) }));
   api.get('/admin/restaurants/list', (req, res) => res.json({ ok: true, restaurants: services.platform.list(req.actor, { status: req.query.status || undefined }) }));
   api.post('/admin/restaurants/:id/approve', async (req, res) => res.json({ ok: true, restaurant: await services.platform.approve(req.actor, req.params.id) }));
   api.post('/admin/restaurants/:id/reject', async (req, res) => res.json({ ok: true, restaurant: await services.platform.reject(req.actor, req.params.id, req.body?.reason) }));

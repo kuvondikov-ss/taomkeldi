@@ -21,32 +21,52 @@ async function env() {
   e.services.setBotApi(bot.api);
 }
 const APP = { name: 'Yangi Choyxona', phone: '+998 90 555 44 33', description: 'Milliy taomlar', lat: 40.13, lon: 67.83, address_text: 'Jizzax, Bunyodkor 3', cuisine_ids: [1, 2] };
-const apply = (user = 401, body = APP) => call(e.base, user, 'POST', '/api/applications', body);
 const admin = (path, body) => call(e.base, 900, 'POST', `/api/admin/restaurants/${path}`, body);
-const tick = () => new Promise((r) => setTimeout(r, 30));
+// Yopilishidan oldin kelgan (bazada qolgan) ariza: 'pending' restoran, ariza beruvchi bilan.
+function legacyApplication(user = 401) {
+  e.services.users.upsertFromTelegram({ id: user, first_name: 'Ariza beruvchi' });
+  const t = Date.now();
+  const id = Number(e.db.prepare(`INSERT INTO restaurants (name, phone, address_text, lat, lon, status, applicant_id, created_by, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)`).run(APP.name, '+998905554433', APP.address_text, APP.lat, APP.lon, user, user, t, t).lastInsertRowid);
+  for (const c of APP.cuisine_ids) e.db.prepare('INSERT INTO restaurant_cuisines (restaurant_id, cuisine_id) VALUES (?, ?)').run(id, c);
+  return id;
+}
+const count = () => e.db.prepare('SELECT COUNT(*) AS n FROM restaurants').get().n;
 
-describe('Ariza → qaror → egasi', () => {
+describe('Restoranni faqat admin qo\'shadi', () => {
   beforeEach(env);
   afterEach(() => e.close());
 
-  test('ariza: pending, oshxona turlari, adminga xabar; ikkinchi ariza mumkin emas', async () => {
-    const r = await apply();
-    assert.equal(r.status, 201);
-    assert.equal(r.body.restaurant.status, 'pending');
-    await tick();
-    assert.ok(sent.some((m) => m.chat_id === 900 && m.text.includes('Yangi Choyxona')));
-    assert.equal((await apply()).body.error.details.reason, 'application_exists');
-    const mine = (await call(e.base, 401, 'GET', '/api/applications/mine')).body.applications;
-    assert.deepEqual(mine.map((a) => a.status), ['pending']);
+  test('foydalanuvchi ham, admin ham ariza orqali restoran qo\'sha olmaydi (403 admin_only)', async () => {
+    const before = count();
+    for (const user of [401, 301, 101, 900]) {
+      const r = await call(e.base, user, 'POST', '/api/applications', APP);
+      assert.equal(r.status, 403);
+      assert.equal(r.body.error.details.reason, 'admin_only');
+    }
+    assert.equal(count(), before, 'restoran yaratilmadi');
+    assert.equal((await call(e.base, 401, 'GET', '/api/applications/mine')).status, 404, 'eski "arizalarim" yo\'q');
+    assert.ok(!sent.some((m) => m.chat_id === 900 && m.text.includes('Yangi Choyxona')), 'adminga ariza xabari yo\'q');
   });
 
-  test('ariza nuqtasi Jizzax viloyatidan tashqarida — 422; telefon noto\'g\'ri — 400', async () => {
-    assert.equal((await apply(402, { ...APP, lat: 41.2995, lon: 69.2401 })).body.error.code, 'OUT_OF_AREA');
-    assert.equal((await apply(402, { ...APP, phone: '123' })).body.error.details.field, 'phone');
+  test('admin bo\'lmagan foydalanuvchi /admin/restaurants orqali ham yarata olmaydi; admin yaratadi', async () => {
+    const before = count();
+    for (const user of [401, 301, 101, 102]) {
+      assert.equal((await call(e.base, user, 'POST', '/api/admin/restaurants', { name: 'Begona', status: 'active' })).status, 403);
+    }
+    assert.equal(count(), before);
+    const r = await call(e.base, 900, 'POST', '/api/admin/restaurants', { name: 'Admin Kafe', status: 'active' });
+    assert.equal(r.status, 201);
+    assert.equal(count(), before + 1);
   });
+});
+
+describe('Eski ariza → qaror → egasi', () => {
+  beforeEach(env);
+  afterEach(() => e.close());
 
   test('tasdiq: ariza beruvchi EGA bo\'ladi (menejer emas), xabar oladi, panelga kiradi', async () => {
-    const id = (await apply()).body.restaurant.id;
+    const id = legacyApplication();
     assert.equal((await call(e.base, 401, 'GET', `/api/panel/restaurants/${id}/readiness`)).status, 403, 'tasdiqgacha panel yo\'q');
     const ok = await admin(`${id}/approve`);
     assert.equal(ok.body.restaurant.status, 'active');
@@ -59,14 +79,14 @@ describe('Ariza → qaror → egasi', () => {
     assert.equal((await admin(`${id}/approve`)).body.error.code, 'INVALID_TRANSITION', 'qayta tasdiqlab bo\'lmaydi');
   });
 
-  test('rad: sabab majburiy, egasiga sabab bilan xabar, rol berilmaydi; keyin yangi ariza mumkin', async () => {
-    const id = (await apply()).body.restaurant.id;
+  test('rad: sabab majburiy, egasiga sabab bilan xabar, rol berilmaydi; yangi ariza yuborib bo\'lmaydi', async () => {
+    const id = legacyApplication();
     assert.equal((await admin(`${id}/reject`, {})).status, 400);
     const r = await admin(`${id}/reject`, { reason: 'Telefon javob bermadi' });
     assert.equal(r.body.restaurant.status, 'rejected');
     assert.ok(sent.some((m) => m.chat_id === 401 && m.text.includes('Telefon javob bermadi')));
     assert.equal((await call(e.base, 401, 'GET', '/api/me')).body.roles.staff.length, 0);
-    assert.equal((await apply()).status, 201, 'rad etilgandan keyin qayta ariza');
+    assert.equal((await call(e.base, 401, 'POST', '/api/applications', APP)).status, 403, 'qayta ariza yo\'q — faqat admin qo\'shadi');
   });
 });
 
@@ -126,7 +146,7 @@ describe('Platforma API himoyasi va ko\'rsatkichlar', () => {
   });
 
   test('ko\'rsatkichlar va ro\'yxat (arizalar birinchi)', async () => {
-    await apply();
+    legacyApplication();
     const o = (await call(e.base, 900, 'GET', '/api/admin/overview')).body.overview;
     assert.equal(o.restaurants.active, 2);
     assert.equal(o.restaurants.pending, 1);
@@ -153,5 +173,64 @@ describe('Platforma API himoyasi va ko\'rsatkichlar', () => {
     assert.equal(e.db.prepare('SELECT COUNT(*) AS n FROM restaurants WHERE id = ?').get(ids.r2).n, 0);
     assert.equal(e.db.prepare('SELECT COUNT(*) AS n FROM restaurants WHERE id = ?').get(ids.r1).n, 1, 'haqiqiy restoran qoladi');
     assert.equal(e.db.prepare('SELECT COUNT(*) AS n FROM orders WHERE restaurant_id = ?').get(ids.r1).n, 1, 'haqiqiy buyurtma qoladi');
+  });
+});
+
+describe('Moliya (faqat platforma admini)', () => {
+  beforeEach(env);
+  afterEach(() => e.close());
+  const setOrder = (id, patch) => {
+    const keys = Object.keys(patch);
+    e.db.prepare(`UPDATE orders SET ${keys.map((k) => `${k} = ?`).join(', ')} WHERE id = ?`).run(...keys.map((k) => patch[k]), id);
+  };
+  const fin = (user, period) => call(e.base, user, 'GET', `/api/admin/finance${period ? `?period=${period}` : ''}`);
+
+  test('faqat admin ko\'radi: mijoz, ega, menejer — 403; noto\'g\'ri davr — 400', async () => {
+    for (const user of [301, 101, 102, 201]) assert.equal((await fin(user)).status, 403);
+    assert.equal((await fin(900, 'year')).status, 400);
+    assert.equal((await fin(900)).body.finance.period, 'week', 'standart — 7 kun');
+  });
+
+  test('restoranlar bo\'yicha tushum: naqd va oldindan to\'langan, yetkazish haqi, tasdiq kutilayotgan, qaytarilgan, davr', async () => {
+    const DAY = 86400000;
+    setOrder(ids.o1, { status: 'delivered', payment_method: 'cash' }); // R1: 70 000 + 5 000
+    setOrder(ids.o2, { status: 'delivered', payment_method: 'card_transfer', payment_status: 'paid' }); // R2: 24 000
+    const old = e.services.orders.createRecord(e.services.users.get(301), { restaurantId: ids.r1, items: [{ productId: ids.p1, qty: 1 }] });
+    setOrder(old.id, { status: 'delivered', payment_method: 'cash', created_at: Date.now() - 12 * DAY }); // faqat 30 kunda
+    const claimed = e.services.orders.createRecord(e.services.users.get(302), { restaurantId: ids.r2, items: [{ productId: ids.p2, qty: 1 }] });
+    setOrder(claimed.id, { status: 'new', payment_method: 'card_transfer', payment_status: 'claimed' });
+    const refunded = e.services.orders.createRecord(e.services.users.get(302), { restaurantId: ids.r2, items: [{ productId: ids.p2, qty: 2 }] });
+    setOrder(refunded.id, { status: 'cancelled', payment_method: 'card_transfer', payment_status: 'refunded' });
+
+    const w = (await fin(900, 'week')).body.finance;
+    const r1 = w.restaurants.find((r) => r.id === ids.r1);
+    const r2 = w.restaurants.find((r) => r.id === ids.r2);
+    assert.deepEqual([r1.revenue, r1.cash, r1.prepaid, r1.delivery_fees, r1.items, r1.delivered, r1.orders], [75000, 75000, 0, 5000, 70000, 1, 1]);
+    assert.deepEqual([r2.revenue, r2.cash, r2.prepaid, r2.awaiting_confirm, r2.refunded, r2.cancelled, r2.in_progress, r2.orders], [24000, 0, 24000, 8000, 16000, 1, 1, 3]);
+    assert.equal(w.totals.revenue, 99000);
+    assert.equal(w.totals.delivered, 2);
+    assert.equal(w.totals.average, 49500);
+    assert.equal(w.restaurants[0].id, ids.r1, 'tushum bo\'yicha saralangan');
+    assert.equal(w.days.length, 7);
+    assert.equal(w.days.reduce((s, d) => s + d.revenue, 0), 99000);
+
+    const m = (await fin(900, 'month')).body.finance;
+    assert.equal(m.restaurants.find((r) => r.id === ids.r1).revenue, 75000 + 35000, '12 kun oldingi buyurtma faqat 30 kunda');
+    assert.equal(m.days.length, 30);
+  });
+
+  test('"bugun" — Toshkent vaqti bo\'yicha (server UTC bo\'lsa ham); bloklangan restoran ham ko\'rinadi, ariza ko\'rinmaydi', async () => {
+    const at = Date.UTC(2026, 10, 26, 6, 0); // Toshkentda 11:00
+    setOrder(ids.o1, { status: 'delivered', payment_method: 'cash', created_at: Date.UTC(2026, 10, 25, 20, 0) }); // Toshkentda bugun 01:00
+    setOrder(ids.o2, { status: 'delivered', payment_method: 'cash', created_at: Date.UTC(2026, 10, 25, 18, 0) }); // Toshkentda kecha 23:00
+    await admin(`${ids.r2}/block`, { reason: 'Tekshiruv' });
+    legacyApplication();
+    const f = e.services.platform.finance(e.services.users.get(900), { period: 'today' }, at);
+    assert.equal(f.restaurants.find((r) => r.id === ids.r1).revenue, 75000);
+    assert.equal(f.restaurants.find((r) => r.id === ids.r2).revenue, 0);
+    assert.equal(f.restaurants.find((r) => r.id === ids.r2).status, 'blocked');
+    assert.ok(!f.restaurants.some((r) => r.status === 'pending'));
+    assert.deepEqual(f.days.map((d) => d.date), ['2026-11-26']);
+    assert.equal(e.services.platform.overview(e.services.users.get(900), at).today.orders, 1, 'ko\'rsatkichlar ham Toshkent kuni bo\'yicha');
   });
 });

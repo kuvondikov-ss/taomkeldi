@@ -74,7 +74,6 @@ export function renderProfile(el, _p, _m, { go }) {
       </div>
       ${work.length ? `<p class="label">${t('work_sections')}</p><div class="list">${work.map(([k, ic]) => `<button class="list-item" data-go="${k}">${icon(ic)}<span class="grow">${t(k)}</span>${icon('chevron')}</button>`).join('')}</div>` : ''}
       <div class="list">
-        <button class="list-item" data-go="apply">${icon('store')}<span class="grow">${t('connect_restaurant')}</span>${icon('chevron')}</button>
         <div class="list-item" style="cursor:default">${icon('info')}<span class="grow"><span class="h3">${t('help')}</span><br><span class="small text-2">${t('help_text')}</span></span></div>
         <div class="list-item" style="cursor:default">${icon('dish')}<span class="grow"><span class="h3">${t('about')}</span><br><span class="small text-2">${t('about_text')}</span></span></div>
       </div>

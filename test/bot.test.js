@@ -68,7 +68,7 @@ describe('Bot: /start va rolga qarab menyu', () => {
     assert.ok(msg.text.includes('Taomkeldi’ga xush kelibsiz!'));
     assert.ok(msg.text.includes('Jizzaxdagi kafe va restoranlardan taom buyurtma qiling.'));
     assert.ok(msg.text.includes('DasturXona\'ning yangi loyihasi.'));
-    assert.deepEqual(buttons(msg), ['Buyurtma berish', 'Buyurtmalarim', 'Yordam', 'Restoran ulash']);
+    assert.deepEqual(buttons(msg), ['Buyurtma berish', 'Buyurtmalarim', 'Yordam'], '"Restoran ulash" yo\'q — faqat admin qo\'shadi');
   });
 
   test('egasi: restoran paneli bor, admin amallari yo\'q', async () => {
@@ -282,29 +282,20 @@ describe('Taklif havolalari', () => {
   });
 });
 
-describe('Restoran ulash (ariza)', () => {
-  test('ariza: nom → telefon → pending restoran, adminga xabar, takror ariza yo\'q', async () => {
+describe('Restoran ulash — faqat admin', () => {
+  test('eski klaviaturadagi "Restoran ulash": ariza ochilmaydi, "faqat admin" javobi va yangi klaviatura', async () => {
     const e = await botEnv();
     await e.send(501, '/start');
-    assert.ok((await e.send(501, 'Restoran ulash'))[0].text.includes('nomini'));
-    assert.ok((await e.send(501, 'Yangi Choyxona'))[0].text.includes('telefon'));
-    assert.ok((await e.send(501, '12'))[0].text.includes('noto‘g‘ri'));
-    const done = await e.sendContact(501, '+998901234567');
-    assert.ok(done.some((m) => m.chat_id === 501 && m.text.includes('Arizangiz qabul qilindi')));
-    assert.ok(done.some((m) => m.chat_id === 900 && m.text.includes('Yangi Choyxona')), 'adminga xabar');
-    const r = e.db.prepare('SELECT status, applicant_id, phone FROM restaurants WHERE name = ?').get('Yangi Choyxona');
-    assert.deepEqual({ ...r }, { status: 'pending', applicant_id: 501, phone: '+998901234567' });
-    assert.ok((await e.send(501, 'Restoran ulash'))[0].text.includes('ko‘rib chiqilmoqda'));
-    // Ariza beruvchi hali ega emas (tasdiq — 10-bosqich).
-    assert.equal(e.services.access.rolesOf(e.services.users.get(501)).staff.length, 0);
-    await e.close();
-  });
-
-  test('bekor qilish suhbatni to\'xtatadi', async () => {
-    const e = await botEnv();
-    await e.send(502, 'Restoran ulash');
-    assert.equal((await e.send(502, 'Bekor qilish'))[0].text, 'Bekor qilindi.');
-    assert.ok((await e.send(502, 'Bir narsa'))[0].text.includes('Menyudan'));
+    const before = e.db.prepare('SELECT COUNT(*) AS n FROM restaurants').get().n;
+    const out = await e.send(501, 'Restoran ulash');
+    assert.equal(out.length, 1);
+    assert.ok(out[0].text.includes('faqat platforma administratori'));
+    assert.ok(!buttons(out[0]).includes('Restoran ulash'));
+    // Keyingi matn ariza nomi sifatida qabul qilinmaydi.
+    const next = await e.send(501, 'Yangi Choyxona');
+    assert.ok(next[0].text.includes('Menyudan'));
+    assert.ok(!next.some((m) => m.chat_id === 900), 'adminga ariza xabari yo\'q');
+    assert.equal(e.db.prepare('SELECT COUNT(*) AS n FROM restaurants').get().n, before, 'restoran yaratilmadi');
     await e.close();
   });
 });

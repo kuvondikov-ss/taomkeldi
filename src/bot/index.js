@@ -3,16 +3,13 @@
 import { Bot, InlineKeyboard, Keyboard, GrammyError, HttpError } from 'grammy';
 import { t, keyOfLabel, formatSum, LANGS } from '../i18n/index.js';
 import { INVITE_PREFIX } from '../services/invites.js';
-import { AppError } from '../lib/errors.js';
 import { registerGroupHandlers } from './group.js';
 import { registerCourierHandlers } from './courier.js';
 
-const CONVO_TTL_MS = 15 * 60 * 1000;
 
 export function createBot({ config, services, logger = console, botInfo }) {
   const bot = new Bot(config.botToken, botInfo ? { botInfo } : undefined);
   const { users, access, orders, restaurants, invites } = services;
-  const convos = new Map(); // userId -> { step, name, at }  (restoran arizasi suhbati)
 
   // --- Har update: foydalanuvchini bazaga yozish, tilni aniqlash ---
   bot.use(async (ctx, next) => {
@@ -48,7 +45,7 @@ export function createBot({ config, services, logger = console, botInfo }) {
       roleRow.forEach((label) => kb.text(label));
       kb.row();
     }
-    if (!roles.staff.length) kb.text(ctx.t('btn_connect'));
+    // "Restoran ulash" tugmasi yo'q: restoranlarni faqat platforma admini qo'shadi.
     return kb.resized().persistent();
   }
 
@@ -80,7 +77,6 @@ export function createBot({ config, services, logger = console, botInfo }) {
 
   bot.command('start', async (ctx) => {
     if (!isPrivate(ctx)) return ctx.reply(ctx.t('group_start'));
-    convos.delete(ctx.user.id);
     if (users.bootstrapAutoAdmin(ctx.user.id)) {
       logger.warn(`AUTO_ADMIN: ${ctx.user.id} platforma administratori qilindi (faqat test muhiti).`);
       ctx.user = users.get(ctx.user.id);
@@ -150,55 +146,6 @@ export function createBot({ config, services, logger = console, botInfo }) {
 
   const showId = (ctx) => ctx.reply(ctx.t('id', { user: ctx.from.id, chat: ctx.chat.id }), html);
 
-  // --- Restoran ulash (ariza) ---
-  async function startApplication(ctx) {
-    const pending = restaurants.pendingApplicationOf(ctx.user);
-    if (pending) return ctx.reply(ctx.t('apply_exists', { name: pending.name }), { ...html, reply_markup: mainKeyboard(ctx) });
-    // To'liq ariza (xaritadagi nuqta, oshxona turlari) — Mini App'da. Ilova ulanmagan bo'lsa — bot orqali qisqa ariza.
-    if (config.webapp.ok) return replyWithApp(ctx, ctx.t('apply_in_app'), 'apply');
-    convos.set(ctx.user.id, { step: 'name', at: Date.now() });
-    return ctx.reply(ctx.t('apply_name'), { reply_markup: new Keyboard().text(ctx.t('btn_cancel')).resized() });
-  }
-
-  async function notifyAdmins(restaurant, ctx) {
-    const who = ctx.from.username ? `@${ctx.from.username}` : `${ctx.from.first_name} (${ctx.from.id})`;
-    for (const adminId of access.platformAdminIds()) {
-      const admin = users.get(adminId);
-      const lang = admin ? users.langOf(admin) : 'uz';
-      try {
-        await bot.api.sendMessage(adminId, t(lang, 'apply_admin', {
-          id: restaurant.id, name: restaurant.name, phone: restaurant.phone, user: who,
-        }), html);
-      } catch (e) {
-        logger.error(`Adminga (${adminId}) ariza xabari yuborilmadi:`, e.description || e.message);
-      }
-    }
-  }
-
-  async function continueApplication(ctx, convo) {
-    const msg = ctx.message;
-    if (convo.step === 'name') {
-      const name = msg.text?.trim();
-      if (!name || name.length < 2 || name.length > 120) return ctx.reply(ctx.t('apply_name'));
-      convos.set(ctx.user.id, { step: 'phone', name, at: Date.now() });
-      return ctx.reply(ctx.t('apply_phone'), {
-        reply_markup: new Keyboard().requestContact(ctx.t('btn_send_phone')).row().text(ctx.t('btn_cancel')).resized(),
-      });
-    }
-    // step === 'phone'
-    const phone = msg.contact?.user_id === ctx.from.id ? msg.contact.phone_number : msg.text?.trim();
-    try {
-      const { restaurant, created } = restaurants.createApplication(ctx.user, { name: convo.name, phone });
-      convos.delete(ctx.user.id);
-      if (!created) return ctx.reply(ctx.t('apply_exists', { name: restaurant.name }), { ...html, reply_markup: mainKeyboard(ctx) });
-      await ctx.reply(ctx.t('apply_done', { name: restaurant.name }), { ...html, reply_markup: mainKeyboard(ctx) });
-      await notifyAdmins(restaurant, ctx);
-    } catch (e) {
-      if (e instanceof AppError && e.code === 'VALIDATION') return ctx.reply(ctx.t('apply_phone_invalid'));
-      throw e;
-    }
-  }
-
   // --- Restoran guruhi: /bogla, buyurtma tugmalari, bot holati, migratsiya ---
   const groupBot = registerGroupHandlers(bot, { services, logger });
 
@@ -221,27 +168,21 @@ export function createBot({ config, services, logger = console, botInfo }) {
   bot.command('help', showHelp);
   bot.command(['id', 'myid'], showId);
 
-  // --- Matnli tugmalar va suhbat ---
+  // --- Matnli tugmalar ---
   bot.on(['message:text', 'message:contact'], async (ctx, next) => {
     if (!isPrivate(ctx)) return next();
     const key = ctx.message.text ? keyOfLabel(ctx.message.text) : null;
 
-    if (key === 'btn_cancel') {
-      convos.delete(ctx.user.id);
-      return ctx.reply(ctx.t('cancelled'), { reply_markup: mainKeyboard(ctx) });
-    }
-    const convo = convos.get(ctx.user.id);
-    if (convo && Date.now() - convo.at < CONVO_TTL_MS && !key) return continueApplication(ctx, convo);
-    if (convo) convos.delete(ctx.user.id);
-
     switch (key) {
+      case 'btn_cancel': return ctx.reply(ctx.t('cancelled'), { reply_markup: mainKeyboard(ctx) });
+      // Eski klaviaturadagi "Restoran ulash" — endi faqat admin qo'shadi; yangi klaviatura yuboriladi.
+      case 'btn_connect': return ctx.reply(ctx.t('connect_admin_only'), { ...html, reply_markup: mainKeyboard(ctx) });
       case 'btn_order': return openOrder(ctx);
       case 'btn_orders': return showOrders(ctx);
       case 'btn_help': return showHelp(ctx);
       case 'btn_panel': return showPanel(ctx);
       case 'btn_courier': return showCourier(ctx);
       case 'btn_admin': return showPlatform(ctx);
-      case 'btn_connect': return startApplication(ctx);
       default: return ctx.reply(ctx.t('menu_hint'), { reply_markup: mainKeyboard(ctx) });
     }
   });

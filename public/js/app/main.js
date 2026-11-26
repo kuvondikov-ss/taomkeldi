@@ -13,7 +13,6 @@ import { renderCheckout } from './views/checkout.js';
 import { renderOrder } from './views/order.js';
 import { renderAdmin } from './views/admin.js';
 import { renderPanelList, renderPanel, renderPanelSection } from './views/panel.js';
-import { renderApply } from './views/apply.js';
 import { renderPicker } from './views/picker.js';
 import { renderAddressForm } from './views/address-form.js';
 import { renderAddresses } from './views/addresses.js';
@@ -53,7 +52,6 @@ const ROUTES = [
   [/^panel$/, renderPanelList, {}],
   [/^panel\/(\d+)$/, renderPanel, {}],
   [/^panel\/(\d+)\/(orders|menu|couriers|staff|settings|report)$/, renderPanelSection, {}],
-  [/^apply$/, renderApply, {}],
   [/^courier$/, renderCourier, {}],
 ];
 

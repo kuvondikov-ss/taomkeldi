@@ -225,6 +225,8 @@ export async function renderPanelReport(el, _p, rid) {
       <div class="metric"><span class="metric-value">${formatSum(x.revenue)}</span><span class="xs text-2">${t('rep_revenue')}</span></div>
       <div class="metric"><span class="metric-value">${formatSum(x.average)}</span><span class="xs text-2">${t('rep_avg')}</span></div>
     </div>
+    <div class="row sum-row small"><span>${t('fin_items')}</span><span>${formatSum(x.food_revenue)}</span></div>
+    <div class="row sum-row small"><span>${t('fin_delivery_fees')}</span><span>${formatSum(x.delivery_revenue)}</span></div>
     <div class="row sum-row small"><span>${t('rep_cash')}</span><span>${formatSum(x.cash)}</span></div>
     <div class="row sum-row small"><span>${t('rep_prepaid')}</span><span>${formatSum(x.prepaid)}</span></div>
     <div class="row sum-row small"><span>${t('rep_free_deliveries')}</span><span>${x.free_deliveries ?? 0}</span></div>

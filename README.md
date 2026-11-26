@@ -3,7 +3,7 @@
 Jizzax viloyatidagi kafe va restoranlardan taom buyurtma qilish va yetkazib berish platformasi.
 Bot: [@taomkeldi_bot](https://t.me/taomkeldi_bot). DasturXona'ning yangi loyihasi.
 
-Holat: 18 bosqich bajarildi (290/290 test) va production'da: Railway, commit `bd39cd3`, Mini App — https://taomkeldi-production.up.railway.app. Muhit va texnik xizmat: [docs/OPERATIONS.md](docs/OPERATIONS.md), test hisoboti: [docs/TEST_REPORT.md](docs/TEST_REPORT.md). Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
+Holat: 18 bosqich bajarildi (290/290 test) va production'da: Railway, commit `08e5965`, Mini App — https://taomkeldi-production.up.railway.app. Muhit va texnik xizmat: [docs/OPERATIONS.md](docs/OPERATIONS.md), test hisoboti: [docs/TEST_REPORT.md](docs/TEST_REPORT.md). Batafsil — [docs/PROGRESS.md](docs/PROGRESS.md), qarorlar — [docs/PROJECT_CONTEXT.md](docs/PROJECT_CONTEXT.md).
 
 ## Texnologiyalar
 Node.js 22.13+ · Express 5 · grammY · `node:sqlite` · oddiy HTML/CSS/JS (Mini App).

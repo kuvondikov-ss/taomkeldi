@@ -264,7 +264,7 @@ Railway'da hali **1-bosqichgacha bo'lgan oddiy bot** ishlaydi (kodi endi `legacy
 - Savat qatori kaliti: `"<id>"` — standart, `"<id>~ing:qty,..."` — maxsus; bir taomning turli sozlamalari alohida qator, bir xillari birlashadi. Panelda masalliq o'zgarsa eski qator `options_changed` bo'ladi. Restoran/kuryer xabarida "✎ Maxsus: …".
 - Buyurtma sahifasida (holat `new`/`accepted`) 30 soniyalik taxminiy tayyorlanish animatsiyasi: mangal (shashlik sixlari), plita (burger), pech (pitsa), fritur, shaurma, qozon, sushi, tova — taom rasmi bilan, "Qoldi: m:ss" → "✓ Tayyor". Haqiqiy holatni baribir restoran o'zgartiradi. `prefers-reduced-motion` hurmat qilinadi.
 - Menyular: Starburger (10 taom, rasmlar `assets/menus/starburger`), Eshonbobo, Yaponamama, Taomkeldi — `scripts/menus/*.json`, narxlar **TEST** (generator: `scripts/menus/generate.cjs`).
-- Deploy (2026-11-26, `7e19af9`, migratsiya 11): production'da #2 Starburger 10 taom, #3 Yaponamama 1, #4 Eshonbobo 8 (hammasi rasm va masalliqlar bilan), #1 Taomkeldi 29 taom (holati `pending` — mijozga ko'rinmaydi). Qidiruv: "burger", "shashlik", "sushi" va restoran nomlari to'g'ri topiladi.
+- Deploy (2026-11-26, `7e19af9`, migratsiya 11): production'da #2 Starburger 10 taom, #3 Yaponamama 1, #4 Eshonbobo 8 (hammasi rasm va masalliqlar bilan), #1 Taomkeldi 29 taom (rasmsiz) — shu kuni faollashtirildi, vaqtincha joylashuv/yetkazish zonasi bilan (Jizzax markazi, 8 000 so'm, 10 km). Qidiruv: "burger", "shashlik", "sushi" va restoran nomlari to'g'ri topiladi.
 - Sinov: 300/300 (`test/options.test.js` — 9 ta). Brauzerda: Maxsus burger (+1 kotlet = +12 000, piyozsiz −600), savat yozuvi, buyurtma va animatsiya (plita, mangal, 30 s → Tayyor).
 
 ## Ochiq savollar

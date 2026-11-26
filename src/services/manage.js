@@ -6,6 +6,7 @@
 import { now, tx } from '../db/index.js';
 import { AppError } from '../lib/errors.js';
 import * as v from '../lib/validate.js';
+import { locationState } from '../../public/js/shared/tracking.js';
 import { validHoursInput } from '../../public/js/shared/hours.js';
 
 const TZ_MS = 5 * 3600000; // Asia/Tashkent
@@ -208,13 +209,16 @@ export function createManageService(db, { access, geo, options }) {
     staff(actor, rid);
     const from = dayStartUtc(at);
     return db.prepare(`
-      SELECT c.id, c.name, c.phone, c.transport, c.status, c.is_online, c.user_id, c.last_location_at, u.username,
+      SELECT c.id, c.name, c.phone, c.transport, c.status, c.is_online, c.user_id, c.last_location_at, c.last_lat, c.last_lon, u.username,
         (SELECT COUNT(*) FROM orders o WHERE o.courier_id = c.id AND o.status = 'delivered' AND o.updated_at >= ?) AS delivered_today,
         (SELECT COALESCE(SUM(o.total), 0) FROM orders o WHERE o.courier_id = c.id AND o.status = 'delivered' AND o.payment_method = 'cash' AND o.updated_at >= ?) AS cash_today,
         (SELECT COUNT(*) FROM orders o WHERE o.courier_id = c.id AND o.status IN ('new','accepted','ready','on_way')) AS active_orders
       FROM couriers c LEFT JOIN users u ON u.id = c.user_id
       WHERE c.restaurant_id = ? AND c.status = 'active' ORDER BY c.is_online DESC, c.name
-    `).all(from, from, rid).map((c) => ({ ...c, linked: c.user_id != null }));
+    `).all(from, from, rid).map(({ last_lat, last_lon, ...c }) => {
+      const state = c.is_online && c.last_location_at != null ? locationState(at - c.last_location_at) : 'hidden';
+      return { ...c, linked: c.user_id != null, location: state !== 'hidden' && last_lat != null && last_lon != null ? { lat: last_lat, lon: last_lon, at: c.last_location_at, state } : null };
+    });
   }
 
   function saveCourier(actor, rid, data, courierId = null) {
@@ -330,13 +334,15 @@ export function createManageService(db, { access, geo, options }) {
         SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) AS delivered,
         SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
         COALESCE(SUM(CASE WHEN status = 'delivered' THEN total END), 0) AS revenue,
+        COALESCE(SUM(CASE WHEN status = 'delivered' THEN items_total END), 0) AS food_revenue,
+        COALESCE(SUM(CASE WHEN status = 'delivered' THEN delivery_fee END), 0) AS delivery_revenue,
         COALESCE(SUM(CASE WHEN status = 'delivered' AND payment_method = 'cash' THEN total END), 0) AS cash,
         COALESCE(SUM(CASE WHEN status = 'delivered' AND payment_method <> 'cash' THEN total END), 0) AS prepaid,
         SUM(CASE WHEN status = 'delivered' AND type = 'delivery' AND delivery_fee = 0 THEN 1 ELSE 0 END) AS free_deliveries
       FROM orders WHERE restaurant_id = ? AND created_at >= ? AND created_at < ?`).get(rid, fromMs, toMs);
     const shape = (a) => ({
       orders: a.orders, delivered: a.delivered || 0, cancelled: a.cancelled || 0,
-      revenue: a.revenue, cash: a.cash, prepaid: a.prepaid, free_deliveries: a.free_deliveries || 0,
+      revenue: a.revenue, food_revenue: a.food_revenue, delivery_revenue: a.delivery_revenue, cash: a.cash, prepaid: a.prepaid, free_deliveries: a.free_deliveries || 0,
       average: a.delivered ? Math.round(a.revenue / a.delivered) : 0,
     });
     const days = [];
@@ -349,7 +355,8 @@ export function createManageService(db, { access, geo, options }) {
       FROM order_items oi JOIN orders o ON o.id = oi.order_id
       WHERE o.restaurant_id = ? AND o.status = 'delivered' AND o.created_at >= ?
       GROUP BY oi.name ORDER BY qty DESC, total DESC LIMIT 5`).all(rid, from7).map((p) => ({ ...p }));
-    return { today: shape(agg(today, today + 86400000)), week: shape(agg(from7, today + 86400000)), days, popular, revenue_note: 'gross_without_costs' };
+    const counts = db.prepare('SELECT COUNT(*) AS products, COALESCE(SUM(is_available), 0) AS available FROM products WHERE restaurant_id = ? AND is_deleted = 0').get(rid);
+    return { counts, today: shape(agg(today, today + 86400000)), week: shape(agg(from7, today + 86400000)), days, popular, revenue_note: 'gross_without_costs' };
   }
 
   return {

@@ -35,8 +35,9 @@ export function adminClient({ base = process.env.PROD_URL || 'https://taomkeldi-
       try {
         res = await fetch(base + path, {
           method,
-          headers: { Authorization: `tma ${initData()}`, ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
-          body: body !== undefined ? JSON.stringify(body) : undefined,
+          // Buffer — fayl yuklash (rasm), aks holda JSON.
+          headers: { Authorization: `tma ${initData()}`, ...(Buffer.isBuffer(body) ? { 'Content-Type': 'application/octet-stream' } : body !== undefined ? { 'Content-Type': 'application/json' } : {}) },
+          body: Buffer.isBuffer(body) ? body : body !== undefined ? JSON.stringify(body) : undefined,
           signal: AbortSignal.timeout(20_000),
         });
         break;

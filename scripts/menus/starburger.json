@@ -1,0 +1,14 @@
+{
+  "restaurant": {
+    "name": "Starburger",
+    "description": "Burgerlar, lavash va fast food.",
+    "status": "active",
+    "cuisines": ["Fast food"],
+    "profile": {
+      "address_text": "Jizzax shahri",
+      "lat": 40.1158, "lon": 67.8422,
+      "delivery_base": 8000, "delivery_base_m": 2000, "delivery_per_km": 2000, "delivery_radius_m": 10000
+    }
+  },
+  "categories": []
+}

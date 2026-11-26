@@ -1,0 +1,36 @@
+{
+  "restaurant": {
+    "name": "Eshonbobo oshmarkazi",
+    "description": "Milliy osh va mangalda pishirilgan shashliklar.",
+    "status": "active",
+    "cuisines": ["Milliy taomlar", "Shashlik"],
+    "cover": "assets/menus/eshonbobo/cover.webp",
+    "profile": {
+      "address_text": "Jizzax shahri",
+      "lat": 40.1158, "lon": 67.8422,
+      "delivery_base": 8000, "delivery_base_m": 2000, "delivery_per_km": 2000, "delivery_radius_m": 10000
+    }
+  },
+  "categories": [
+    {
+      "name_uz": "Osh", "name_ru": "Плов",
+      "items": [
+        { "name_uz": "Osh", "name_ru": "Плов", "portion": "1 porsiya",
+          "description_uz": "Mol go‘shti, sabzi, no‘xat va sarimsoq bilan.", "description_ru": "С говядиной, морковью, нутом и чесноком.",
+          "image": "assets/menus/eshonbobo/osh.webp" }
+      ]
+    },
+    {
+      "name_uz": "Shashliklar", "name_ru": "Шашлыки",
+      "items": [
+        { "name_uz": "Mol go‘shti shashlik", "name_ru": "Шашлык из говядины", "portion": "1 six (~250 g)", "image": "assets/menus/eshonbobo/mol-shashlik.webp" },
+        { "name_uz": "Tovuq shashlik", "name_ru": "Шашлык из курицы", "portion": "1 six", "image": "assets/menus/eshonbobo/tovuq-shashlik.webp" },
+        { "name_uz": "Qo‘y qovurg‘a shashlik", "name_ru": "Шашлык из бараньих рёбрышек", "portion": "1 six", "image": "assets/menus/eshonbobo/qoy-qovurga.webp" },
+        { "name_uz": "Sabzavotli mol go‘shti shashlik", "name_ru": "Шашлык из говядины с овощами", "portion": "1 six", "image": "assets/menus/eshonbobo/sabzavotli-mol.webp" },
+        { "name_uz": "Qiyma kabob", "name_ru": "Люля-кебаб", "portion": "1 six", "image": "assets/menus/eshonbobo/qiyma-kabob.webp" },
+        { "name_uz": "Qo‘ziqorin shashlik", "name_ru": "Шашлык из шампиньонов", "portion": "1 six", "image": "assets/menus/eshonbobo/qoziqorin.webp" },
+        { "name_uz": "Sabzavotli shashlik", "name_ru": "Овощной шашлык", "portion": "1 six (~200 g)", "image": "assets/menus/eshonbobo/sabzavotli.webp" }
+      ]
+    }
+  ]
+}

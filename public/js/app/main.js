@@ -23,9 +23,10 @@ import { renderCourier } from './views/courier.js';
 const tg = applyTelegramTheme();
 tg?.ready();
 tg?.expand?.();
-// To'liq ekran (Bot API 8.0+, faqat telefonda; kompyuterda oyna butun ekranni egallab olmasin).
+// To'liq ekran (Bot API 8.0+): telefonda ham, kompyuterda (Telegram Desktop, macOS, Web) ham.
 // Telegram tugmalari ustida qolmasligi uchun kontent --safe-top bilan suriladi (tokens.css, SDK o'zgaruvchilari).
-if (tg && ['android', 'ios'].includes(tg.platform) && tg.isVersionAtLeast?.('8.0') && !tg.isFullscreen) {
+// Eski mijozlar — oddiy kengaytirilgan rejim; foydalanuvchi Telegram tugmasi bilan to'liq ekrandan chiqa oladi.
+if (tg?.isVersionAtLeast?.('8.0') && !tg.isFullscreen) {
   try { tg.requestFullscreen(); } catch { /* qo'llamaydigan mijoz — oddiy kengaytirilgan rejim qoladi */ }
 }
 
